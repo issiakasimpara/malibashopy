@@ -214,7 +214,7 @@ class OrderService {
 
       const { data: orders, error } = await supabase
         .from('orders')
-        .select('total_amount, order_status, created_at')
+        .select('total_amount, status, created_at')
         .eq('store_id', storeId);
 
       if (error) throw error;
@@ -230,13 +230,13 @@ class OrderService {
 
       if (orders) {
         const today = new Date().toISOString().split('T')[0];
-        
+
         orders.forEach(order => {
           stats.totalRevenue += order.total_amount;
-          
-          if (order.order_status === 'pending') stats.pendingOrders++;
-          if (order.order_status === 'delivered') stats.completedOrders++;
-          
+
+          if (order.status === 'pending') stats.pendingOrders++;
+          if (order.status === 'delivered') stats.completedOrders++;
+
           if (order.created_at.startsWith(today)) {
             stats.todayOrders++;
             stats.todayRevenue += order.total_amount;

@@ -44,7 +44,7 @@ const Orders = () => {
     }
 
     if (statusFilter !== 'all') {
-      results = results.filter(order => order.order_status === statusFilter);
+      results = results.filter(order => order.status === statusFilter);
     }
 
     setFilteredOrders(results);
@@ -72,7 +72,7 @@ const Orders = () => {
     return <Badge className={config.className}>{config.label}</Badge>;
   };
 
-  const handleStatusChange = (orderId: string, newStatus: Order['order_status']) => {
+  const handleStatusChange = (orderId: string, newStatus: Order['status']) => {
     updateOrderStatus({ orderId, status: newStatus });
   };
 
@@ -196,7 +196,7 @@ const Orders = () => {
                       </p>
                     </div>
                     <div className="text-right">
-                      {getStatusBadge(order.order_status)}
+                      {getStatusBadge(order.status)}
                       <p className="text-xl font-bold text-gray-800 dark:text-gray-200">
                         {Number(order.total_amount).toLocaleString()} {order.currency}
                       </p>

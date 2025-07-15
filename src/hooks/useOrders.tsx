@@ -66,7 +66,7 @@ export const useOrders = () => {
 
   // Mettre à jour le statut d'une commande
   const updateOrderStatusMutation = useMutation({
-    mutationFn: ({ orderId, status }: { orderId: string; status: Order['order_status'] }) =>
+    mutationFn: ({ orderId, status }: { orderId: string; status: Order['status'] }) =>
       orderService.updateOrderStatus(orderId, status),
     onSuccess: (updatedOrder) => {
       // Mettre à jour le cache
@@ -146,8 +146,8 @@ export const useOrders = () => {
     
     // Utilitaires
     getOrderById: (orderId: string) => orders.find(order => order.id === orderId),
-    getOrdersByStatus: (status: Order['order_status']) => 
-      orders.filter(order => order.order_status === status),
+    getOrdersByStatus: (status: Order['status']) =>
+      orders.filter(order => order.status === status),
     getTodayOrders: () => {
       const today = new Date().toISOString().split('T')[0];
       return orders.filter(order => order.created_at.startsWith(today));
