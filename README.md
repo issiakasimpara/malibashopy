@@ -4,6 +4,7 @@
 
 ✅ **Synchronisation VSCode ↔ GitHub configurée avec succès !**
 🔄 **Test de détection Git par VSCode**
+🚀 **Synchronisation automatique VSCode ↔ GitHub active !**
 
 # Welcome to your Lovable project
 
