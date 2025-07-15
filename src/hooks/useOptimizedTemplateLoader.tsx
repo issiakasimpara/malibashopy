@@ -20,7 +20,7 @@ const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 export const useOptimizedTemplateLoader = (templateId: string) => {
   const { toast } = useToast();
   const { user, loading: authLoading } = useAuth();
-  const { stores, isLoading: storesLoading } = useStores();
+  const { stores, isLoading: storesLoading, refetchStores } = useStores();
   const selectedStore = stores.length > 0 ? stores[0] : null;
   const { loadTemplate, saveTemplate } = useSiteTemplates(selectedStore?.id);
 

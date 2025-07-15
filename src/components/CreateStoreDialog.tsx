@@ -12,6 +12,7 @@ import { AlertTriangle } from 'lucide-react';
 import { useStores } from '@/hooks/useStores';
 import { preBuiltTemplates } from '@/data/preBuiltTemplates';
 import { templateCategories } from '@/data/templateCategories';
+import { siteTemplateService } from '@/services/siteTemplateService';
 import { useNavigate } from 'react-router-dom';
 
 interface CreateStoreDialogProps {
@@ -60,16 +61,39 @@ const CreateStoreDialog = ({ open, onOpenChange, onStoreCreated, hasExistingStor
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!selectedTemplate) return;
 
     try {
+      console.log('🏪 Création de la boutique avec template:', selectedTemplate);
+
+      // 1. Créer la boutique
       const newStore = await createStore({
         name: formData.name,
         description: formData.description || null,
         domain: formData.domain || null,
-        status: 'draft',
+        status: 'active', // Mettre directement en actif
       });
+
+      console.log('✅ Boutique créée:', newStore);
+
+      // 2. Récupérer le template sélectionné
+      const templateData = preBuiltTemplates.find(t => t.id === selectedTemplate);
+      if (!templateData) {
+        throw new Error('Template non trouvé');
+      }
+
+      console.log('📋 Sauvegarde du template:', templateData.name);
+
+      // 3. Sauvegarder le template pour cette boutique et le publier directement
+      await siteTemplateService.saveTemplate(
+        newStore.id,
+        selectedTemplate,
+        templateData,
+        true // Publier directement
+      );
+
+      console.log('✅ Template sauvegardé et publié');
 
       // Reset form and close dialog
       setFormData({ name: '', description: '', domain: '' });
@@ -82,7 +106,12 @@ const CreateStoreDialog = ({ open, onOpenChange, onStoreCreated, hasExistingStor
         onStoreCreated(newStore.id);
       }
 
+      // Attendre un peu pour que les hooks se mettent à jour
+      console.log('⏳ Attente de la synchronisation...');
+      await new Promise(resolve => setTimeout(resolve, 2000));
+
       // Rediriger vers l'éditeur de template avec le template sélectionné
+      console.log('🔄 Redirection vers l\'éditeur...');
       navigate(`/store-config/site-builder/editor/${selectedTemplate}`);
     } catch (error) {
       console.error('Erreur lors de la création de la boutique:', error);
