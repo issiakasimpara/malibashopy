@@ -21,20 +21,53 @@ export const useStores = () => {
         console.log('No user found, returning empty array');
         return [];
       }
-      
+
       console.log('Fetching stores for user:', user.email);
-      
+
+      // D'abord récupérer le profil de l'utilisateur
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('user_id', user.id)
+        .single();
+
+      if (profileError) {
+        console.error('Profile error:', profileError);
+        // Si pas de profil, créer un profil automatiquement
+        const { data: newProfile, error: createError } = await supabase
+          .from('profiles')
+          .insert({
+            user_id: user.id,
+            email: user.email,
+            first_name: user.user_metadata?.first_name || '',
+            last_name: user.user_metadata?.last_name || ''
+          })
+          .select('id')
+          .single();
+
+        if (createError) {
+          console.error('Error creating profile:', createError);
+          throw createError;
+        }
+
+        console.log('Profile created:', newProfile);
+        // Pas de boutiques pour un nouveau profil
+        return [];
+      }
+
+      // Maintenant récupérer les boutiques de ce profil
       const { data, error } = await supabase
         .from('stores')
         .select('*')
+        .eq('merchant_id', profile.id)
         .order('created_at', { ascending: false });
 
       if (error) {
         console.error('Error fetching stores:', error);
         throw error;
       }
-      
-      console.log('Stores fetched:', data);
+
+      console.log('Stores fetched for profile:', profile.id, 'stores:', data);
       return data as Store[];
     },
     enabled: !!user && !authLoading,
