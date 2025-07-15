@@ -73,7 +73,7 @@ const RecentOrders = () => {
                   </div>
                 </div>
                 <div className="text-right">
-                  <p className="font-bold text-foreground">{order.total_amount.toLocaleString()} {order.currency}</p>
+                  <p className="font-bold text-foreground">{formatCurrency(order.total_amount, order.currency)}</p>
                   <p className="text-xs text-muted-foreground">{(order.items || []).length} article{(order.items || []).length > 1 ? 's' : ''}</p>
                 </div>
               </div>
