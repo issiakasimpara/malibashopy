@@ -1,17 +1,15 @@
-import React, { useEffect, useState } from 'react';
-import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
+import React from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Home, ShoppingBag, Store } from 'lucide-react';
+import { Store, ShoppingBag } from 'lucide-react';
 
 const Storefront = () => {
   const { storeSlug } = useParams();
-  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const [loading, setLoading] = useState(false);
 
   console.log('Storefront: Loading store:', storeSlug);
+  // Force refresh
 
-  // Version simplifiée pour éviter les erreurs
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Navigation simple */}
