@@ -74,58 +74,6 @@ const Storefront = () => {
   );
 };
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Chargement de la boutique...</p>
-        </div>
-      </div>
-    );
-  }
 
-  if (error || !store || !template) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold mb-4">Boutique non trouvée</h1>
-          <p className="text-gray-600 mb-6">
-            {error || 'Cette boutique n\'existe pas ou n\'est pas encore publiée.'}
-          </p>
-          <Button onClick={() => window.location.href = '/'}>
-            Retour à l'accueil
-          </Button>
-        </div>
-      </div>
-    );
-  }
-
-  const currentPageBlocks = getPageBlocks(currentPage);
-
-  return (
-    <div className="min-h-screen bg-gray-50">
-      {renderNavigation()}
-      {renderBreadcrumb()}
-      
-      {/* Contenu principal */}
-      <div className="min-h-screen">
-        {currentPageBlocks.map((block) => (
-          <BlockRenderer
-            key={`${block.id}-${block.order}`}
-            block={block}
-            isEditing={false}
-            viewMode="desktop"
-            selectedStore={store}
-            productId={selectedProductId}
-            onProductClick={handleProductClick}
-          />
-        ))}
-      </div>
-
-      <CartWidget />
-    </div>
-  );
-};
 
 export default Storefront;
