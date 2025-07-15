@@ -2,45 +2,75 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
-import { Target, Clock, ShoppingBag, CreditCard } from "lucide-react";
+import { Target, Clock, ShoppingBag, CreditCard, Loader2 } from "lucide-react";
+import { useAnalytics } from "@/hooks/useAnalytics";
+import { formatCurrency } from "@/utils/orderUtils";
 
 const PerformanceMetrics = () => {
+  const { performanceMetrics, salesTargets, isLoading } = useAnalytics();
+
+  if (isLoading) {
+    return (
+      <div className="grid lg:grid-cols-2 gap-6">
+        <Card className="border-0 shadow-sm">
+          <CardHeader>
+            <CardTitle className="text-lg font-semibold">Métriques de performance</CardTitle>
+            <CardDescription>
+              Indicateurs clés de performance de votre boutique
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center justify-center h-[200px]">
+              <Loader2 className="h-6 w-6 animate-spin" />
+            </div>
+          </CardContent>
+        </Card>
+        <Card className="border-0 shadow-sm">
+          <CardHeader>
+            <CardTitle className="text-lg font-semibold">Objectifs de ventes</CardTitle>
+            <CardDescription>
+              Suivi de vos objectifs par période
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center justify-center h-[200px]">
+              <Loader2 className="h-6 w-6 animate-spin" />
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   const metrics = [
     {
       title: "Taux de conversion",
-      value: "0%",
+      value: `${performanceMetrics?.conversionRate || 0}%`,
       target: "4.0%",
-      progress: 0,
+      progress: (performanceMetrics?.conversionRate || 0) * 25, // 4% = 100%
       icon: Target
     },
     {
       title: "Temps moyen sur site",
-      value: "0m 0s",
+      value: performanceMetrics?.avgTimeOnSite || "0m 0s",
       target: "3m 00s",
-      progress: 0,
+      progress: performanceMetrics?.avgTimeOnSiteProgress || 0,
       icon: Clock
     },
     {
       title: "Panier abandonné",
-      value: "0%",
+      value: `${performanceMetrics?.cartAbandonmentRate || 0}%`,
       target: "60.0%",
-      progress: 0,
+      progress: 100 - (performanceMetrics?.cartAbandonmentRate || 0), // Lower is better
       icon: ShoppingBag
     },
     {
       title: "Paiements réussis",
-      value: "0%",
+      value: `${performanceMetrics?.paymentSuccessRate || 0}%`,
       target: "95.0%",
-      progress: 0,
+      progress: (performanceMetrics?.paymentSuccessRate || 0) * 1.05, // 95% = 100%
       icon: CreditCard
     }
-  ];
-
-  const salesTargets = [
-    { period: "Aujourd'hui", target: 0, achieved: 0, percentage: 0 },
-    { period: "Cette semaine", target: 0, achieved: 0, percentage: 0 },
-    { period: "Ce mois", target: 0, achieved: 0, percentage: 0 },
-    { period: "Cette année", target: 0, achieved: 0, percentage: 0 }
   ];
 
   return (
@@ -68,7 +98,9 @@ const PerformanceMetrics = () => {
                 </div>
                 <div className="text-right">
                   <p className="font-semibold text-gray-900">{metric.value}</p>
-                  <p className="text-xs text-gray-500">Aucune donnée</p>
+                  <p className="text-xs text-gray-500">
+                    {performanceMetrics ? "Données actuelles" : "Aucune donnée"}
+                  </p>
                 </div>
               </div>
               <Progress value={metric.progress} className="h-2" />
@@ -86,7 +118,7 @@ const PerformanceMetrics = () => {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          {salesTargets.map((target, index) => (
+          {(salesTargets || []).map((target, index) => (
             <div key={index} className="space-y-2">
               <div className="flex items-center justify-between">
                 <span className="font-medium text-gray-900">{target.period}</span>
@@ -95,8 +127,8 @@ const PerformanceMetrics = () => {
                 </Badge>
               </div>
               <div className="flex justify-between text-sm text-gray-600">
-                <span>{target.achieved.toLocaleString()} CFA</span>
-                <span>/ {target.target.toLocaleString()} CFA</span>
+                <span>{formatCurrency(target.achieved)}</span>
+                <span>/ {formatCurrency(target.target)}</span>
               </div>
               <Progress value={target.percentage} className="h-2" />
             </div>
