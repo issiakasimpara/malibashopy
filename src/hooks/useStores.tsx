@@ -24,6 +24,8 @@ export const useStores = () => {
 
       console.log('Fetching stores for user:', user.email);
 
+      try {
+
       // D'abord récupérer le profil de l'utilisateur
       const { data: profile, error: profileError } = await supabase
         .from('profiles')
@@ -33,25 +35,8 @@ export const useStores = () => {
 
       if (profileError) {
         console.error('Profile error:', profileError);
-        // Si pas de profil, créer un profil automatiquement
-        const { data: newProfile, error: createError } = await supabase
-          .from('profiles')
-          .insert({
-            user_id: user.id,
-            email: user.email,
-            first_name: user.user_metadata?.first_name || '',
-            last_name: user.user_metadata?.last_name || ''
-          })
-          .select('id')
-          .single();
-
-        if (createError) {
-          console.error('Error creating profile:', createError);
-          throw createError;
-        }
-
-        console.log('Profile created:', newProfile);
-        // Pas de boutiques pour un nouveau profil
+        // Si pas de profil, retourner un tableau vide au lieu de créer automatiquement
+        console.log('No profile found, returning empty stores array');
         return [];
       }
 
@@ -69,10 +54,17 @@ export const useStores = () => {
 
       console.log('Stores fetched for profile:', profile.id, 'stores:', data);
       return data as Store[];
+      } catch (error) {
+        console.error('Error in stores query:', error);
+        // Retourner un tableau vide en cas d'erreur pour éviter les crashes
+        return [];
+      }
     },
     enabled: !!user && !authLoading,
-    staleTime: 1000 * 60 * 5, // 5 minutes
-    retry: 3,
+    staleTime: 1000 * 60 * 10, // 10 minutes de cache
+    cacheTime: 1000 * 60 * 30, // 30 minutes en cache
+    retry: 1, // Réduire les tentatives
+    refetchOnWindowFocus: false, // Éviter les requêtes inutiles
   });
 
   // Get the single store (since users can only have one)

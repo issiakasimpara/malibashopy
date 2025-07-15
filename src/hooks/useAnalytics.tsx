@@ -77,7 +77,11 @@ export const useAnalytics = () => {
       ordersByStatus: []
     } as AnalyticsData),
     enabled: !!store?.id,
-    refetchInterval: 60000, // Rafraîchir toutes les minutes
+    staleTime: 1000 * 60 * 5, // 5 minutes
+    cacheTime: 1000 * 60 * 15, // 15 minutes
+    retry: 1,
+    refetchOnWindowFocus: false,
+    // refetchInterval: 60000, // Désactivé pour éviter les requêtes constantes
     staleTime: 30000, // Considérer les données comme fraîches pendant 30 secondes
   });
 
