@@ -61,11 +61,11 @@ const Orders = () => {
 
 
 
-  const handleStatusChange = (orderId: string, newStatus: Order['status']) => {
+  const handleStatusChange = (orderId: string, newStatus: string) => {
     updateOrderStatus({ orderId, status: newStatus });
   };
 
-  const handlePaymentStatusChange = (orderId: string, newStatus: Order['payment_status']) => {
+  const handlePaymentStatusChange = (orderId: string, newStatus: string) => {
     updatePaymentStatus({ orderId, status: newStatus });
   };
 
@@ -172,9 +172,6 @@ const Orders = () => {
                       <p className="text-xl font-bold text-gray-800 dark:text-gray-200">
                         {formatCurrency(order.total_amount, order.currency)}
                       </p>
-                      <div className="text-sm text-gray-500">
-                        {order.payment_status && getPaymentStatusBadge(order.payment_status)}
-                      </div>
                     </div>
                   </div>
                   <div className="mt-4 flex justify-end gap-2">

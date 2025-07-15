@@ -34,24 +34,16 @@ export interface CreateOrderData {
 export interface Order {
   id: string;
   order_number: string;
-  store_id: string;
-  customer_id?: string;
-  customer_email?: string;
-  customer_name?: string;
-  customer_phone?: string;
-  customer_address?: string;
-  items?: OrderItem[];
+  store_id: string | null;
+  customer_email: string;
+  customer_name: string | null;
+  customer_phone: string | null;
+  items: OrderItem[];
   total_amount: number;
-  subtotal: number;
-  tax_amount: number;
-  shipping_amount: number;
   currency: string;
-  payment_method?: string;
-  payment_status?: 'pending' | 'paid' | 'failed' | 'refunded';
-  status: 'pending' | 'confirmed' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
+  status: string;
   shipping_address?: any;
   billing_address?: any;
-  notes?: string;
   created_at: string;
   updated_at: string;
 }
@@ -70,40 +62,8 @@ class OrderService {
       console.log('🛒 Création de commande:', orderData);
 
       const orderNumber = this.generateOrderNumber();
-      const shippingCost = orderData.shippingCost || 0;
-      const subtotal = orderData.totalAmount - shippingCost;
 
-      const orderToInsert = {
-        order_number: orderNumber,
-        store_id: orderData.storeId,
-        customer_email: orderData.customerInfo.email.toLowerCase().trim(),
-        customer_name: `${orderData.customerInfo.firstName} ${orderData.customerInfo.lastName}`.trim(),
-        customer_phone: orderData.customerInfo.phone || null,
-        customer_address: `${orderData.customerInfo.address}, ${orderData.customerInfo.city}, ${orderData.customerInfo.postalCode}, ${orderData.customerInfo.country}`,
-        items: orderData.items,
-        total_amount: orderData.totalAmount,
-        subtotal: subtotal,
-        tax_amount: 0, // TODO: Calculer les taxes si nécessaire
-        shipping_amount: shippingCost,
-        currency: orderData.currency,
-        payment_method: orderData.paymentMethod,
-        payment_status: 'pending' as const,
-        status: 'pending' as const,
-        shipping_address: {
-          street: orderData.customerInfo.address,
-          city: orderData.customerInfo.city,
-          postal_code: orderData.customerInfo.postalCode,
-          country: orderData.customerInfo.country
-        },
-        billing_address: {
-          street: orderData.customerInfo.address,
-          city: orderData.customerInfo.city,
-          postal_code: orderData.customerInfo.postalCode,
-          country: orderData.customerInfo.country
-        }
-      };
-
-      console.log('📝 Données à insérer:', orderToInsert);
+      console.log('📝 Création commande avec public_orders');
 
       const { data, error } = await supabase
         .from('public_orders')
@@ -152,7 +112,7 @@ class OrderService {
       console.log('📊 Récupération commandes boutique:', storeId);
 
       const { data, error } = await supabase
-        .from('orders')
+        .from('public_orders')
         .select('*')
         .eq('store_id', storeId)
         .order('created_at', { ascending: false });
@@ -174,7 +134,7 @@ class OrderService {
   async getCustomerOrders(email: string): Promise<Order[]> {
     try {
       const { data, error } = await supabase
-        .from('orders')
+        .from('public_orders')
         .select('*')
         .eq('customer_email', email.toLowerCase().trim())
         .order('created_at', { ascending: false });
@@ -188,10 +148,10 @@ class OrderService {
   }
 
   // Mettre à jour le statut d'une commande
-  async updateOrderStatus(orderId: string, status: Order['status']): Promise<Order> {
+  async updateOrderStatus(orderId: string, status: string): Promise<Order> {
     try {
       const { data, error } = await supabase
-        .from('orders')
+        .from('public_orders')
         .update({
           status: status,
           updated_at: new Date().toISOString()
@@ -209,12 +169,14 @@ class OrderService {
   }
 
   // Mettre à jour le statut de paiement
-  async updatePaymentStatus(orderId: string, status: Order['payment_status']): Promise<Order> {
+  async updatePaymentStatus(orderId: string, status: string): Promise<Order> {
     try {
+      // Note: public_orders n'a pas de colonne payment_status
+      // On pourrait l'ajouter ou utiliser le champ status pour le paiement
       const { data, error } = await supabase
-        .from('orders')
+        .from('public_orders')
         .update({
-          payment_status: status,
+          status: status === 'paid' ? 'confirmed' : 'pending',
           updated_at: new Date().toISOString()
         })
         .eq('id', orderId)
@@ -235,7 +197,7 @@ class OrderService {
       console.log('📈 Récupération statistiques boutique:', storeId);
 
       const { data: orders, error } = await supabase
-        .from('orders')
+        .from('public_orders')
         .select('total_amount, status, created_at')
         .eq('store_id', storeId);
 
@@ -257,7 +219,7 @@ class OrderService {
           stats.totalRevenue += order.total_amount;
 
           if (order.status === 'pending') stats.pendingOrders++;
-          if (order.status === 'delivered') stats.completedOrders++;
+          if (order.status === 'delivered' || order.status === 'confirmed') stats.completedOrders++;
 
           if (order.created_at.startsWith(today)) {
             stats.todayOrders++;
