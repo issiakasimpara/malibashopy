@@ -4,10 +4,21 @@ import { Button } from '@/components/ui/button';
 import { useCart } from '@/contexts/CartContext';
 import { Minus, Plus, X, ShoppingBag } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useStores } from '@/hooks/useStores';
+import { useEffect } from 'react';
 
 const Cart = () => {
-  const { items, updateQuantity, removeItem, getTotalPrice, clearCart } = useCart();
+  const { items, updateQuantity, removeItem, getTotalPrice, clearCart, setStoreId, storeId } = useCart();
   const navigate = useNavigate();
+  const { stores } = useStores();
+
+  // Initialiser le panier avec le premier store disponible
+  useEffect(() => {
+    if (stores.length > 0 && !storeId) {
+      console.log('Cart: Initializing with storeId:', stores[0].id);
+      setStoreId(stores[0].id);
+    }
+  }, [stores, storeId, setStoreId]);
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('fr-FR', {

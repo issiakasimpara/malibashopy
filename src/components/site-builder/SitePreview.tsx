@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Template, TemplateBlock } from '@/types/template';
 import BlockRenderer from './BlockRenderer';
 import CartWidget from './blocks/CartWidget';
-import { CartProvider, useCart } from '@/contexts/CartContext';
+import { useCart } from '@/contexts/CartContext';
 import { ArrowLeft, Home, Package, Grid, Phone, Eye, ShoppingBag, Search, User, Heart } from 'lucide-react';
 import { useStores } from '@/hooks/useStores';
 import { useDomains } from '@/hooks/useDomains';
@@ -33,19 +33,33 @@ const SitePreviewContent = ({
   const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
   const [navigationHistory, setNavigationHistory] = useState<string[]>([]);
   const { stores } = useStores();
-  const { getTotalItems, setStoreId } = useCart();
+  const { getTotalItems, setStoreId, storeId, items } = useCart();
   const selectedStore = stores.length > 0 ? stores[0] : null;
+
+  // Debug logs
+  console.log('SitePreview: Current state', {
+    selectedStore: selectedStore?.id,
+    storeId,
+    itemsCount: items.length,
+    totalItems: getTotalItems()
+  });
   
   // Récupérer les domaines pour afficher la bonne URL
   const { domains } = useDomains(selectedStore?.id);
 
   // Initialiser le panier avec le storeId de la boutique sélectionnée
   useEffect(() => {
+    console.log('SitePreview: useEffect triggered', {
+      selectedStoreId: selectedStore?.id,
+      open,
+      currentStoreId: storeId
+    });
+
     if (selectedStore?.id && open) {
       console.log('SitePreview: Initializing cart with storeId:', selectedStore.id);
       setStoreId(selectedStore.id);
     }
-  }, [selectedStore?.id, open, setStoreId]);
+  }, [selectedStore?.id, open, setStoreId, storeId]);
 
   // Synchroniser la page active avec la page courante de l'éditeur
   useEffect(() => {
@@ -419,6 +433,12 @@ const SitePreviewContent = ({
               <Badge variant="secondary" className="text-xs bg-green-100 text-green-800">
                 ✓ Mode Aperçu Client
               </Badge>
+              <Badge variant="outline" className="text-xs">
+                Store: {storeId || 'Non défini'}
+              </Badge>
+              <Badge variant="outline" className="text-xs">
+                Items: {items.length}
+              </Badge>
             </div>
           </div>
         </DialogHeader>
@@ -475,13 +495,9 @@ const SitePreviewContent = ({
   );
 };
 
-// Composant principal avec CartProvider
+// Composant principal - utilise le CartProvider global
 const SitePreview = (props: SitePreviewProps) => {
-  return (
-    <CartProvider>
-      <SitePreviewContent {...props} />
-    </CartProvider>
-  );
+  return <SitePreviewContent {...props} />;
 };
 
 export default SitePreview;
