@@ -71,16 +71,20 @@ const SitePreviewContent = ({
   // Écouter les messages de la page de succès de paiement
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
-      console.log('SitePreview received message:', event.data);
-      
+      console.log('🔔 SitePreview received message:', event.data);
+      console.log('🔔 Event origin:', event.origin);
+      console.log('🔔 Current activePreviewPage:', activePreviewPage);
+
       if (event.data.type === 'CLOSE_PREVIEW') {
-        console.log('Handling CLOSE_PREVIEW - returning to home');
+        console.log('✅ Handling CLOSE_PREVIEW - returning to home');
+        console.log('🏠 Setting activePreviewPage to "home"');
         // Retourner à la page d'accueil de la boutique dans l'aperçu
         setActivePreviewPage('home');
         setSelectedProductId(null);
         setNavigationHistory([]);
+        console.log('✅ CLOSE_PREVIEW handled successfully');
       } else if (event.data.type === 'NAVIGATE_TO_CUSTOMER_ORDERS') {
-        console.log('Handling NAVIGATE_TO_CUSTOMER_ORDERS - showing customer orders preview');
+        console.log('✅ Handling NAVIGATE_TO_CUSTOMER_ORDERS - showing customer orders preview');
         // Dans l'aperçu, on peut simuler la page de suivi des commandes
         // ou simplement afficher un message informatif
         setActivePreviewPage('customer-orders-preview');
@@ -89,9 +93,13 @@ const SitePreviewContent = ({
       }
     };
 
+    console.log('🎧 SitePreview: Adding message listener');
     window.addEventListener('message', handleMessage);
-    return () => window.removeEventListener('message', handleMessage);
-  }, []);
+    return () => {
+      console.log('🎧 SitePreview: Removing message listener');
+      window.removeEventListener('message', handleMessage);
+    };
+  }, [activePreviewPage]);
 
   const getDisplayUrl = () => {
     // Vérifier s'il y a un domaine personnalisé actif

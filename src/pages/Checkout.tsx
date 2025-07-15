@@ -6,11 +6,15 @@ import { Label } from '@/components/ui/label';
 import { useCart } from '@/contexts/CartContext';
 import { Trash2, CreditCard } from 'lucide-react';
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 const Checkout = () => {
   const { items, updateQuantity, removeItem, getTotalPrice } = useCart();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // Détecter si nous sommes dans l'aperçu
+  const isInPreview = window.self !== window.top;
   const [customerInfo, setCustomerInfo] = useState({
     email: '',
     firstName: '',
@@ -34,11 +38,13 @@ const Checkout = () => {
       items,
       customerInfo,
       paymentMethod,
-      total: getTotalPrice()
+      total: getTotalPrice(),
+      isInPreview
     });
     // Ici on intégrerait avec les moyens de paiement configurés dans l'onglet Paiements
     // Pour l'instant, on redirige vers une page de succès
-    navigate('/payment-success');
+    const successUrl = isInPreview ? '/payment-success?preview=true' : '/payment-success';
+    navigate(successUrl);
   };
 
   if (items.length === 0) {

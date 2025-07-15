@@ -2,14 +2,20 @@
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { CheckCircle } from 'lucide-react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import { useCart } from '@/contexts/CartContext';
 import { useEffect } from 'react';
 
 const PaymentSuccess = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const [searchParams] = useSearchParams();
   const { clearCart } = useCart();
+
+  // Vérifier si nous sommes dans l'aperçu via l'URL ou le contexte
+  const isInPreview = searchParams.get('preview') === 'true' ||
+                     location.pathname.includes('preview') ||
+                     window.self !== window.top;
 
   useEffect(() => {
     // Vider le panier après un paiement réussi
@@ -17,19 +23,42 @@ const PaymentSuccess = () => {
   }, [clearCart]);
 
   const handleReturnToShop = () => {
-    console.log('Button clicked - handleReturnToShop');
-    
-    // Vérifier si nous sommes dans une iframe (mode aperçu du site builder)
-    const isInIframe = window.self !== window.top;
-    console.log('Is in iframe:', isInIframe);
-    
-    if (isInIframe) {
-      // Si nous sommes dans l'aperçu, envoyer un message au parent pour retourner à la page d'accueil de la boutique
-      console.log('Sending CLOSE_PREVIEW message to parent');
-      window.parent.postMessage({ type: 'CLOSE_PREVIEW' }, '*');
+    console.log('🔘 Button clicked - handleReturnToShop');
+    console.log('🖼️ isInPreview:', isInPreview);
+    console.log('🖼️ searchParams preview:', searchParams.get('preview'));
+    console.log('🖼️ pathname:', location.pathname);
+    console.log('🖼️ window.self !== window.top:', window.self !== window.top);
+
+    if (isInPreview) {
+      // Si nous sommes dans l'aperçu, essayer plusieurs méthodes
+      console.log('📤 In preview mode - trying multiple methods');
+
+      // Méthode 1: Message au parent
+      try {
+        console.log('📤 Method 1: Sending CLOSE_PREVIEW message to parent');
+        window.parent.postMessage({ type: 'CLOSE_PREVIEW' }, '*');
+        console.log('✅ Message sent successfully');
+      } catch (error) {
+        console.error('❌ Error sending message:', error);
+      }
+
+      // Méthode 2: Navigation directe dans l'aperçu (fallback)
+      setTimeout(() => {
+        console.log('🔄 Method 2: Direct navigation fallback');
+        // Essayer de revenir en arrière dans l'historique pour rester dans l'aperçu
+        if (window.history.length > 1) {
+          console.log('🔙 Going back in history');
+          window.history.go(-3); // Retour de 3 pages (payment-success -> checkout -> cart -> home)
+        } else {
+          console.log('🏠 No history, trying to stay in current context');
+          // Forcer le rechargement de la page actuelle sans quitter l'aperçu
+          window.location.reload();
+        }
+      }, 100);
+
     } else {
       // Sinon, navigation normale vers la page d'accueil de la boutique publique
-      console.log('Navigating to shop home page');
+      console.log('🔄 Navigating to shop home page (not in preview)');
       navigate('/');
     }
   };
