@@ -11,9 +11,10 @@ interface CartBlockProps {
   isEditing?: boolean;
   viewMode?: 'desktop' | 'tablet' | 'mobile';
   onUpdate?: (block: TemplateBlock) => void;
+  onNavigate?: (page: string) => void; // Pour la navigation dans l'aperçu
 }
 
-const CartBlock = ({ block, isEditing = false }: CartBlockProps) => {
+const CartBlock = ({ block, isEditing = false, onNavigate }: CartBlockProps) => {
   const { items, updateQuantity, removeItem, getTotalPrice, clearCart } = useCart();
   const navigate = useNavigate();
 
@@ -28,12 +29,23 @@ const CartBlock = ({ block, isEditing = false }: CartBlockProps) => {
   };
 
   const handleCheckout = () => {
-    navigate('/checkout');
+    if (onNavigate) {
+      // Mode aperçu - navigation interne
+      onNavigate('checkout');
+    } else {
+      // Mode normal - navigation React Router
+      navigate('/checkout');
+    }
   };
 
   const handleContinueShopping = () => {
-    // Rediriger vers la page d'accueil au lieu de /products qui n'existe pas
-    navigate('/');
+    if (onNavigate) {
+      // Mode aperçu - retour à la page d'accueil
+      onNavigate('home');
+    } else {
+      // Mode normal - navigation React Router
+      navigate('/');
+    }
   };
 
   if (isEditing) {

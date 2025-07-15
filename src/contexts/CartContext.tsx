@@ -82,26 +82,52 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
       console.error('CartContext: itemStoreId manquant dans addItem');
       return;
     }
-    
+
     try {
       setIsLoading(true);
-      
+
       // Mettre à jour le store ID d'abord si nécessaire
       if (!storeId || storeId !== itemStoreId) {
         console.log('CartContext: Updating storeId from', storeId, 'to', itemStoreId);
         setStoreIdState(itemStoreId);
       }
-      
+
+      // Optimisation: Ajouter l'item localement d'abord pour un feedback immédiat
+      const existingItemIndex = items.findIndex(
+        existingItem => existingItem.product_id === item.product_id && existingItem.variant_id === item.variant_id
+      );
+
+      let updatedItems: CartItem[];
+      if (existingItemIndex >= 0) {
+        // Mettre à jour la quantité si l'item existe déjà
+        updatedItems = items.map((existingItem, index) =>
+          index === existingItemIndex
+            ? { ...existingItem, quantity: existingItem.quantity + item.quantity }
+            : existingItem
+        );
+      } else {
+        // Ajouter le nouvel item
+        updatedItems = [...items, item];
+      }
+
+      // Mettre à jour l'état local immédiatement
+      setItems(updatedItems);
+
+      // Sauvegarder en arrière-plan
       const success = await cartSessions.addToCart(itemStoreId, item);
       console.log('CartContext: addToCart result:', success);
-      
-      if (success) {
-        // Recharger le panier après ajout
-        await loadCart(itemStoreId);
-        console.log('CartContext: Item added successfully, cart reloaded');
+
+      if (!success) {
+        // En cas d'échec, revenir à l'état précédent
+        setItems(items);
+        throw new Error('Échec de l\'ajout au panier');
       }
+
+      console.log('CartContext: Item added successfully');
     } catch (error) {
       console.error('Erreur lors de l\'ajout:', error);
+      // Revenir à l'état précédent en cas d'erreur
+      setItems(items);
     } finally {
       setIsLoading(false);
     }

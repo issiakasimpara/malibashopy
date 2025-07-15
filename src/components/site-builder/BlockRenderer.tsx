@@ -30,16 +30,18 @@ interface BlockRendererProps {
   selectedStore?: Store | null;
   productId?: string | null;
   onProductClick?: (productId: string) => void;
+  onNavigate?: (page: string) => void;
 }
 
-const BlockRenderer = ({ 
-  block, 
-  isEditing = false, 
+const BlockRenderer = ({
+  block,
+  isEditing = false,
   viewMode = 'desktop',
   onUpdate,
   selectedStore,
   productId,
-  onProductClick
+  onProductClick,
+  onNavigate
 }: BlockRendererProps) => {
   console.log('BlockRenderer - Rendering block:', block.type, 'with productId:', productId);
   
@@ -50,7 +52,8 @@ const BlockRenderer = ({
     onUpdate,
     selectedStore,
     productId,
-    onProductClick
+    onProductClick,
+    onNavigate
   };
 
   switch (block.type) {

@@ -188,6 +188,40 @@ const SitePreviewContent = ({
     );
   };
 
+  const renderCartPreview = () => {
+    const cartBlock: TemplateBlock = {
+      id: 'cart-preview-temp',
+      type: 'cart',
+      content: {
+        title: 'Mon Panier',
+        subtitle: 'Vérifiez vos articles avant de passer commande',
+        showContinueShopping: true,
+        showClearCart: true
+      },
+      styles: {
+        backgroundColor: '#ffffff',
+        textColor: '#000000',
+        padding: '40px 0',
+      },
+      order: 1
+    };
+
+    return (
+      <div className="min-h-screen">
+        <BlockRenderer
+          key="cart-preview-block"
+          block={cartBlock}
+          isEditing={false}
+          viewMode="desktop"
+          selectedStore={selectedStore}
+          productId={null}
+          onProductClick={handleProductClick}
+          onNavigate={handlePageNavigation}
+        />
+      </div>
+    );
+  };
+
   const renderCustomerOrdersPreview = () => {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
@@ -202,8 +236,8 @@ const SitePreviewContent = ({
               <strong>Mode Aperçu :</strong> Cette fonctionnalité sera disponible sur votre vraie boutique une fois publiée.
             </p>
           </div>
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             onClick={() => handlePageNavigation('home')}
             className="flex items-center gap-2"
           >
@@ -410,6 +444,8 @@ const SitePreviewContent = ({
           {/* Contenu principal */}
           {activePreviewPage === 'product-detail' && selectedProductId ? (
             renderProductDetail()
+          ) : activePreviewPage === 'cart' ? (
+            renderCartPreview()
           ) : activePreviewPage === 'customer-orders-preview' ? (
             renderCustomerOrdersPreview()
           ) : currentPageBlocks.length === 0 ? (
