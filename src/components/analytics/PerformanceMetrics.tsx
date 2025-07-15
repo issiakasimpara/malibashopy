@@ -3,24 +3,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { Target, Clock, ShoppingBag, CreditCard, Loader2 } from "lucide-react";
-// import { useAnalytics } from "@/hooks/useAnalytics"; // Temporairement désactivé
+import { useAnalytics } from "@/hooks/useAnalytics";
 import { formatCurrency } from "@/utils/orderUtils";
 
 const PerformanceMetrics = () => {
-  // const { performanceMetrics, salesTargets, isLoading } = useAnalytics(); // Temporairement désactivé
-  const isLoading = false;
-  const performanceMetrics = {
-    conversionRate: 0,
-    averageOrderValue: 0,
-    customerRetentionRate: 0,
-    paymentSuccessRate: 0
-  };
-  const salesTargets = {
-    monthlyTarget: 0,
-    currentProgress: 0,
-    quarterlyTarget: 0,
-    quarterlyProgress: 0
-  };
+  const { performanceMetrics, salesTargets, isLoading } = useAnalytics();
 
   if (isLoading) {
     return (

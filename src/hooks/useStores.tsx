@@ -25,35 +25,34 @@ export const useStores = () => {
       console.log('Fetching stores for user:', user.email);
 
       try {
+        // D'abord récupérer le profil de l'utilisateur
+        const { data: profile, error: profileError } = await supabase
+          .from('profiles')
+          .select('id')
+          .eq('user_id', user.id)
+          .single();
 
-      // D'abord récupérer le profil de l'utilisateur
-      const { data: profile, error: profileError } = await supabase
-        .from('profiles')
-        .select('id')
-        .eq('user_id', user.id)
-        .single();
+        if (profileError) {
+          console.error('Profile error:', profileError);
+          // Si pas de profil, retourner un tableau vide au lieu de créer automatiquement
+          console.log('No profile found, returning empty stores array');
+          return [];
+        }
 
-      if (profileError) {
-        console.error('Profile error:', profileError);
-        // Si pas de profil, retourner un tableau vide au lieu de créer automatiquement
-        console.log('No profile found, returning empty stores array');
-        return [];
-      }
+        // Maintenant récupérer les boutiques de ce profil
+        const { data, error } = await supabase
+          .from('stores')
+          .select('*')
+          .eq('merchant_id', profile.id)
+          .order('created_at', { ascending: false });
 
-      // Maintenant récupérer les boutiques de ce profil
-      const { data, error } = await supabase
-        .from('stores')
-        .select('*')
-        .eq('merchant_id', profile.id)
-        .order('created_at', { ascending: false });
+        if (error) {
+          console.error('Error fetching stores:', error);
+          throw error;
+        }
 
-      if (error) {
-        console.error('Error fetching stores:', error);
-        throw error;
-      }
-
-      console.log('Stores fetched for profile:', profile.id, 'stores:', data);
-      return data as Store[];
+        console.log('Stores fetched for profile:', profile.id, 'stores:', data);
+        return data as Store[];
       } catch (error) {
         console.error('Error in stores query:', error);
         // Retourner un tableau vide en cas d'erreur pour éviter les crashes

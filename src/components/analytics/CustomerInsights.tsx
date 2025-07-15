@@ -3,21 +3,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Users, MapPin, CreditCard, Star, Loader2 } from "lucide-react";
-// import { useAnalytics } from "@/hooks/useAnalytics"; // Temporairement désactivé
+import { useAnalytics } from "@/hooks/useAnalytics";
 import { formatCurrency } from "@/utils/orderUtils";
 
 const CustomerInsights = () => {
-  // const { customerInsights, topCustomers, isLoading } = useAnalytics(); // Temporairement désactivé
-  const isLoading = false;
-  const customerInsights = {
-    totalCustomers: 0,
-    newCustomers: 0,
-    returningCustomers: 0,
-    averageLifetimeValue: 0,
-    topCountries: [],
-    paymentMethods: []
-  };
-  const topCustomers = [];
+  const { customerInsights, topCustomers, isLoading } = useAnalytics();
 
   if (isLoading) {
     return (
