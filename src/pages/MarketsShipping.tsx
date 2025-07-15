@@ -2,45 +2,16 @@ import { useState } from 'react';
 import DashboardLayout from '@/components/DashboardLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Badge } from '@/components/ui/badge';
-import { 
-  Globe, 
-  Truck, 
-  Plus, 
-  Settings, 
+import {
+  Globe,
+  Truck,
+  Settings,
   MapPin,
-  Package,
-  RefreshCw
+  Package
 } from 'lucide-react';
-import { useStores } from '@/hooks/useStores';
-import { useMarketsShipping } from '@/hooks/useMarketsShipping';
-import { AFRICAN_FRANCOPHONE_COUNTRIES } from '@/constants/africanCountries';
-import MarketSettingsForm from '@/components/markets-shipping/MarketSettingsForm';
-import ShippingMethodsList from '@/components/markets-shipping/ShippingMethodsList';
-import CreateShippingMethodModal from '@/components/markets-shipping/CreateShippingMethodModal';
 
 const MarketsShipping = () => {
-  const { store } = useStores();
-  const {
-    marketSettings,
-    shippingMethods,
-    isLoading,
-    initializeDefaultSettings,
-    isInitializing
-  } = useMarketsShipping(store?.id);
-
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('markets');
-
-  const handleInitializeDefaults = () => {
-    if (store?.id) {
-      initializeDefaultSettings(store.id);
-    }
-  };
-
-  const enabledCountriesCount = marketSettings?.enabledCountries?.length || 0;
-  const activeShippingMethodsCount = shippingMethods.filter(method => method.isActive).length;
 
   return (
     <DashboardLayout>
@@ -55,20 +26,10 @@ const MarketsShipping = () => {
               Gérez vos marchés de vente et vos méthodes de livraison
             </p>
           </div>
-          {!marketSettings && (
-            <Button
-              onClick={handleInitializeDefaults}
-              disabled={isInitializing}
-              className="flex items-center gap-2"
-            >
-              {isInitializing ? (
-                <RefreshCw className="h-4 w-4 animate-spin" />
-              ) : (
-                <Settings className="h-4 w-4" />
-              )}
-              Initialiser les paramètres
-            </Button>
-          )}
+          <Button className="flex items-center gap-2">
+            <Settings className="h-4 w-4" />
+            Initialiser les paramètres
+          </Button>
         </div>
 
         {/* Stats Cards */}
@@ -81,7 +42,7 @@ const MarketsShipping = () => {
                     Marchés actifs
                   </p>
                   <p className="text-3xl font-bold text-blue-700 dark:text-blue-300">
-                    {enabledCountriesCount}
+                    0
                   </p>
                   <p className="text-xs text-blue-600/70 dark:text-blue-400/70">
                     pays disponibles
@@ -102,7 +63,7 @@ const MarketsShipping = () => {
                     Méthodes de livraison
                   </p>
                   <p className="text-3xl font-bold text-green-700 dark:text-green-300">
-                    {activeShippingMethodsCount}
+                    0
                   </p>
                   <p className="text-xs text-green-600/70 dark:text-green-400/70">
                     méthodes actives
@@ -123,7 +84,7 @@ const MarketsShipping = () => {
                     Couverture
                   </p>
                   <p className="text-3xl font-bold text-purple-700 dark:text-purple-300">
-                    {Math.round((enabledCountriesCount / AFRICAN_FRANCOPHONE_COUNTRIES.length) * 100)}%
+                    0%
                   </p>
                   <p className="text-xs text-purple-600/70 dark:text-purple-400/70">
                     de l'Afrique francophone
@@ -139,87 +100,20 @@ const MarketsShipping = () => {
 
         {/* Main Content */}
         <Card className="shadow-lg border-0 bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm">
-          <CardContent className="p-0">
-            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-              <div className="border-b border-gray-200 dark:border-gray-700 px-6 pt-6">
-                <TabsList className="grid w-full grid-cols-2 bg-gray-100 dark:bg-gray-800">
-                  <TabsTrigger value="markets" className="flex items-center gap-2">
-                    <Globe className="h-4 w-4" />
-                    Marchés de vente
-                  </TabsTrigger>
-                  <TabsTrigger value="shipping" className="flex items-center gap-2">
-                    <Truck className="h-4 w-4" />
-                    Méthodes de livraison
-                  </TabsTrigger>
-                </TabsList>
+          <CardContent className="p-6">
+            <div className="text-center py-12">
+              <div className="p-4 bg-blue-100 dark:bg-blue-900/20 rounded-2xl w-fit mx-auto mb-6">
+                <Package className="h-12 w-12 mx-auto text-blue-600" />
               </div>
-
-              <TabsContent value="markets" className="p-6 space-y-6">
-                <div className="flex justify-between items-center">
-                  <div>
-                    <h3 className="text-xl font-semibold text-gray-800 dark:text-gray-200">
-                      Configuration des marchés
-                    </h3>
-                    <p className="text-gray-600 dark:text-gray-400">
-                      Sélectionnez les pays où vous souhaitez vendre vos produits
-                    </p>
-                  </div>
-                </div>
-
-                {isLoading ? (
-                  <div className="text-center py-12">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
-                    <p className="mt-4 text-gray-600 dark:text-gray-400">Chargement...</p>
-                  </div>
-                ) : (
-                  <MarketSettingsForm 
-                    marketSettings={marketSettings}
-                    storeId={store?.id}
-                  />
-                )}
-              </TabsContent>
-
-              <TabsContent value="shipping" className="p-6 space-y-6">
-                <div className="flex justify-between items-center">
-                  <div>
-                    <h3 className="text-xl font-semibold text-gray-800 dark:text-gray-200">
-                      Méthodes de livraison
-                    </h3>
-                    <p className="text-gray-600 dark:text-gray-400">
-                      Configurez vos options de livraison et leurs tarifs
-                    </p>
-                  </div>
-                  <Button
-                    onClick={() => setIsCreateModalOpen(true)}
-                    className="flex items-center gap-2"
-                  >
-                    <Plus className="h-4 w-4" />
-                    Ajouter une méthode
-                  </Button>
-                </div>
-
-                {isLoading ? (
-                  <div className="text-center py-12">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
-                    <p className="mt-4 text-gray-600 dark:text-gray-400">Chargement...</p>
-                  </div>
-                ) : (
-                  <ShippingMethodsList 
-                    shippingMethods={shippingMethods}
-                    storeId={store?.id}
-                  />
-                )}
-              </TabsContent>
-            </Tabs>
+              <h3 className="text-2xl font-semibold mb-4 text-gray-800 dark:text-gray-200">
+                Marchés et Livraisons
+              </h3>
+              <p className="text-gray-600 dark:text-gray-400 mb-6 text-lg max-w-md mx-auto">
+                Cette fonctionnalité sera bientôt disponible. Vous pourrez configurer vos marchés de vente et méthodes de livraison.
+              </p>
+            </div>
           </CardContent>
         </Card>
-
-        {/* Create Shipping Method Modal */}
-        <CreateShippingMethodModal
-          isOpen={isCreateModalOpen}
-          onClose={() => setIsCreateModalOpen(false)}
-          storeId={store?.id}
-        />
       </div>
     </DashboardLayout>
   );
