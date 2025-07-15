@@ -9,6 +9,7 @@ import { useStores } from '@/hooks/useStores';
 import { useOrders } from '@/hooks/useOrders';
 import { useToast } from '@/hooks/use-toast';
 import { Order } from '@/services/orderService';
+import { getOrderStatusBadge, getPaymentStatusBadge, formatCurrency } from '@/utils/orderUtils';
 
 const Orders = () => {
   const { store } = useStores();
@@ -80,24 +81,7 @@ const Orders = () => {
     updatePaymentStatus({ orderId, status: newStatus });
   };
 
-  const getStatusBadge = (status: string) => {
-    const statusConfig = {
-      pending: { label: 'En attente', color: 'bg-yellow-100 text-yellow-800' },
-      confirmed: { label: 'Confirmée', color: 'bg-blue-100 text-blue-800' },
-      processing: { label: 'En traitement', color: 'bg-purple-100 text-purple-800' },
-      shipped: { label: 'Expédiée', color: 'bg-orange-100 text-orange-800' },
-      delivered: { label: 'Livrée', color: 'bg-green-100 text-green-800' },
-      cancelled: { label: 'Annulée', color: 'bg-red-100 text-red-800' }
-    };
 
-    const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.pending;
-
-    return (
-      <Badge className={`${config.color} border-0 mb-2`}>
-        {config.label}
-      </Badge>
-    );
-  };
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-6">
