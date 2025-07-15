@@ -167,49 +167,39 @@ export const useAnalytics = () => {
     ];
   };
 
-  // Générer les insights clients
+  // Générer les insights clients basés sur les vraies données
   const generateCustomerInsights = (): CustomerInsights => {
     const totalCustomers = analytics?.totalCustomers || 0;
 
     return {
       activeCustomers: totalCustomers,
       averageOrderValue: analytics?.averageOrderValue || 0,
-      averageRating: 4.2,
-      retentionRate: 68,
-      demographics: [
-        { age: "18-25", percentage: 25, count: Math.round(totalCustomers * 0.25) },
-        { age: "26-35", percentage: 35, count: Math.round(totalCustomers * 0.35) },
-        { age: "36-45", percentage: 25, count: Math.round(totalCustomers * 0.25) },
-        { age: "46-55", percentage: 10, count: Math.round(totalCustomers * 0.10) },
-        { age: "55+", percentage: 5, count: Math.round(totalCustomers * 0.05) }
+      averageRating: analytics?.averageRating || 0,
+      retentionRate: analytics?.retentionRate || 0,
+      demographics: analytics?.demographics || [
+        { age: "18-25", percentage: 0, count: 0 },
+        { age: "26-35", percentage: 0, count: 0 },
+        { age: "36-45", percentage: 0, count: 0 },
+        { age: "46-55", percentage: 0, count: 0 },
+        { age: "55+", percentage: 0, count: 0 }
       ]
     };
   };
 
-  // Générer les meilleurs clients
+  // Générer les meilleurs clients basés sur les vraies données
   const generateTopCustomers = (): TopCustomer[] => {
-    if (!analytics?.totalCustomers) return [];
+    // Si nous avons des données de clients réels dans analytics, les utiliser
+    if (analytics?.topCustomers && analytics.topCustomers.length > 0) {
+      return analytics.topCustomers.map((customer: any) => ({
+        name: customer.name || customer.email?.split('@')[0] || 'Client anonyme',
+        email: customer.email || 'email@example.com',
+        totalSpent: customer.totalSpent || 0,
+        orderCount: customer.orderCount || 0
+      }));
+    }
 
-    return [
-      {
-        name: "Marie Dupont",
-        email: "marie.dupont@email.com",
-        totalSpent: (analytics?.averageOrderValue || 0) * 5,
-        orderCount: 5
-      },
-      {
-        name: "Jean Martin",
-        email: "jean.martin@email.com",
-        totalSpent: (analytics?.averageOrderValue || 0) * 3,
-        orderCount: 3
-      },
-      {
-        name: "Sophie Bernard",
-        email: "sophie.bernard@email.com",
-        totalSpent: (analytics?.averageOrderValue || 0) * 4,
-        orderCount: 4
-      }
-    ];
+    // Sinon, retourner un tableau vide (pas de données fictives)
+    return [];
   };
 
   return {
