@@ -10,6 +10,7 @@ import { useOrders } from '@/hooks/useOrders';
 import { useToast } from '@/hooks/use-toast';
 import { Order } from '@/services/orderService';
 import { getOrderStatusBadge, getPaymentStatusBadge, formatCurrency } from '@/utils/orderUtils';
+import DashboardLayout from '@/components/layout/DashboardLayout';
 
 const Orders = () => {
   const { store } = useStores();
@@ -72,10 +73,10 @@ const Orders = () => {
 
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-6">
-      <div className="container mx-auto px-4">
+    <DashboardLayout>
+      <div className="space-y-6">
         {/* Header */}
-        <div className="flex justify-between items-start mb-8">
+        <div className="flex justify-between items-start">
           <div>
             <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-200">
               Gestion des commandes
@@ -97,7 +98,7 @@ const Orders = () => {
         </div>
 
         {/* Filters */}
-        <Card className="mb-6 bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm border-0 shadow-lg">
+        <Card className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm border-0 shadow-lg">
           <CardContent className="p-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
@@ -190,7 +191,7 @@ const Orders = () => {
           </div>
         )}
       </div>
-    </div>
+    </DashboardLayout>
   );
 };
 
