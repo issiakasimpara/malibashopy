@@ -1,11 +1,22 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DollarSign, ShoppingCart, Users, Package, Loader2 } from "lucide-react";
-import { useAnalytics } from "@/hooks/useAnalytics";
+// import { useAnalytics } from "@/hooks/useAnalytics"; // Temporairement désactivé
 import { formatCurrency } from "@/utils/orderUtils";
 
 const KPICards = () => {
-  const { analytics, isLoading } = useAnalytics();
+  // const { analytics, isLoading } = useAnalytics(); // Temporairement désactivé
+  const isLoading = false;
+  const analytics = {
+    totalRevenue: 0,
+    revenueGrowth: 0,
+    totalOrders: 0,
+    ordersGrowth: 0,
+    totalCustomers: 0,
+    customersGrowth: 0,
+    totalProducts: 0,
+    productsGrowth: 0
+  };
 
   const kpiData = [
     {

@@ -2,12 +2,14 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from "recharts";
-import { useAnalytics } from "@/hooks/useAnalytics";
+// import { useAnalytics } from "@/hooks/useAnalytics"; // Temporairement désactivé
 import { Loader2 } from "lucide-react";
 import { formatCurrency } from "@/utils/orderUtils";
 
 const SalesChart = () => {
-  const { salesData, isLoading } = useAnalytics();
+  // const { salesData, isLoading } = useAnalytics(); // Temporairement désactivé
+  const isLoading = false;
+  const salesData = [];
 
   const chartConfig = {
     sales: {

@@ -24,7 +24,7 @@ import {
   RefreshCw,
   Save
 } from 'lucide-react';
-import { useStores } from '@/hooks/useStores';
+// import { useStores } from '@/hooks/useStores'; // Temporairement désactivé
 import { AFRICAN_FRANCOPHONE_COUNTRIES } from '@/constants/africanCountries';
 
 // Composant pour la configuration des marchés
@@ -391,7 +391,7 @@ const CreateShippingMethodModal = ({ isOpen, onClose, onSave }: {
 };
 
 const MarketsShipping = () => {
-  const { store } = useStores();
+  // const { store } = useStores(); // Temporairement désactivé
   const [activeTab, setActiveTab] = useState('markets');
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [shippingMethods, setShippingMethods] = useState([
