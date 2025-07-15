@@ -9,6 +9,7 @@ import { useState } from 'react';
 import { useNavigate, useLocation, useParams } from 'react-router-dom';
 import { useOrders } from '@/hooks/useOrders';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 const Checkout = () => {
   const { items, updateQuantity, removeItem, getTotalPrice, clearCart } = useCart();
@@ -133,30 +134,54 @@ const Checkout = () => {
   // Fonction pour récupérer les infos de la boutique
   const getStoreInfo = async () => {
     try {
-      // Si nous avons le slug dans l'URL, l'utiliser
+      // Si nous avons le slug dans l'URL, récupérer la vraie boutique
       if (storeSlug) {
-        // Ici on pourrait faire un appel API pour récupérer les infos de la boutique
-        // Pour l'instant, on simule avec des données de base
-        return {
-          id: 'store-from-slug',
-          name: storeSlug.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())
-        };
+        console.log('🔍 Recherche boutique par slug:', storeSlug);
+
+        // Appel API pour récupérer la boutique par son slug/nom
+        const { data: stores, error } = await supabase
+          .from('stores')
+          .select('id, name')
+          .ilike('name', `%${storeSlug.replace('-', ' ')}%`)
+          .limit(1);
+
+        if (error) {
+          console.error('❌ Erreur recherche boutique:', error);
+        } else if (stores && stores.length > 0) {
+          console.log('✅ Boutique trouvée:', stores[0]);
+          return stores[0];
+        }
       }
 
       // Sinon, essayer de récupérer depuis le localStorage ou le contexte
       const storeData = localStorage.getItem('currentStore');
       if (storeData) {
-        return JSON.parse(storeData);
+        const parsed = JSON.parse(storeData);
+        console.log('📦 Boutique depuis localStorage:', parsed);
+        return parsed;
       }
 
-      // Fallback: utiliser une boutique par défaut
-      return {
-        id: 'default-store',
-        name: 'Ma Boutique'
-      };
+      // Fallback: récupérer la première boutique disponible
+      console.log('🔄 Fallback: recherche première boutique');
+      const { data: stores, error } = await supabase
+        .from('stores')
+        .select('id, name')
+        .limit(1);
+
+      if (error) {
+        console.error('❌ Erreur fallback boutique:', error);
+        throw new Error('Aucune boutique trouvée');
+      }
+
+      if (stores && stores.length > 0) {
+        console.log('✅ Boutique fallback:', stores[0]);
+        return stores[0];
+      }
+
+      throw new Error('Aucune boutique disponible');
     } catch (error) {
       console.error('❌ Erreur récupération boutique:', error);
-      return null;
+      throw error;
     }
   };
 
