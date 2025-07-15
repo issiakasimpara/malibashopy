@@ -1,59 +1,15 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, useSearchParams } from 'react-router-dom';
-import { useStores } from '@/hooks/useStores';
-import { useSiteTemplates } from '@/hooks/useSiteTemplates';
-import { useProducts } from '@/hooks/useProducts';
-import { useCart } from '@/contexts/CartContext';
-import BlockRenderer from '@/components/site-builder/BlockRenderer';
-import CartWidget from '@/components/site-builder/blocks/CartWidget';
-import { Template } from '@/types/template';
+import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Home, ShoppingBag } from 'lucide-react';
+import { ArrowLeft, Home, ShoppingBag, Store } from 'lucide-react';
 
 const Storefront = () => {
   const { storeSlug } = useParams();
   const [searchParams] = useSearchParams();
-  const [currentPage, setCurrentPage] = useState('home');
-  const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
-  const [template, setTemplate] = useState<Template | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
 
-  const { stores } = useStores();
-  const { templates } = useSiteTemplates();
-  const { products } = useProducts();
-  const { setStoreId } = useCart();
-
-  // Trouver le store par slug
-  const store = stores.find(s => 
-    s.name?.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '') === storeSlug
-  );
-
-  useEffect(() => {
-    if (store) {
-      console.log('Storefront: Setting store ID:', store.id);
-      setStoreId(store.id);
-      
-      // Charger le template du store
-      const storeTemplate = templates.find(t => t.storeId === store.id);
-      if (storeTemplate) {
-        setTemplate(storeTemplate);
-      }
-      setLoading(false);
-    } else if (stores.length > 0) {
-      setError('Boutique non trouvée');
-      setLoading(false);
-    }
-  }, [store, stores, templates, setStoreId]);
-
-  // Gérer les paramètres d'URL pour la navigation
-  useEffect(() => {
-    const page = searchParams.get('page') || 'home';
-    const productId = searchParams.get('product');
-    
-    setCurrentPage(page);
-    setSelectedProductId(productId);
-  }, [searchParams]);
+  console.log('Storefront: Loading store:', storeSlug);
 
   const handleProductClick = (productId: string) => {
     setSelectedProductId(productId);
