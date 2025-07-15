@@ -180,13 +180,13 @@ const Orders = () => {
                       </p>
                     </div>
                     <div className="text-right">
-                      {getStatusBadge(order.status)}
+                      {getOrderStatusBadge(order.status)}
                       <p className="text-xl font-bold text-gray-800 dark:text-gray-200">
-                        {Number(order.total_amount).toLocaleString()} {order.currency}
+                        {formatCurrency(order.total_amount, order.currency)}
                       </p>
-                      <p className="text-sm text-gray-500">
-                        Paiement: {order.payment_status === 'paid' ? '✅ Payé' : '⏳ En attente'}
-                      </p>
+                      <div className="text-sm text-gray-500">
+                        {order.payment_status && getPaymentStatusBadge(order.payment_status)}
+                      </div>
                     </div>
                   </div>
                   <div className="mt-4 flex justify-end gap-2">
