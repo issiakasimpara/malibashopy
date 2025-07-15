@@ -149,11 +149,30 @@ export const useOptimizedTemplateLoader = (templateId: string) => {
       if (storesLoading) return;
 
       if (!selectedStore) {
-        setLoadingState(prev => ({
-          ...prev,
-          error: 'Aucune boutique disponible',
-          isLoading: false
-        }));
+        // Essayer de recharger les stores une fois
+        console.log('⚠️ Aucune boutique trouvée, tentative de rechargement...');
+        updateProgress('stores', 50);
+
+        try {
+          await refetchStores();
+          // Attendre un peu et vérifier à nouveau
+          setTimeout(() => {
+            if (stores.length === 0) {
+              setLoadingState(prev => ({
+                ...prev,
+                error: 'Aucune boutique disponible. Veuillez d\'abord créer une boutique.',
+                isLoading: false
+              }));
+            }
+          }, 1000);
+        } catch (error) {
+          console.error('Erreur lors du rechargement des stores:', error);
+          setLoadingState(prev => ({
+            ...prev,
+            error: 'Erreur lors du chargement des boutiques',
+            isLoading: false
+          }));
+        }
         return;
       }
 
