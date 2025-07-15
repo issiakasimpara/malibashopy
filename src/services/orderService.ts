@@ -70,22 +70,37 @@ class OrderService {
       console.log('🛒 Création de commande:', orderData);
 
       const orderNumber = this.generateOrderNumber();
-      
+      const shippingCost = orderData.shippingCost || 0;
+      const subtotal = orderData.totalAmount - shippingCost;
+
       const orderToInsert = {
         order_number: orderNumber,
         store_id: orderData.storeId,
-        store_name: orderData.storeName,
         customer_email: orderData.customerInfo.email.toLowerCase().trim(),
         customer_name: `${orderData.customerInfo.firstName} ${orderData.customerInfo.lastName}`.trim(),
         customer_phone: orderData.customerInfo.phone || null,
         customer_address: `${orderData.customerInfo.address}, ${orderData.customerInfo.city}, ${orderData.customerInfo.postalCode}, ${orderData.customerInfo.country}`,
         items: orderData.items,
         total_amount: orderData.totalAmount,
+        subtotal: subtotal,
+        tax_amount: 0, // TODO: Calculer les taxes si nécessaire
+        shipping_amount: shippingCost,
         currency: orderData.currency,
         payment_method: orderData.paymentMethod,
         payment_status: 'pending' as const,
-        order_status: 'pending' as const,
-        shipping_cost: orderData.shippingCost || 0,
+        status: 'pending' as const,
+        shipping_address: {
+          street: orderData.customerInfo.address,
+          city: orderData.customerInfo.city,
+          postal_code: orderData.customerInfo.postalCode,
+          country: orderData.customerInfo.country
+        },
+        billing_address: {
+          street: orderData.customerInfo.address,
+          city: orderData.customerInfo.city,
+          postal_code: orderData.customerInfo.postalCode,
+          country: orderData.customerInfo.country
+        }
       };
 
       console.log('📝 Données à insérer:', orderToInsert);
@@ -151,12 +166,12 @@ class OrderService {
   }
 
   // Mettre à jour le statut d'une commande
-  async updateOrderStatus(orderId: string, status: Order['order_status']): Promise<Order> {
+  async updateOrderStatus(orderId: string, status: Order['status']): Promise<Order> {
     try {
       const { data, error } = await supabase
         .from('orders')
-        .update({ 
-          order_status: status,
+        .update({
+          status: status,
           updated_at: new Date().toISOString()
         })
         .eq('id', orderId)
@@ -176,7 +191,7 @@ class OrderService {
     try {
       const { data, error } = await supabase
         .from('orders')
-        .update({ 
+        .update({
           payment_status: status,
           updated_at: new Date().toISOString()
         })
