@@ -269,14 +269,195 @@ const ShippingMethods = () => {
   );
 };
 
+// Modal pour créer une nouvelle méthode de livraison
+const CreateShippingMethodModal = ({ isOpen, onClose, onSave }: {
+  isOpen: boolean;
+  onClose: () => void;
+  onSave: (method: any) => void;
+}) => {
+  const [formData, setFormData] = useState({
+    name: '',
+    description: '',
+    price: 0,
+    estimatedDays: '',
+    icon: '📦'
+  });
+
+  const SHIPPING_ICONS = [
+    { icon: '📦', label: 'Colis standard' },
+    { icon: '⚡', label: 'Express' },
+    { icon: '🚚', label: 'Camion' },
+    { icon: '🏪', label: 'Magasin' },
+    { icon: '✈️', label: 'Avion' },
+    { icon: '🚲', label: 'Vélo' },
+    { icon: '🏃', label: 'Coursier' },
+    { icon: '📮', label: 'Poste' },
+  ];
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+
+    const newMethod = {
+      id: Date.now().toString(),
+      ...formData,
+      isActive: true
+    };
+
+    onSave(newMethod);
+    handleClose();
+  };
+
+  const handleClose = () => {
+    setFormData({
+      name: '',
+      description: '',
+      price: 0,
+      estimatedDays: '',
+      icon: '📦'
+    });
+    onClose();
+  };
+
+  return (
+    <Dialog open={isOpen} onOpenChange={handleClose}>
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <Package className="h-5 w-5" />
+            Créer une méthode de livraison
+          </DialogTitle>
+        </DialogHeader>
+
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="name">Nom de la méthode *</Label>
+              <Input
+                id="name"
+                value={formData.name}
+                onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                placeholder="Ex: Livraison express"
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="estimatedDays">Délai de livraison *</Label>
+              <Input
+                id="estimatedDays"
+                value={formData.estimatedDays}
+                onChange={(e) => setFormData(prev => ({ ...prev, estimatedDays: e.target.value }))}
+                placeholder="Ex: 2-3 jours"
+                required
+              />
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="description">Description</Label>
+            <Textarea
+              id="description"
+              value={formData.description}
+              onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+              placeholder="Décrivez cette méthode de livraison..."
+              rows={3}
+            />
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="price">Prix (CFA) *</Label>
+              <Input
+                id="price"
+                type="number"
+                min="0"
+                value={formData.price}
+                onChange={(e) => setFormData(prev => ({ ...prev, price: parseFloat(e.target.value) || 0 }))}
+                placeholder="0"
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Icône</Label>
+              <div className="grid grid-cols-4 gap-2">
+                {SHIPPING_ICONS.map(({ icon, label }) => (
+                  <button
+                    key={icon}
+                    type="button"
+                    onClick={() => setFormData(prev => ({ ...prev, icon }))}
+                    className={`p-2 text-2xl border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors ${
+                      formData.icon === icon
+                        ? 'border-blue-500 bg-blue-50 dark:bg-blue-950/20'
+                        : 'border-gray-200 dark:border-gray-700'
+                    }`}
+                    title={label}
+                  >
+                    {icon}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div className="flex justify-end gap-3">
+            <Button type="button" variant="outline" onClick={handleClose}>
+              Annuler
+            </Button>
+            <Button
+              type="submit"
+              disabled={!formData.name || !formData.estimatedDays}
+              className="flex items-center gap-2"
+            >
+              <Save className="h-4 w-4" />
+              Créer la méthode
+            </Button>
+          </div>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+};
+
 const MarketsShipping = () => {
   const { store } = useStores();
   const [activeTab, setActiveTab] = useState('markets');
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [shippingMethods, setShippingMethods] = useState([
+    {
+      id: '1',
+      name: 'Livraison standard',
+      description: 'Livraison par transporteur local dans les principales villes',
+      price: 2500,
+      estimatedDays: '3-7 jours',
+      icon: '📦',
+      isActive: true
+    },
+    {
+      id: '2',
+      name: 'Livraison express',
+      description: 'Livraison rapide en 24-48h dans les grandes villes',
+      price: 5000,
+      estimatedDays: '1-2 jours',
+      icon: '⚡',
+      isActive: true
+    },
+    {
+      id: '3',
+      name: 'Retrait en magasin',
+      description: 'Récupération directe dans notre boutique',
+      price: 0,
+      estimatedDays: 'Immédiat',
+      icon: '🏪',
+      isActive: false
+    }
+  ]);
 
   // Données simulées pour l'instant
   const enabledCountriesCount = 0;
-  const activeShippingMethodsCount = 0;
+  const activeShippingMethodsCount = shippingMethods.filter(method => method.isActive).length;
+
+  const handleAddShippingMethod = (newMethod: any) => {
+    setShippingMethods(prev => [...prev, newMethod]);
+  };
 
   return (
     <DashboardLayout>
@@ -414,7 +595,10 @@ const MarketsShipping = () => {
                   </Button>
                 </div>
 
-                <ShippingMethods />
+                <ShippingMethods
+                  methods={shippingMethods}
+                  onUpdateMethods={setShippingMethods}
+                />
               </TabsContent>
             </Tabs>
           </CardContent>
