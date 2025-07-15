@@ -106,8 +106,30 @@ class OrderService {
       console.log('📝 Données à insérer:', orderToInsert);
 
       const { data, error } = await supabase
-        .from('orders')
-        .insert(orderToInsert)
+        .from('public_orders')
+        .insert({
+          order_number: orderNumber,
+          store_id: orderData.storeId,
+          customer_email: orderData.customerInfo.email.toLowerCase().trim(),
+          customer_name: `${orderData.customerInfo.firstName} ${orderData.customerInfo.lastName}`.trim(),
+          customer_phone: orderData.customerInfo.phone || null,
+          items: orderData.items,
+          total_amount: orderData.totalAmount,
+          currency: orderData.currency,
+          status: 'pending',
+          shipping_address: {
+            street: orderData.customerInfo.address,
+            city: orderData.customerInfo.city,
+            postal_code: orderData.customerInfo.postalCode,
+            country: orderData.customerInfo.country
+          },
+          billing_address: {
+            street: orderData.customerInfo.address,
+            city: orderData.customerInfo.city,
+            postal_code: orderData.customerInfo.postalCode,
+            country: orderData.customerInfo.country
+          }
+        })
         .select()
         .single();
 
