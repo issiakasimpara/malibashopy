@@ -2,16 +2,281 @@ import { useState } from 'react';
 import DashboardLayout from '@/components/DashboardLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import {
   Globe,
   Truck,
+  Plus,
   Settings,
   MapPin,
-  Package
+  Package,
+  RefreshCw,
+  Save
 } from 'lucide-react';
+import { useStores } from '@/hooks/useStores';
+import { AFRICAN_FRANCOPHONE_COUNTRIES } from '@/constants/africanCountries';
+
+// Composant pour la configuration des marchés
+const MarketConfiguration = () => {
+  const [selectedCountries, setSelectedCountries] = useState<string[]>([]);
+
+  const handleCountryToggle = (countryCode: string) => {
+    setSelectedCountries(prev =>
+      prev.includes(countryCode)
+        ? prev.filter(code => code !== countryCode)
+        : [...prev, countryCode]
+    );
+  };
+
+  const handleSelectAll = () => {
+    setSelectedCountries(AFRICAN_FRANCOPHONE_COUNTRIES.map(country => country.code));
+  };
+
+  const handleDeselectAll = () => {
+    setSelectedCountries([]);
+  };
+
+  const getCountryByCode = (code: string) => {
+    return AFRICAN_FRANCOPHONE_COUNTRIES.find(country => country.code === code);
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* Sélection des pays */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Globe className="h-5 w-5" />
+            Pays de vente
+          </CardTitle>
+          <div className="flex gap-2">
+            <Button variant="outline" size="sm" onClick={handleSelectAll}>
+              Tout sélectionner
+            </Button>
+            <Button variant="outline" size="sm" onClick={handleDeselectAll}>
+              Tout désélectionner
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {AFRICAN_FRANCOPHONE_COUNTRIES.map((country) => (
+              <div
+                key={country.code}
+                className="flex items-center space-x-3 p-3 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+              >
+                <Checkbox
+                  id={country.code}
+                  checked={selectedCountries.includes(country.code)}
+                  onCheckedChange={() => handleCountryToggle(country.code)}
+                />
+                <div className="flex-1">
+                  <label
+                    htmlFor={country.code}
+                    className="flex items-center gap-2 cursor-pointer"
+                  >
+                    <span className="text-2xl">{country.flag}</span>
+                    <div>
+                      <p className="font-medium">{country.name}</p>
+                      <p className="text-sm text-gray-500">
+                        {country.currencySymbol} ({country.currency})
+                      </p>
+                    </div>
+                  </label>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {selectedCountries.length > 0 && (
+            <div className="mt-4 p-4 bg-blue-50 dark:bg-blue-950/20 rounded-lg">
+              <h4 className="font-medium text-blue-800 dark:text-blue-200 mb-2">
+                Pays sélectionnés ({selectedCountries.length})
+              </h4>
+              <div className="flex flex-wrap gap-2">
+                {selectedCountries.map(code => {
+                  const country = getCountryByCode(code);
+                  return country ? (
+                    <Badge key={code} variant="secondary" className="flex items-center gap-1">
+                      <span>{country.flag}</span>
+                      {country.name}
+                    </Badge>
+                  ) : null;
+                })}
+              </div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Bouton de sauvegarde */}
+      <div className="flex justify-end">
+        <Button
+          disabled={selectedCountries.length === 0}
+          className="flex items-center gap-2"
+        >
+          <Save className="h-4 w-4" />
+          Sauvegarder les paramètres
+        </Button>
+      </div>
+    </div>
+  );
+};
+
+// Composant pour les méthodes de livraison
+const ShippingMethods = () => {
+  const [shippingMethods, setShippingMethods] = useState([
+    {
+      id: '1',
+      name: 'Livraison standard',
+      description: 'Livraison par transporteur local dans les principales villes',
+      price: 2500,
+      estimatedDays: '3-7 jours',
+      icon: '📦',
+      isActive: true
+    },
+    {
+      id: '2',
+      name: 'Livraison express',
+      description: 'Livraison rapide en 24-48h dans les grandes villes',
+      price: 5000,
+      estimatedDays: '1-2 jours',
+      icon: '⚡',
+      isActive: true
+    },
+    {
+      id: '3',
+      name: 'Retrait en magasin',
+      description: 'Récupération directe dans notre boutique',
+      price: 0,
+      estimatedDays: 'Immédiat',
+      icon: '🏪',
+      isActive: false
+    }
+  ]);
+
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('fr-FR', {
+      style: 'currency',
+      currency: 'XOF',
+      minimumFractionDigits: 0
+    }).format(amount);
+  };
+
+  const toggleMethodStatus = (id: string) => {
+    setShippingMethods(prev =>
+      prev.map(method =>
+        method.id === id
+          ? { ...method, isActive: !method.isActive }
+          : method
+      )
+    );
+  };
+
+  if (shippingMethods.length === 0) {
+    return (
+      <Card className="border-dashed border-2 border-gray-300 dark:border-gray-600">
+        <CardContent className="text-center py-16">
+          <div className="p-4 bg-gray-100 dark:bg-gray-800 rounded-2xl w-fit mx-auto mb-6">
+            <Package className="h-12 w-12 mx-auto text-gray-400" />
+          </div>
+          <h3 className="text-2xl font-semibold mb-4 text-gray-800 dark:text-gray-200">
+            Aucune méthode de livraison
+          </h3>
+          <p className="text-gray-600 dark:text-gray-400 mb-6 text-lg max-w-md mx-auto">
+            Commencez par créer votre première méthode de livraison pour permettre à vos clients de recevoir leurs commandes.
+          </p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      {shippingMethods.map((method) => (
+        <Card
+          key={method.id}
+          className={`transition-all duration-200 ${
+            method.isActive
+              ? 'border-green-200 dark:border-green-800 bg-green-50/30 dark:bg-green-950/10'
+              : 'border-gray-200 dark:border-gray-700 bg-gray-50/30 dark:bg-gray-800/30'
+          }`}
+        >
+          <CardContent className="p-6">
+            <div className="flex items-start justify-between">
+              <div className="flex items-start gap-4 flex-1">
+                {/* Icône */}
+                <div className="text-3xl">{method.icon}</div>
+
+                {/* Informations principales */}
+                <div className="flex-1 space-y-2">
+                  <div className="flex items-center gap-3">
+                    <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200">
+                      {method.name}
+                    </h3>
+                    <Badge
+                      variant={method.isActive ? "default" : "secondary"}
+                      className={method.isActive ? "bg-green-500" : ""}
+                    >
+                      {method.isActive ? 'Actif' : 'Inactif'}
+                    </Badge>
+                  </div>
+
+                  <p className="text-gray-600 dark:text-gray-400">
+                    {method.description}
+                  </p>
+
+                  <div className="flex items-center gap-6 text-sm text-gray-500 dark:text-gray-400">
+                    <div className="flex items-center gap-1">
+                      <span className="font-medium">
+                        {method.price === 0 ? 'Gratuit' : formatCurrency(method.price)}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <span>{method.estimatedDays}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Actions */}
+              <div className="flex items-center gap-3">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => toggleMethodStatus(method.id)}
+                  className={method.isActive ? "text-red-600 hover:text-red-700" : "text-green-600 hover:text-green-700"}
+                >
+                  {method.isActive ? 'Désactiver' : 'Activer'}
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      ))}
+    </div>
+  );
+};
 
 const MarketsShipping = () => {
+  const { store } = useStores();
   const [activeTab, setActiveTab] = useState('markets');
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+
+  // Données simulées pour l'instant
+  const enabledCountriesCount = 0;
+  const activeShippingMethodsCount = 0;
 
   return (
     <DashboardLayout>
@@ -42,7 +307,7 @@ const MarketsShipping = () => {
                     Marchés actifs
                   </p>
                   <p className="text-3xl font-bold text-blue-700 dark:text-blue-300">
-                    0
+                    {enabledCountriesCount}
                   </p>
                   <p className="text-xs text-blue-600/70 dark:text-blue-400/70">
                     pays disponibles
@@ -63,7 +328,7 @@ const MarketsShipping = () => {
                     Méthodes de livraison
                   </p>
                   <p className="text-3xl font-bold text-green-700 dark:text-green-300">
-                    0
+                    {activeShippingMethodsCount}
                   </p>
                   <p className="text-xs text-green-600/70 dark:text-green-400/70">
                     méthodes actives
@@ -84,7 +349,7 @@ const MarketsShipping = () => {
                     Couverture
                   </p>
                   <p className="text-3xl font-bold text-purple-700 dark:text-purple-300">
-                    0%
+                    {Math.round((enabledCountriesCount / AFRICAN_FRANCOPHONE_COUNTRIES.length) * 100)}%
                   </p>
                   <p className="text-xs text-purple-600/70 dark:text-purple-400/70">
                     de l'Afrique francophone
@@ -100,18 +365,58 @@ const MarketsShipping = () => {
 
         {/* Main Content */}
         <Card className="shadow-lg border-0 bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm">
-          <CardContent className="p-6">
-            <div className="text-center py-12">
-              <div className="p-4 bg-blue-100 dark:bg-blue-900/20 rounded-2xl w-fit mx-auto mb-6">
-                <Package className="h-12 w-12 mx-auto text-blue-600" />
+          <CardContent className="p-0">
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+              <div className="border-b border-gray-200 dark:border-gray-700 px-6 pt-6">
+                <TabsList className="grid w-full grid-cols-2 bg-gray-100 dark:bg-gray-800">
+                  <TabsTrigger value="markets" className="flex items-center gap-2">
+                    <Globe className="h-4 w-4" />
+                    Marchés de vente
+                  </TabsTrigger>
+                  <TabsTrigger value="shipping" className="flex items-center gap-2">
+                    <Truck className="h-4 w-4" />
+                    Méthodes de livraison
+                  </TabsTrigger>
+                </TabsList>
               </div>
-              <h3 className="text-2xl font-semibold mb-4 text-gray-800 dark:text-gray-200">
-                Marchés et Livraisons
-              </h3>
-              <p className="text-gray-600 dark:text-gray-400 mb-6 text-lg max-w-md mx-auto">
-                Cette fonctionnalité sera bientôt disponible. Vous pourrez configurer vos marchés de vente et méthodes de livraison.
-              </p>
-            </div>
+
+              <TabsContent value="markets" className="p-6 space-y-6">
+                <div className="flex justify-between items-center">
+                  <div>
+                    <h3 className="text-xl font-semibold text-gray-800 dark:text-gray-200">
+                      Configuration des marchés
+                    </h3>
+                    <p className="text-gray-600 dark:text-gray-400">
+                      Sélectionnez les pays où vous souhaitez vendre vos produits
+                    </p>
+                  </div>
+                </div>
+
+                <MarketConfiguration />
+              </TabsContent>
+
+              <TabsContent value="shipping" className="p-6 space-y-6">
+                <div className="flex justify-between items-center">
+                  <div>
+                    <h3 className="text-xl font-semibold text-gray-800 dark:text-gray-200">
+                      Méthodes de livraison
+                    </h3>
+                    <p className="text-gray-600 dark:text-gray-400">
+                      Configurez vos options de livraison et leurs tarifs
+                    </p>
+                  </div>
+                  <Button
+                    onClick={() => setIsCreateModalOpen(true)}
+                    className="flex items-center gap-2"
+                  >
+                    <Plus className="h-4 w-4" />
+                    Ajouter une méthode
+                  </Button>
+                </div>
+
+                <ShippingMethods />
+              </TabsContent>
+            </Tabs>
           </CardContent>
         </Card>
       </div>
