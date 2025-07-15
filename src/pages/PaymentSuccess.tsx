@@ -25,39 +25,16 @@ const PaymentSuccess = () => {
   const handleReturnToShop = () => {
     console.log('🔘 Button clicked - handleReturnToShop');
     console.log('🖼️ isInPreview:', isInPreview);
-    console.log('🖼️ searchParams preview:', searchParams.get('preview'));
-    console.log('🖼️ pathname:', location.pathname);
-    console.log('🖼️ window.self !== window.top:', window.self !== window.top);
 
     if (isInPreview) {
-      // Si nous sommes dans l'aperçu, essayer plusieurs méthodes
-      console.log('📤 In preview mode - trying multiple methods');
+      console.log('📤 In preview mode - using direct navigation');
 
-      // Méthode 1: Message au parent
-      try {
-        console.log('📤 Method 1: Sending CLOSE_PREVIEW message to parent');
-        window.parent.postMessage({ type: 'CLOSE_PREVIEW' }, '*');
-        console.log('✅ Message sent successfully');
-      } catch (error) {
-        console.error('❌ Error sending message:', error);
-      }
-
-      // Méthode 2: Navigation directe dans l'aperçu (fallback)
-      setTimeout(() => {
-        console.log('🔄 Method 2: Direct navigation fallback');
-        // Essayer de revenir en arrière dans l'historique pour rester dans l'aperçu
-        if (window.history.length > 1) {
-          console.log('🔙 Going back in history');
-          window.history.go(-3); // Retour de 3 pages (payment-success -> checkout -> cart -> home)
-        } else {
-          console.log('🏠 No history, trying to stay in current context');
-          // Forcer le rechargement de la page actuelle sans quitter l'aperçu
-          window.location.reload();
-        }
-      }, 100);
+      // Solution directe : naviguer vers une page qui simule l'accueil de la boutique
+      // en restant dans le contexte de l'aperçu
+      navigate('/?preview=true&page=home');
 
     } else {
-      // Sinon, navigation normale vers la page d'accueil de la boutique publique
+      // Navigation normale vers la page d'accueil de la boutique publique
       console.log('🔄 Navigating to shop home page (not in preview)');
       navigate('/');
     }
