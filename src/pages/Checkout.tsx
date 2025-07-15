@@ -4,14 +4,19 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useCart } from '@/contexts/CartContext';
-import { Trash2, CreditCard } from 'lucide-react';
+import { Trash2, CreditCard, Loader2 } from 'lucide-react';
 import { useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, useParams } from 'react-router-dom';
+import { useOrders } from '@/hooks/useOrders';
+import { useToast } from '@/hooks/use-toast';
 
 const Checkout = () => {
-  const { items, updateQuantity, removeItem, getTotalPrice } = useCart();
+  const { items, updateQuantity, removeItem, getTotalPrice, clearCart } = useCart();
   const navigate = useNavigate();
   const location = useLocation();
+  const { storeSlug } = useParams();
+  const { createOrder, isCreating } = useOrders();
+  const { toast } = useToast();
 
   // Détecter si nous sommes dans l'aperçu
   const isInPreview = window.self !== window.top;
@@ -22,9 +27,11 @@ const Checkout = () => {
     address: '',
     city: '',
     postalCode: '',
-    country: ''
+    country: '',
+    phone: ''
   });
   const [paymentMethod, setPaymentMethod] = useState('card');
+  const [isProcessing, setIsProcessing] = useState(false);
 
   const handleCustomerInfoChange = (field: string, value: string) => {
     setCustomerInfo(prev => ({
@@ -33,18 +40,124 @@ const Checkout = () => {
     }));
   };
 
-  const handleCheckout = () => {
-    console.log('Processus de commande:', {
-      items,
-      customerInfo,
-      paymentMethod,
-      total: getTotalPrice(),
-      isInPreview
-    });
-    // Ici on intégrerait avec les moyens de paiement configurés dans l'onglet Paiements
-    // Pour l'instant, on redirige vers une page de succès
-    const successUrl = isInPreview ? '/payment-success?preview=true' : '/payment-success';
-    navigate(successUrl);
+  const handleCheckout = async () => {
+    // Validation des champs requis
+    if (!customerInfo.email || !customerInfo.firstName || !customerInfo.lastName || !customerInfo.address) {
+      toast({
+        title: "Informations manquantes",
+        description: "Veuillez remplir tous les champs obligatoires.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (items.length === 0) {
+      toast({
+        title: "Panier vide",
+        description: "Ajoutez des produits avant de passer commande.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setIsProcessing(true);
+
+    try {
+      console.log('🛒 Début du processus de commande...');
+
+      // Si nous sommes en mode aperçu, simuler la commande
+      if (isInPreview) {
+        console.log('📱 Mode aperçu - simulation de commande');
+        await new Promise(resolve => setTimeout(resolve, 2000)); // Simuler le traitement
+        const successUrl = '/payment-success?preview=true';
+        navigate(successUrl);
+        return;
+      }
+
+      // Récupérer les informations de la boutique depuis l'URL ou le contexte
+      const storeInfo = await getStoreInfo();
+      if (!storeInfo) {
+        throw new Error('Impossible de récupérer les informations de la boutique');
+      }
+
+      // Préparer les données de commande
+      const orderData = {
+        storeId: storeInfo.id,
+        storeName: storeInfo.name,
+        items: items.map(item => ({
+          id: item.id,
+          name: item.name,
+          price: item.price,
+          quantity: item.quantity,
+          image: item.image,
+          product_id: item.product_id
+        })),
+        customerInfo,
+        paymentMethod,
+        totalAmount: getTotalPrice(),
+        currency: 'CFA',
+        shippingCost: 0
+      };
+
+      console.log('📝 Création de la commande:', orderData);
+
+      // Créer la commande
+      createOrder(orderData, {
+        onSuccess: (order) => {
+          console.log('✅ Commande créée:', order);
+
+          // Vider le panier
+          clearCart();
+
+          // Rediriger vers la page de succès avec le numéro de commande
+          navigate(`/payment-success?order=${order.order_number}`);
+        },
+        onError: (error) => {
+          console.error('❌ Erreur création commande:', error);
+          throw error;
+        }
+      });
+
+    } catch (error: any) {
+      console.error('❌ Erreur checkout:', error);
+      toast({
+        title: "Erreur de commande",
+        description: error.message || "Une erreur est survenue lors de la commande.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  // Fonction pour récupérer les infos de la boutique
+  const getStoreInfo = async () => {
+    try {
+      // Si nous avons le slug dans l'URL, l'utiliser
+      if (storeSlug) {
+        // Ici on pourrait faire un appel API pour récupérer les infos de la boutique
+        // Pour l'instant, on simule avec des données de base
+        return {
+          id: 'store-from-slug',
+          name: storeSlug.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())
+        };
+      }
+
+      // Sinon, essayer de récupérer depuis le localStorage ou le contexte
+      const storeData = localStorage.getItem('currentStore');
+      if (storeData) {
+        return JSON.parse(storeData);
+      }
+
+      // Fallback: utiliser une boutique par défaut
+      return {
+        id: 'default-store',
+        name: 'Ma Boutique'
+      };
+    } catch (error) {
+      console.error('❌ Erreur récupération boutique:', error);
+      return null;
+    }
   };
 
   if (items.length === 0) {
@@ -97,21 +210,34 @@ const Checkout = () => {
               </div>
               
               <div>
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="email">Email *</Label>
                 <Input
                   id="email"
                   type="email"
                   value={customerInfo.email}
                   onChange={(e) => handleCustomerInfoChange('email', e.target.value)}
+                  required
                 />
               </div>
-              
+
               <div>
-                <Label htmlFor="address">Adresse</Label>
+                <Label htmlFor="phone">Téléphone</Label>
+                <Input
+                  id="phone"
+                  type="tel"
+                  value={customerInfo.phone}
+                  onChange={(e) => handleCustomerInfoChange('phone', e.target.value)}
+                  placeholder="+221 XX XXX XX XX"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="address">Adresse *</Label>
                 <Input
                   id="address"
                   value={customerInfo.address}
                   onChange={(e) => handleCustomerInfoChange('address', e.target.value)}
+                  required
                 />
               </div>
               
@@ -190,13 +316,22 @@ const Checkout = () => {
                   </div>
                 </div>
                 
-                <Button 
-                  className="w-full" 
+                <Button
+                  className="w-full"
                   onClick={handleCheckout}
-                  disabled={items.length === 0}
+                  disabled={items.length === 0 || isProcessing || isCreating}
                 >
-                  <CreditCard className="h-4 w-4 mr-2" />
-                  Payer maintenant
+                  {(isProcessing || isCreating) ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Traitement en cours...
+                    </>
+                  ) : (
+                    <>
+                      <CreditCard className="h-4 w-4 mr-2" />
+                      Payer maintenant
+                    </>
+                  )}
                 </Button>
               </div>
             </CardContent>

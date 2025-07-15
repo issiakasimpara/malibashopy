@@ -4,24 +4,28 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Search, Package, Calendar, Eye, Edit } from 'lucide-react';
+import { Search, Package, Calendar, Eye, Edit, Loader2, RefreshCw } from 'lucide-react';
 import { useStores } from '@/hooks/useStores';
-import { usePublicOrders, PublicOrder } from '@/hooks/usePublicOrders';
+import { useOrders } from '@/hooks/useOrders';
 import { useToast } from '@/hooks/use-toast';
+import { Order } from '@/services/orderService';
 
 const Orders = () => {
   const { store } = useStores();
   const { toast } = useToast();
-  const [orders, setOrders] = useState<PublicOrder[]>([]);
-  const [filteredOrders, setFilteredOrders] = useState<PublicOrder[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const {
+    orders,
+    isLoading,
+    updateOrderStatus,
+    updatePaymentStatus,
+    isUpdatingStatus,
+    isUpdatingPayment,
+    refetchOrders
+  } = useOrders();
+
+  const [filteredOrders, setFilteredOrders] = useState<Order[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
-  const { searchOrders } = usePublicOrders();
-
-  useEffect(() => {
-    loadOrders();
-  }, [store?.id]);
 
   useEffect(() => {
     filterOrders();
@@ -40,7 +44,7 @@ const Orders = () => {
     }
 
     if (statusFilter !== 'all') {
-      results = results.filter(order => order.status === statusFilter);
+      results = results.filter(order => order.order_status === statusFilter);
     }
 
     setFilteredOrders(results);
@@ -68,39 +72,56 @@ const Orders = () => {
     return <Badge className={config.className}>{config.label}</Badge>;
   };
 
-  const loadOrders = async () => {
-    if (!store?.id) return;
-    
-    try {
-      setIsLoading(true);
-      // Pour les marchands, on va récupérer toutes les commandes de leur boutique
-      // Note: Il faudrait créer une fonction spécifique pour les marchands
-      // Pour l'instant, on utilise une liste vide en attendant l'implémentation
-      setOrders([]);
-      setFilteredOrders([]);
-    } catch (error) {
-      console.error('Erreur lors du chargement des commandes:', error);
-      toast({
-        title: "Erreur",
-        description: "Impossible de charger les commandes.",
-        variant: "destructive"
-      });
-    } finally {
-      setIsLoading(false);
-    }
+  const handleStatusChange = (orderId: string, newStatus: Order['order_status']) => {
+    updateOrderStatus({ orderId, status: newStatus });
+  };
+
+  const handlePaymentStatusChange = (orderId: string, newStatus: Order['payment_status']) => {
+    updatePaymentStatus({ orderId, status: newStatus });
+  };
+
+  const getStatusBadge = (status: string) => {
+    const statusConfig = {
+      pending: { label: 'En attente', color: 'bg-yellow-100 text-yellow-800' },
+      confirmed: { label: 'Confirmée', color: 'bg-blue-100 text-blue-800' },
+      processing: { label: 'En traitement', color: 'bg-purple-100 text-purple-800' },
+      shipped: { label: 'Expédiée', color: 'bg-orange-100 text-orange-800' },
+      delivered: { label: 'Livrée', color: 'bg-green-100 text-green-800' },
+      cancelled: { label: 'Annulée', color: 'bg-red-100 text-red-800' }
+    };
+
+    const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.pending;
+
+    return (
+      <Badge className={`${config.color} border-0 mb-2`}>
+        {config.label}
+      </Badge>
+    );
   };
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-6">
       <div className="container mx-auto px-4">
         {/* Header */}
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-200">
-            Gestion des commandes
-          </h1>
-          <p className="text-gray-600 dark:text-gray-400">
-            Visualisez et gérez les commandes de votre boutique
-          </p>
+        <div className="flex justify-between items-start mb-8">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-200">
+              Gestion des commandes
+            </h1>
+            <p className="text-gray-600 dark:text-gray-400">
+              Visualisez et gérez les commandes de votre boutique ({orders.length} commande{orders.length !== 1 ? 's' : ''})
+            </p>
+          </div>
+          <Button
+            onClick={() => refetchOrders()}
+            variant="outline"
+            size="sm"
+            className="flex items-center gap-2"
+            disabled={isLoading}
+          >
+            <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
+            Actualiser
+          </Button>
         </div>
 
         {/* Filters */}
@@ -175,9 +196,12 @@ const Orders = () => {
                       </p>
                     </div>
                     <div className="text-right">
-                      {getStatusBadge(order.status)}
+                      {getStatusBadge(order.order_status)}
                       <p className="text-xl font-bold text-gray-800 dark:text-gray-200">
                         {Number(order.total_amount).toLocaleString()} {order.currency}
+                      </p>
+                      <p className="text-sm text-gray-500">
+                        Paiement: {order.payment_status === 'paid' ? '✅ Payé' : '⏳ En attente'}
                       </p>
                     </div>
                   </div>

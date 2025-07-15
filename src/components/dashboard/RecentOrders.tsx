@@ -1,10 +1,35 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ShoppingCart, ArrowRight, Plus } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { ShoppingCart, ArrowRight, Plus, Calendar, User, Loader2 } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useOrders } from "@/hooks/useOrders";
 
 const RecentOrders = () => {
+  const { orders, isLoading } = useOrders();
+
+  // Prendre les 5 dernières commandes
+  const recentOrders = orders.slice(0, 5);
+
+  const getStatusBadge = (status: string) => {
+    const statusConfig = {
+      pending: { label: 'En attente', color: 'bg-yellow-100 text-yellow-800' },
+      confirmed: { label: 'Confirmée', color: 'bg-blue-100 text-blue-800' },
+      processing: { label: 'En traitement', color: 'bg-purple-100 text-purple-800' },
+      shipped: { label: 'Expédiée', color: 'bg-orange-100 text-orange-800' },
+      delivered: { label: 'Livrée', color: 'bg-green-100 text-green-800' },
+      cancelled: { label: 'Annulée', color: 'bg-red-100 text-red-800' }
+    };
+
+    const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.pending;
+
+    return (
+      <Badge className={`${config.color} border-0 text-xs`}>
+        {config.label}
+      </Badge>
+    );
+  };
   return (
     <Card className="border-0 shadow-xl bg-gradient-to-br from-background via-background to-muted/20 backdrop-blur-sm overflow-hidden">
       <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500" />

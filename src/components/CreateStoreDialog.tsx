@@ -108,11 +108,11 @@ const CreateStoreDialog = ({ open, onOpenChange, onStoreCreated, hasExistingStor
 
       // Attendre un peu pour que les hooks se mettent à jour
       console.log('⏳ Attente de la synchronisation...');
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      await new Promise(resolve => setTimeout(resolve, 1000));
 
-      // Rediriger vers l'éditeur de template avec le template sélectionné
-      console.log('🔄 Redirection vers l\'éditeur...');
-      navigate(`/store-config/site-builder/editor/${selectedTemplate}`);
+      // Rediriger vers la configuration de boutique d'abord
+      console.log('🔄 Redirection vers la configuration...');
+      navigate('/store-config');
     } catch (error) {
       console.error('Erreur lors de la création de la boutique:', error);
     }
