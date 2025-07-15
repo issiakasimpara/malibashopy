@@ -1,12 +1,12 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { 
-  Store, 
-  ShoppingCart, 
-  Package, 
-  BarChart3, 
-  Settings, 
+import {
+  Store,
+  ShoppingCart,
+  Package,
+  BarChart3,
+  Settings,
   Users,
   Menu,
   X,
@@ -16,7 +16,8 @@ import {
   LogOut,
   MessageSquare,
   Grid3X3,
-  Globe
+  Globe,
+  Truck
 } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
