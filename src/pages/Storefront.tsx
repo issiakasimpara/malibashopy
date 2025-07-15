@@ -11,132 +11,68 @@ const Storefront = () => {
 
   console.log('Storefront: Loading store:', storeSlug);
 
-  const handleProductClick = (productId: string) => {
-    setSelectedProductId(productId);
-    setCurrentPage('product-detail');
-    // Mettre à jour l'URL sans recharger la page
-    window.history.pushState({}, '', `?page=product-detail&product=${productId}`);
-  };
-
-  const handlePageNavigation = (page: string) => {
-    setCurrentPage(page);
-    setSelectedProductId(null);
-    window.history.pushState({}, '', page === 'home' ? '' : `?page=${page}`);
-  };
-
-  const handleCartNavigation = () => {
-    setCurrentPage('cart');
-    setSelectedProductId(null);
-    window.history.pushState({}, '', '?page=cart');
-  };
-
-  const getPageBlocks = (pageName: string) => {
-    if (!template) return [];
-    return template.pages[pageName] ? template.pages[pageName].sort((a, b) => a.order - b.order) : [];
-  };
-
-  const renderNavigation = () => {
-    if (!template) return null;
-
-    const mainPages = ['home', 'product', 'category', 'contact'];
-    
-    return (
+  // Version simplifiée pour éviter les erreurs
+  return (
+    <div className="min-h-screen bg-gray-50">
+      {/* Navigation simple */}
       <nav className="bg-white shadow-sm border-b">
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between h-16">
-            {/* Logo/Nom de la boutique */}
             <div className="flex items-center space-x-3">
-              <div className="p-2 rounded-lg" style={{ backgroundColor: template.styles.primaryColor }}>
-                <ShoppingBag className="h-5 w-5 text-white" />
+              <div className="p-2 rounded-lg bg-blue-600">
+                <Store className="h-5 w-5 text-white" />
               </div>
-              <span className="text-xl font-bold">{store?.name}</span>
+              <span className="text-xl font-bold">Boutique: {storeSlug}</span>
             </div>
-
-            {/* Navigation principale */}
-            <div className="hidden md:flex items-center space-x-8">
-              {mainPages.map((page) => (
-                <button
-                  key={page}
-                  onClick={() => handlePageNavigation(page)}
-                  className={`text-gray-700 hover:text-gray-900 transition-colors font-medium ${
-                    currentPage === page ? 'border-b-2 pb-1' : ''
-                  }`}
-                  style={{ 
-                    borderColor: currentPage === page ? template.styles.primaryColor : 'transparent'
-                  }}
-                >
-                  {page === 'home' ? 'Accueil' : 
-                   page === 'product' ? 'Boutique' :
-                   page === 'category' ? 'Catégories' : 'Contact'}
-                </button>
-              ))}
-            </div>
-
-            {/* Actions */}
             <div className="flex items-center space-x-4">
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={handleCartNavigation}
-                className="relative"
+                onClick={() => navigate(`/store/${storeSlug}/cart`)}
               >
                 <ShoppingBag className="h-5 w-5" />
+                Panier
               </Button>
             </div>
           </div>
         </div>
       </nav>
-    );
-  };
 
-  const renderBreadcrumb = () => {
-    if (currentPage === 'home') return null;
-    
-    return (
-      <div className="bg-gray-50 border-b">
-        <div className="container mx-auto px-4 py-3">
-          <div className="flex items-center gap-2 text-sm text-gray-600">
-            <button 
-              onClick={() => handlePageNavigation('home')}
-              className="hover:text-gray-900 flex items-center gap-1"
+      {/* Contenu principal */}
+      <div className="container mx-auto px-4 py-8">
+        <div className="text-center">
+          <div className="text-6xl mb-4">🏪</div>
+          <h1 className="text-3xl font-bold mb-4">Boutique: {storeSlug}</h1>
+          <p className="text-gray-600 mb-8">
+            Bienvenue dans cette boutique ! Cette page sera bientôt entièrement fonctionnelle.
+          </p>
+
+          <div className="grid gap-4 max-w-md mx-auto">
+            <Button
+              onClick={() => navigate(`/store/${storeSlug}/cart`)}
+              className="w-full"
             >
-              <Home className="h-3 w-3" />
-              Accueil
-            </button>
-            <span>/</span>
-            {currentPage === 'product-detail' && selectedProductId ? (
-              <>
-                <button 
-                  onClick={() => handlePageNavigation('product')}
-                  className="hover:text-gray-900"
-                >
-                  Boutique
-                </button>
-                <span>/</span>
-                <span className="text-gray-900 font-medium">Détail du produit</span>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => handlePageNavigation('product')}
-                  className="ml-2 h-6 px-2 text-xs"
-                >
-                  <ArrowLeft className="h-3 w-3 mr-1" />
-                  Retour
-                </Button>
-              </>
-            ) : (
-              <span className="text-gray-900 font-medium">
-                {currentPage === 'product' ? 'Boutique' :
-                 currentPage === 'category' ? 'Catégories' :
-                 currentPage === 'contact' ? 'Contact' :
-                 currentPage === 'cart' ? 'Panier' : currentPage}
-              </span>
-            )}
+              Voir le panier
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => navigate('/')}
+              className="w-full"
+            >
+              Retour à l'accueil
+            </Button>
+          </div>
+
+          <div className="mt-8 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+            <p className="text-sm text-blue-800">
+              <strong>🚧 En développement :</strong> Cette boutique publique sera bientôt complètement intégrée avec les templates et produits.
+            </p>
           </div>
         </div>
       </div>
-    );
-  };
+    </div>
+  );
+};
 
   if (loading) {
     return (
