@@ -11,6 +11,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Order } from '@/services/orderService';
 import { getOrderStatusBadge, getPaymentStatusBadge, formatCurrency } from '@/utils/orderUtils';
 import DashboardLayout from '@/components/DashboardLayout';
+import OrderDetailsModal from '@/components/OrderDetailsModal';
 
 const Orders = () => {
   const { store } = useStores();
@@ -28,6 +29,8 @@ const Orders = () => {
   const [filteredOrders, setFilteredOrders] = useState<Order[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const [isOrderModalOpen, setIsOrderModalOpen] = useState(false);
 
   useEffect(() => {
     filterOrders();
@@ -68,6 +71,16 @@ const Orders = () => {
 
   const handlePaymentStatusChange = (orderId: string, newStatus: string) => {
     updatePaymentStatus({ orderId, status: newStatus });
+  };
+
+  const handleViewOrder = (order: Order) => {
+    setSelectedOrder(order);
+    setIsOrderModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsOrderModalOpen(false);
+    setSelectedOrder(null);
   };
 
 
@@ -176,7 +189,10 @@ const Orders = () => {
                     </div>
                   </div>
                   <div className="mt-4 flex justify-end gap-2">
-                    <Button variant="outline">
+                    <Button
+                      variant="outline"
+                      onClick={() => handleViewOrder(order)}
+                    >
                       <Eye className="h-4 w-4 mr-2" />
                       Voir
                     </Button>
@@ -191,6 +207,13 @@ const Orders = () => {
           </div>
         )}
       </div>
+
+      {/* Modal des détails de commande */}
+      <OrderDetailsModal
+        order={selectedOrder}
+        isOpen={isOrderModalOpen}
+        onClose={handleCloseModal}
+      />
     </DashboardLayout>
   );
 };
