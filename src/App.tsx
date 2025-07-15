@@ -28,6 +28,7 @@ import Cart from "./pages/Cart";
 import Checkout from "./pages/Checkout";
 import PaymentSuccess from "./pages/PaymentSuccess";
 import CustomerOrders from "./pages/CustomerOrders";
+import Storefront from "./pages/Storefront";
 import NotFound from "./pages/NotFound";
 import ProtectedRoute from "./components/ProtectedRoute";
 
@@ -79,6 +80,12 @@ const App = () => (
               <Route path="/checkout" element={<Checkout />} />
               <Route path="/payment-success" element={<PaymentSuccess />} />
               <Route path="/mes-commandes" element={<CustomerOrders />} />
+
+              {/* Routes des boutiques publiques */}
+              <Route path="/store/:storeSlug" element={<Storefront />} />
+              <Route path="/store/:storeSlug/cart" element={<Cart />} />
+              <Route path="/store/:storeSlug/checkout" element={<Checkout />} />
+              <Route path="/store/:storeSlug/payment-success" element={<PaymentSuccess />} />
               
               {/* Routes d'authentification */}
               <Route path="/auth" element={<Auth />} />

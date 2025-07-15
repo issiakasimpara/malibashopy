@@ -2,7 +2,7 @@
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { CheckCircle } from 'lucide-react';
-import { useNavigate, useLocation, useSearchParams } from 'react-router-dom';
+import { useNavigate, useLocation, useSearchParams, useParams } from 'react-router-dom';
 import { useCart } from '@/contexts/CartContext';
 import { useEffect } from 'react';
 
@@ -10,12 +10,13 @@ const PaymentSuccess = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [searchParams] = useSearchParams();
+  const { storeSlug } = useParams();
   const { clearCart } = useCart();
 
-  // Vérifier si nous sommes dans l'aperçu via l'URL ou le contexte
+  // Vérifier si nous sommes dans l'aperçu ou dans une boutique publique
   const isInPreview = searchParams.get('preview') === 'true' ||
-                     location.pathname.includes('preview') ||
                      window.self !== window.top;
+  const isInStorefront = location.pathname.includes('/store/');
 
   useEffect(() => {
     // Vider le panier après un paiement réussi
@@ -25,17 +26,25 @@ const PaymentSuccess = () => {
   const handleReturnToShop = () => {
     console.log('🔘 Button clicked - handleReturnToShop');
     console.log('🖼️ isInPreview:', isInPreview);
+    console.log('🏪 isInStorefront:', isInStorefront);
+    console.log('🏪 storeSlug:', storeSlug);
 
     if (isInPreview) {
-      console.log('📤 In preview mode - using direct navigation');
-
-      // Solution directe : naviguer vers une page qui simule l'accueil de la boutique
-      // en restant dans le contexte de l'aperçu
-      navigate('/?preview=true&page=home');
-
+      console.log('📤 In preview mode - sending message to parent');
+      // Si nous sommes dans l'aperçu, envoyer un message au parent
+      try {
+        window.parent.postMessage({ type: 'CLOSE_PREVIEW' }, '*');
+        console.log('✅ Message sent to close preview');
+      } catch (error) {
+        console.error('❌ Error sending message:', error);
+      }
+    } else if (isInStorefront && storeSlug) {
+      console.log('🏪 In storefront - navigating to store home');
+      // Si nous sommes dans une boutique publique, retourner à l'accueil de cette boutique
+      navigate(`/store/${storeSlug}`);
     } else {
-      // Navigation normale vers la page d'accueil de la boutique publique
-      console.log('🔄 Navigating to shop home page (not in preview)');
+      console.log('🔄 Default navigation to platform home');
+      // Navigation par défaut vers la page d'accueil de la plateforme
       navigate('/');
     }
   };

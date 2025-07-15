@@ -83,6 +83,13 @@ const SitePreviewContent = ({
         setSelectedProductId(null);
         setNavigationHistory([]);
         console.log('✅ CLOSE_PREVIEW handled successfully');
+      } else if (event.data.type === 'PREVIEW_HOME_LOADED') {
+        console.log('✅ Handling PREVIEW_HOME_LOADED - confirming home page');
+        // Confirmer que nous sommes bien revenus à l'accueil
+        setActivePreviewPage('home');
+        setSelectedProductId(null);
+        setNavigationHistory([]);
+        console.log('✅ PREVIEW_HOME_LOADED handled successfully');
       } else if (event.data.type === 'NAVIGATE_TO_CUSTOMER_ORDERS') {
         console.log('✅ Handling NAVIGATE_TO_CUSTOMER_ORDERS - showing customer orders preview');
         // Dans l'aperçu, on peut simuler la page de suivi des commandes
@@ -447,6 +454,17 @@ const SitePreviewContent = ({
               <Badge variant="outline" className="text-xs">
                 Items: {items.length}
               </Badge>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  const storeSlug = selectedStore?.name?.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '') || 'ma-boutique';
+                  window.open(`/store/${storeSlug}`, '_blank');
+                }}
+                className="text-xs h-6"
+              >
+                Ouvrir la vraie boutique
+              </Button>
             </div>
           </div>
         </DialogHeader>

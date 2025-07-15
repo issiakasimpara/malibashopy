@@ -3,7 +3,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ArrowRight, Store, ShoppingCart, BarChart3, CreditCard, Globe, Zap, Shield, HeadphonesIcon } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
+import { useEffect } from "react";
 import HeroSection from "@/components/home/HeroSection";
 import StatsSection from "@/components/home/StatsSection";
 import TestimonialsSection from "@/components/home/TestimonialsSection";
@@ -11,6 +12,53 @@ import CtaSection from "@/components/home/CtaSection";
 import TrustSection from "@/components/home/TrustSection";
 
 const Index = () => {
+  const [searchParams] = useSearchParams();
+  const isPreviewMode = searchParams.get('preview') === 'true';
+  const previewPage = searchParams.get('page');
+
+  // Si nous sommes en mode aperçu, afficher un message de retour à l'accueil
+  useEffect(() => {
+    if (isPreviewMode) {
+      console.log('🏠 Index page loaded in preview mode');
+      console.log('📄 Preview page:', previewPage);
+
+      // Envoyer un message au parent pour indiquer qu'on est revenu à l'accueil
+      try {
+        window.parent.postMessage({
+          type: 'PREVIEW_HOME_LOADED',
+          page: previewPage || 'home'
+        }, '*');
+      } catch (error) {
+        console.error('Error sending preview message:', error);
+      }
+    }
+  }, [isPreviewMode, previewPage]);
+
+  // Si nous sommes en mode aperçu, afficher une interface simplifiée
+  if (isPreviewMode) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center max-w-md p-8">
+          <div className="text-6xl mb-4">🏪</div>
+          <h1 className="text-2xl font-bold mb-4">Retour à l'accueil de la boutique</h1>
+          <p className="text-gray-600 mb-6">
+            Vous êtes revenu à l'accueil de votre boutique dans l'aperçu.
+          </p>
+          <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
+            <p className="text-sm text-green-800">
+              <strong>✅ Succès :</strong> Le bouton "Retour à la boutique" fonctionne correctement !
+            </p>
+          </div>
+          <Button
+            onClick={() => window.parent.postMessage({ type: 'CLOSE_PREVIEW' }, '*')}
+            className="w-full"
+          >
+            Fermer l'aperçu
+          </Button>
+        </div>
+      </div>
+    );
+  }
   const features = [
     {
       icon: Store,
