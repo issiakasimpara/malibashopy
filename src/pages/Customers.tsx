@@ -12,10 +12,10 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { 
-  Users, 
-  Search, 
-  Plus, 
+import {
+  Users,
+  Search,
+  Plus,
   ShoppingCart,
   Filter,
   Download,
@@ -23,7 +23,7 @@ import {
   Store,
   UserCheck,
   TrendingUp,
-  Star
+  Star,
   Loader2,
   Mail,
   Phone
