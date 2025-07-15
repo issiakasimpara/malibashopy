@@ -39,6 +39,7 @@ export const useTemplateState = ({ initialTemplate }: UseTemplateStateProps) => 
     selectedStore,
     templateData,
     setHasUnsavedChanges,
+    setShowPreview,
     saveTemplate
   });
 
