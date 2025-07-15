@@ -10,7 +10,7 @@ import { useOrders } from '@/hooks/useOrders';
 import { useToast } from '@/hooks/use-toast';
 import { Order } from '@/services/orderService';
 import { getOrderStatusBadge, getPaymentStatusBadge, formatCurrency } from '@/utils/orderUtils';
-import DashboardLayout from '@/components/layout/DashboardLayout';
+import DashboardLayout from '@/components/DashboardLayout';
 
 const Orders = () => {
   const { store } = useStores();
