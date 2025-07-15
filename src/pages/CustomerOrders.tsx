@@ -209,10 +209,10 @@ const CustomerOrders = () => {
                         </div>
                         
                         <div className="text-right">
-                          {getStatusBadge(order.status)}
+                          {getOrderStatusBadge(order.status)}
                           <div className="flex items-center gap-2 mt-2 text-xl font-bold text-gray-800 dark:text-gray-200">
                             <CreditCard className="h-5 w-5" />
-                            {Number(order.total_amount).toLocaleString()} {order.currency}
+                            {formatCurrency(order.total_amount, order.currency)}
                           </div>
                         </div>
                       </div>
