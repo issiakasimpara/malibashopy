@@ -4,23 +4,27 @@ import { DollarSign, ShoppingCart, Package, Users, Loader2 } from "lucide-react"
 import { useOrders } from "@/hooks/useOrders";
 import { useProducts } from "@/hooks/useProducts";
 import { useStores } from "@/hooks/useStores";
+import { useAnalytics } from "@/hooks/useAnalytics";
+import { formatCurrency } from "@/utils/orderUtils";
 
 const DashboardStats = () => {
   const { stats, isLoadingStats } = useOrders();
   const { store } = useStores();
   const { products, isLoading: isLoadingProducts } = useProducts(store?.id);
+  const { analytics, isLoading: analyticsLoading } = useAnalytics();
 
-  // Calculer les statistiques
-  const revenue = stats?.totalRevenue || 0;
-  const totalOrders = stats?.totalOrders || 0;
+  // Utiliser les analytics pour les statistiques
+  const revenue = analytics?.totalRevenue || stats?.totalRevenue || 0;
+  const totalOrders = analytics?.totalOrders || stats?.totalOrders || 0;
   const todayOrders = stats?.todayOrders || 0;
   const todayRevenue = stats?.todayRevenue || 0;
   const productCount = products?.length || 0;
+  const totalCustomers = analytics?.totalCustomers || 0;
 
   const statsData = [
     {
       title: "Chiffre d'affaires",
-      value: `${revenue.toLocaleString()} CFA`,
+      value: formatCurrency(revenue),
       change: todayRevenue > 0 ? `+${todayRevenue.toLocaleString()} CFA aujourd'hui` : "Aucune vente aujourd'hui",
       icon: DollarSign,
       color: "text-emerald-600",
@@ -52,15 +56,15 @@ const DashboardStats = () => {
       isLoading: isLoadingProducts
     },
     {
-      title: "Visiteurs",
-      value: "0", // TODO: Implémenter le tracking des visiteurs
-      change: "Fonctionnalité à venir",
+      title: "Clients",
+      value: totalCustomers.toString(),
+      change: totalCustomers > 0 ? `${totalCustomers} client${totalCustomers > 1 ? 's' : ''} unique${totalCustomers > 1 ? 's' : ''}` : "Aucun client",
       icon: Users,
       color: "text-orange-600",
       bgColor: "from-orange-50 to-amber-50 dark:from-orange-950/30 dark:to-amber-950/30",
       iconBg: "from-orange-500 to-amber-500",
       borderColor: "border-orange-200/50 dark:border-orange-800/50",
-      isLoading: false
+      isLoading: analyticsLoading
     }
   ];
 

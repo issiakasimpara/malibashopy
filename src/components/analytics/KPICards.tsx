@@ -1,42 +1,46 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { DollarSign, ShoppingCart, Users, Package } from "lucide-react";
+import { DollarSign, ShoppingCart, Users, Package, Loader2 } from "lucide-react";
+import { useAnalytics } from "@/hooks/useAnalytics";
+import { formatCurrency } from "@/utils/orderUtils";
 
 const KPICards = () => {
+  const { analytics, isLoading } = useAnalytics();
+
   const kpiData = [
     {
       title: "Chiffre d'affaires total",
-      value: "0 CFA",
-      change: "Aucune donnée",
+      value: isLoading ? <Loader2 className="h-6 w-6 animate-spin" /> : formatCurrency(analytics?.totalRevenue || 0),
+      change: isLoading ? "..." : analytics?.revenueGrowth ? `${analytics.revenueGrowth >= 0 ? '+' : ''}${analytics.revenueGrowth.toFixed(1)}%` : "Aucune donnée",
       icon: DollarSign,
       period: "Ce mois",
-      trend: "up",
+      trend: (analytics?.revenueGrowth || 0) >= 0 ? "up" : "down",
       color: "blue"
     },
     {
       title: "Commandes",
-      value: "0",
-      change: "Aucune donnée",
+      value: isLoading ? <Loader2 className="h-6 w-6 animate-spin" /> : (analytics?.totalOrders || 0).toString(),
+      change: isLoading ? "..." : analytics?.ordersGrowth ? `${analytics.ordersGrowth >= 0 ? '+' : ''}${analytics.ordersGrowth.toFixed(1)}%` : "Aucune donnée",
       icon: ShoppingCart,
       period: "Ce mois",
-      trend: "up",
+      trend: (analytics?.ordersGrowth || 0) >= 0 ? "up" : "down",
       color: "green"
     },
     {
       title: "Nouveaux clients",
-      value: "0",
-      change: "Aucune donnée",
+      value: isLoading ? <Loader2 className="h-6 w-6 animate-spin" /> : (analytics?.totalCustomers || 0).toString(),
+      change: isLoading ? "..." : analytics?.customersGrowth ? `${analytics.customersGrowth >= 0 ? '+' : ''}${analytics.customersGrowth.toFixed(1)}%` : "Aucune donnée",
       icon: Users,
       period: "Ce mois",
-      trend: "up",
+      trend: (analytics?.customersGrowth || 0) >= 0 ? "up" : "down",
       color: "purple"
     },
     {
-      title: "Produits vendus",
-      value: "0",
-      change: "Aucune donnée",
+      title: "Panier moyen",
+      value: isLoading ? <Loader2 className="h-6 w-6 animate-spin" /> : formatCurrency(analytics?.averageOrderValue || 0),
+      change: "Valeur moyenne",
       icon: Package,
-      period: "Ce mois",
+      period: "Toutes commandes",
       trend: "up",
       color: "orange"
     }
