@@ -2,6 +2,8 @@
 
 ## 🚀 Plateforme E-commerce Multi-Boutiques
 
+✅ **Synchronisation VSCode ↔ GitHub configurée avec succès !**
+
 # Welcome to your Lovable project
 
 ## Project info
