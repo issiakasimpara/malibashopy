@@ -59,7 +59,7 @@ const RecentOrders = () => {
                 <div className="flex-1">
                   <div className="flex items-center gap-3 mb-2">
                     <h4 className="font-semibold text-foreground">#{order.order_number}</h4>
-                    {renderStatusBadge(order.status)}
+                    {getOrderStatusBadge(order.status)}
                   </div>
                   <div className="flex items-center gap-4 text-sm text-muted-foreground">
                     <div className="flex items-center gap-1">
