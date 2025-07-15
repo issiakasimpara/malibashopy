@@ -6,6 +6,7 @@ interface UseTemplateActionsProps {
   selectedStore: any;
   templateData: Template;
   setHasUnsavedChanges: (value: boolean) => void;
+  setShowPreview: (value: boolean) => void;
   saveTemplate: (store_id: string, template_id: string, template_data: any, is_published?: boolean) => Promise<string>;
 }
 
@@ -13,6 +14,7 @@ export const useTemplateActions = ({
   selectedStore,
   templateData,
   setHasUnsavedChanges,
+  setShowPreview,
   saveTemplate
 }: UseTemplateActionsProps) => {
   const { toast } = useToast();
@@ -48,11 +50,14 @@ export const useTemplateActions = ({
   }, [selectedStore?.id, templateData, saveTemplate, setHasUnsavedChanges, toast]);
 
   const handlePreview = useCallback(() => {
+    // Ouvrir l'aperçu
+    setShowPreview(true);
+
     toast({
       title: "Aperçu ouvert",
       description: "L'aperçu reflète vos modifications en temps réel.",
     });
-  }, [toast]);
+  }, [setShowPreview, toast]);
 
   const handlePublish = useCallback(async () => {
     if (!selectedStore?.id) {
