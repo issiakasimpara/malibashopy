@@ -135,36 +135,10 @@ const MarketConfiguration = () => {
 };
 
 // Composant pour les méthodes de livraison
-const ShippingMethods = () => {
-  const [shippingMethods, setShippingMethods] = useState([
-    {
-      id: '1',
-      name: 'Livraison standard',
-      description: 'Livraison par transporteur local dans les principales villes',
-      price: 2500,
-      estimatedDays: '3-7 jours',
-      icon: '📦',
-      isActive: true
-    },
-    {
-      id: '2',
-      name: 'Livraison express',
-      description: 'Livraison rapide en 24-48h dans les grandes villes',
-      price: 5000,
-      estimatedDays: '1-2 jours',
-      icon: '⚡',
-      isActive: true
-    },
-    {
-      id: '3',
-      name: 'Retrait en magasin',
-      description: 'Récupération directe dans notre boutique',
-      price: 0,
-      estimatedDays: 'Immédiat',
-      icon: '🏪',
-      isActive: false
-    }
-  ]);
+const ShippingMethods = ({ methods, onUpdateMethods }: {
+  methods: any[];
+  onUpdateMethods: (methods: any[]) => void;
+}) => {
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('fr-FR', {
@@ -175,16 +149,15 @@ const ShippingMethods = () => {
   };
 
   const toggleMethodStatus = (id: string) => {
-    setShippingMethods(prev =>
-      prev.map(method =>
-        method.id === id
-          ? { ...method, isActive: !method.isActive }
-          : method
-      )
+    const updatedMethods = methods.map(method =>
+      method.id === id
+        ? { ...method, isActive: !method.isActive }
+        : method
     );
+    onUpdateMethods(updatedMethods);
   };
 
-  if (shippingMethods.length === 0) {
+  if (methods.length === 0) {
     return (
       <Card className="border-dashed border-2 border-gray-300 dark:border-gray-600">
         <CardContent className="text-center py-16">
@@ -204,7 +177,7 @@ const ShippingMethods = () => {
 
   return (
     <div className="space-y-4">
-      {shippingMethods.map((method) => (
+      {methods.map((method) => (
         <Card
           key={method.id}
           className={`transition-all duration-200 ${
@@ -603,6 +576,13 @@ const MarketsShipping = () => {
             </Tabs>
           </CardContent>
         </Card>
+
+        {/* Create Shipping Method Modal */}
+        <CreateShippingMethodModal
+          isOpen={isCreateModalOpen}
+          onClose={() => setIsCreateModalOpen(false)}
+          onSave={handleAddShippingMethod}
+        />
       </div>
     </DashboardLayout>
   );
