@@ -3,6 +3,7 @@
 ## 🚀 Plateforme E-commerce Multi-Boutiques
 
 ✅ **Synchronisation VSCode ↔ GitHub configurée avec succès !**
+🔄 **Test de détection Git par VSCode**
 
 # Welcome to your Lovable project
 
