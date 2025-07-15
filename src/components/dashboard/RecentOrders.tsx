@@ -12,7 +12,7 @@ const RecentOrders = () => {
   // Prendre les 5 dernières commandes
   const recentOrders = orders.slice(0, 5);
 
-  const getStatusBadge = (status: string) => {
+  const renderStatusBadge = (status: string) => {
     const statusConfig = {
       pending: { label: 'En attente', color: 'bg-yellow-100 text-yellow-800' },
       confirmed: { label: 'Confirmée', color: 'bg-blue-100 text-blue-800' },
@@ -75,7 +75,7 @@ const RecentOrders = () => {
                 <div className="flex-1">
                   <div className="flex items-center gap-3 mb-2">
                     <h4 className="font-semibold text-foreground">#{order.order_number}</h4>
-                    {getStatusBadge(order.status)}
+                    {renderStatusBadge(order.status)}
                   </div>
                   <div className="flex items-center gap-4 text-sm text-muted-foreground">
                     <div className="flex items-center gap-1">
