@@ -20,7 +20,18 @@ class MarketsShippingService {
         throw error;
       }
 
-      return data as MarketSettings | null;
+      if (!data) return null;
+
+      // Mapper les données de la DB (snake_case) vers TypeScript (camelCase)
+      return {
+        id: data.id,
+        storeId: data.store_id,
+        enabledCountries: data.enabled_countries || [],
+        defaultCurrency: data.default_currency,
+        taxSettings: data.tax_settings,
+        createdAt: data.created_at,
+        updatedAt: data.updated_at
+      } as MarketSettings;
     } catch (error) {
       console.error('Erreur lors de la récupération des paramètres de marché:', error);
       throw error;
@@ -46,7 +57,16 @@ class MarketsShippingService {
         throw error;
       }
 
-      return data as MarketSettings;
+      // Mapper les données de retour
+      return {
+        id: data.id,
+        storeId: data.store_id,
+        enabledCountries: data.enabled_countries || [],
+        defaultCurrency: data.default_currency,
+        taxSettings: data.tax_settings,
+        createdAt: data.created_at,
+        updatedAt: data.updated_at
+      } as MarketSettings;
     } catch (error) {
       console.error('Erreur lors de la mise à jour des paramètres de marché:', error);
       throw error;
@@ -66,7 +86,21 @@ class MarketsShippingService {
         throw error;
       }
 
-      return (data || []) as StoreShippingMethod[];
+      // Mapper les données de la DB (snake_case) vers TypeScript (camelCase)
+      return (data || []).map(item => ({
+        id: item.id,
+        storeId: item.store_id,
+        name: item.name,
+        description: item.description,
+        price: item.price,
+        estimatedDays: item.estimated_days,
+        isActive: item.is_active,
+        icon: item.icon,
+        availableCountries: item.available_countries || [],
+        conditions: item.conditions,
+        createdAt: item.created_at,
+        updatedAt: item.updated_at
+      })) as StoreShippingMethod[];
     } catch (error) {
       console.error('Erreur lors de la récupération des méthodes de livraison:', error);
       throw error;
@@ -76,6 +110,7 @@ class MarketsShippingService {
   // Créer une nouvelle méthode de livraison
   async createShippingMethod(storeId: string, methodData: CreateShippingMethodData): Promise<StoreShippingMethod> {
     try {
+      // Pour l'instant, on ignore available_countries car le champ n'existe pas encore
       const { data, error } = await supabase
         .from('shipping_methods')
         .insert({
@@ -86,7 +121,6 @@ class MarketsShippingService {
           estimated_days: methodData.estimatedDays,
           icon: methodData.icon,
           conditions: methodData.conditions || null,
-          available_countries: methodData.availableCountries || [],
           is_active: true
         })
         .select()
@@ -96,7 +130,21 @@ class MarketsShippingService {
         throw error;
       }
 
-      return data as StoreShippingMethod;
+      // Mapper les données de retour
+      return {
+        id: data.id,
+        storeId: data.store_id,
+        name: data.name,
+        description: data.description,
+        price: data.price,
+        estimatedDays: data.estimated_days,
+        isActive: data.is_active,
+        icon: data.icon,
+        availableCountries: methodData.availableCountries || [],
+        conditions: data.conditions,
+        createdAt: data.created_at,
+        updatedAt: data.updated_at
+      } as StoreShippingMethod;
     } catch (error) {
       console.error('Erreur lors de la création de la méthode de livraison:', error);
       throw error;

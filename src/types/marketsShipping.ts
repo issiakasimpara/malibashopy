@@ -32,6 +32,7 @@ export interface StoreShippingMethod {
   estimatedDays: string;
   isActive: boolean;
   icon: string;
+  availableCountries?: string[];
   conditions?: {
     minOrderAmount?: number;
     maxOrderAmount?: number;
@@ -47,6 +48,7 @@ export interface CreateShippingMethodData {
   price: number;
   estimatedDays: string;
   icon: string;
+  availableCountries?: string[];
   conditions?: {
     minOrderAmount?: number;
     maxOrderAmount?: number;
