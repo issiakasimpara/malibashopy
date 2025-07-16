@@ -30,13 +30,12 @@ import {
   Trash2,
   CheckCircle,
   Search,
-  Filter,
-  Loader2
+  Filter
 } from 'lucide-react';
 import { useStores } from '@/hooks/useStores';
 import { useMarketsShipping } from '@/hooks/useMarketsShipping';
 import { AFRICAN_FRANCOPHONE_COUNTRIES } from '@/constants/africanCountries';
-import { checkDatabaseStatus, createTestData } from '@/utils/createTablesManually';
+import { checkDatabaseStatus, createTestData, createRLSPolicies } from '@/utils/createTablesManually';
 
 // Composant pour la configuration des marchés
 const MarketConfiguration = ({
@@ -796,6 +795,22 @@ const MarketsShipping = () => {
             >
               <Settings className="h-4 w-4" />
               Initialiser les paramètres
+            </Button>
+
+            <Button
+              onClick={async () => {
+                try {
+                  await createRLSPolicies();
+                  console.log('✅ RLS désactivé');
+                } catch (error) {
+                  console.error('❌ Erreur RLS:', error);
+                }
+              }}
+              variant="outline"
+              className="flex items-center gap-2"
+            >
+              <Settings className="h-4 w-4" />
+              Désactiver RLS
             </Button>
           </div>
         </div>

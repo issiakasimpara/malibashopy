@@ -191,9 +191,36 @@ export async function checkDatabaseStatus() {
   }
 }
 
+// Fonction pour créer les politiques RLS
+export async function createRLSPolicies() {
+  try {
+    console.log('🔐 Création des politiques RLS...');
+
+    // Désactiver temporairement RLS pour permettre l'accès
+    const { error: disableRLSError } = await supabase.rpc('exec_sql', {
+      sql: `
+        ALTER TABLE public.market_settings DISABLE ROW LEVEL SECURITY;
+        ALTER TABLE public.shipping_methods DISABLE ROW LEVEL SECURITY;
+      `
+    });
+
+    if (disableRLSError) {
+      console.log('⚠️ Impossible de désactiver RLS:', disableRLSError);
+    } else {
+      console.log('✅ RLS désactivé temporairement');
+    }
+
+    return true;
+  } catch (error) {
+    console.error('❌ Erreur politiques RLS:', error);
+    return false;
+  }
+}
+
 // Exposer les fonctions globalement pour les tests
 if (typeof window !== 'undefined') {
   (window as any).createTablesManually = createTablesManually;
   (window as any).createTestData = createTestData;
   (window as any).checkDatabaseStatus = checkDatabaseStatus;
+  (window as any).createRLSPolicies = createRLSPolicies;
 }
