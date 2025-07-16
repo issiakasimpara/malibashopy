@@ -776,9 +776,9 @@ const MarketsShipping = () => {
 
                 <ShippingMethods
                   methods={shippingMethods}
-                  onToggleMethod={toggleShippingMethod}
+                  onToggleMethod={(methodId, isActive) => toggleShippingMethod({ methodId, isActive })}
                   onEditMethod={handleEditMethod}
-                  onDeleteMethod={deleteShippingMethod}
+                  onDeleteMethod={(methodId) => deleteShippingMethod(methodId)}
                   isLoading={isLoading}
                 />
               </TabsContent>
