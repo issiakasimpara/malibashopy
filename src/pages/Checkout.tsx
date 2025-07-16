@@ -192,7 +192,8 @@ const Checkout = () => {
 
   // Calculer le total avec livraison
   const getTotalWithShipping = () => {
-    return getTotalPrice() + shippingCost;
+    const shippingPrice = selectedShippingMethod?.price || 0;
+    return getTotalPrice() + shippingPrice;
   };
 
   const handleCheckout = async () => {
@@ -499,7 +500,7 @@ const Checkout = () => {
                       }`}
                       onClick={() => {
                         setSelectedShippingMethod(method);
-                        setShippingCost(method.price || 0);
+                        console.log('🚚 Méthode sélectionnée:', method.name, method.price, 'CFA');
                       }}
                     >
                       <div className="flex items-center justify-between">
@@ -601,10 +602,14 @@ const Checkout = () => {
                   <div className="flex justify-between">
                     <span>Livraison:</span>
                     <span>
-                      {shippingCost === 0 ? (
-                        <span className="text-green-600">Gratuit</span>
+                      {selectedShippingMethod ? (
+                        selectedShippingMethod.price === 0 ? (
+                          <span className="text-green-600">Gratuit</span>
+                        ) : (
+                          `${selectedShippingMethod.price} CFA`
+                        )
                       ) : (
-                        `${shippingCost} CFA`
+                        <span className="text-gray-500">Non sélectionnée</span>
                       )}
                     </span>
                   </div>
