@@ -3,19 +3,23 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { useCart } from '@/contexts/CartContext';
 import { ShoppingBag, X, Plus, Minus } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams, useLocation } from 'react-router-dom';
+import { useStores } from '@/hooks/useStores';
 
 const CartWidget = () => {
-  const { 
-    items, 
-    getTotalItems, 
-    getTotalPrice, 
-    isOpen, 
+  const {
+    items,
+    getTotalItems,
+    getTotalPrice,
+    isOpen,
     toggleCart,
     updateQuantity,
-    removeItem 
+    removeItem
   } = useCart();
   const navigate = useNavigate();
+  const { storeSlug } = useParams();
+  const location = useLocation();
+  const { stores } = useStores();
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('fr-FR', {

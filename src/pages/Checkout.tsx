@@ -52,6 +52,14 @@ const Checkout = () => {
     currentStoreId,
     detectedCountryCode
   );
+
+  // Sélectionner automatiquement la première méthode disponible
+  useEffect(() => {
+    if (shippingMethods.length > 0 && !selectedShippingMethod) {
+      setSelectedShippingMethod(shippingMethods[0]);
+      console.log('✅ Première méthode sélectionnée automatiquement:', shippingMethods[0].name);
+    }
+  }, [shippingMethods, selectedShippingMethod]);
   const [isProcessing, setIsProcessing] = useState(false);
 
   const handleCustomerInfoChange = (field: string, value: string) => {

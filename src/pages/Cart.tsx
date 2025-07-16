@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useCart } from '@/contexts/CartContext';
 import { Minus, Plus, X, ShoppingBag } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useStores } from '@/hooks/useStores';
 import { useEffect } from 'react';
 
@@ -11,6 +11,7 @@ const Cart = () => {
   const { items, updateQuantity, removeItem, getTotalPrice, clearCart, setStoreId, storeId } = useCart();
   const navigate = useNavigate();
   const { stores } = useStores();
+  const { storeSlug } = useParams();
 
   // Initialiser le panier avec le premier store disponible
   useEffect(() => {
@@ -28,7 +29,18 @@ const Cart = () => {
   };
 
   const handleCheckout = () => {
-    navigate('/checkout');
+    // Si nous sommes dans une boutique spécifique, naviguer vers son checkout
+    if (storeSlug) {
+      navigate(`/store/${storeSlug}/checkout`);
+    } else {
+      // Sinon, utiliser la première boutique disponible
+      if (stores.length > 0) {
+        const firstStore = stores[0];
+        navigate(`/store/${firstStore.slug || firstStore.id}/checkout`);
+      } else {
+        navigate('/checkout'); // Fallback
+      }
+    }
   };
 
   const handleContinueShopping = () => {
