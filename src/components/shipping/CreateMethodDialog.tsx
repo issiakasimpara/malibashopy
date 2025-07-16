@@ -13,14 +13,15 @@ interface CreateMethodDialogProps {
   onOpenChange: (open: boolean) => void;
   storeId: string;
   onMethodCreated: () => void;
+  editingMethod?: any;
 }
 
-const CreateMethodDialog = ({ open, onOpenChange, storeId, onMethodCreated }: CreateMethodDialogProps) => {
-  const [name, setName] = useState('');
-  const [description, setDescription] = useState('');
-  const [price, setPrice] = useState('');
-  const [deliveryTime, setDeliveryTime] = useState('');
-  const [zoneId, setZoneId] = useState('');
+const CreateMethodDialog = ({ open, onOpenChange, storeId, onMethodCreated, editingMethod }: CreateMethodDialogProps) => {
+  const [name, setName] = useState(editingMethod?.name || '');
+  const [description, setDescription] = useState(editingMethod?.description || '');
+  const [price, setPrice] = useState(editingMethod?.price?.toString() || '');
+  const [deliveryTime, setDeliveryTime] = useState(editingMethod?.delivery_time || '');
+  const [zoneId, setZoneId] = useState(editingMethod?.zone_id || '');
   const [zones, setZones] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
@@ -63,42 +64,64 @@ const CreateMethodDialog = ({ open, onOpenChange, storeId, onMethodCreated }: Cr
         throw new Error('Prix invalide');
       }
 
-      const { error } = await supabase
-        .from('shipping_methods')
-        .insert({
-          name: name.trim(),
-          description: description.trim() || null,
-          price: priceValue,
-          estimated_days: deliveryTime.trim(),
-          shipping_zone_id: zoneId,
-          store_id: storeId,
-          is_active: true
-        });
+      if (editingMethod) {
+        // Mode édition
+        const { error } = await supabase
+          .from('shipping_methods')
+          .update({
+            name: name.trim(),
+            description: description.trim() || null,
+            price: priceValue,
+            estimated_days: deliveryTime.trim(),
+            shipping_zone_id: zoneId
+          })
+          .eq('id', editingMethod.id);
 
-      if (error) {
-        console.error('Erreur Supabase:', error);
-        throw error;
+        if (error) {
+          console.error('Erreur Supabase:', error);
+          throw error;
+        }
+      } else {
+        // Mode création
+        const { error } = await supabase
+          .from('shipping_methods')
+          .insert({
+            name: name.trim(),
+            description: description.trim() || null,
+            price: priceValue,
+            estimated_days: deliveryTime.trim(),
+            shipping_zone_id: zoneId,
+            store_id: storeId,
+            is_active: true
+          });
+
+        if (error) {
+          console.error('Erreur Supabase:', error);
+          throw error;
+        }
       }
 
       toast({
         title: "Succès",
-        description: "Méthode de livraison créée avec succès"
+        description: editingMethod ? "Méthode modifiée avec succès" : "Méthode de livraison créée avec succès"
       });
 
-      // Reset form
-      setName('');
-      setDescription('');
-      setPrice('');
-      setDeliveryTime('');
-      setZoneId('');
-      
+      // Reset form only if creating new method
+      if (!editingMethod) {
+        setName('');
+        setDescription('');
+        setPrice('');
+        setDeliveryTime('');
+        setZoneId('');
+      }
+
       onMethodCreated();
       onOpenChange(false);
     } catch (error: any) {
       console.error('Erreur complète:', error);
       toast({
         title: "Erreur",
-        description: error.message || "Impossible de créer la méthode",
+        description: error.message || (editingMethod ? "Impossible de modifier la méthode" : "Impossible de créer la méthode"),
         variant: "destructive"
       });
     } finally {
@@ -110,7 +133,7 @@ const CreateMethodDialog = ({ open, onOpenChange, storeId, onMethodCreated }: Cr
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg">
         <DialogHeader>
-          <DialogTitle>Créer une méthode de livraison</DialogTitle>
+          <DialogTitle>{editingMethod ? 'Modifier la méthode de livraison' : 'Créer une méthode de livraison'}</DialogTitle>
         </DialogHeader>
         
         <form onSubmit={handleSubmit} className="space-y-4">

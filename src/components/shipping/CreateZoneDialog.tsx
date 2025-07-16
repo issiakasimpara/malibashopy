@@ -101,7 +101,7 @@ const CreateZoneDialog = ({ open, onOpenChange, storeId, onZoneCreated, editingZ
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Créer une zone de livraison</DialogTitle>
+          <DialogTitle>{editingZone ? 'Modifier la zone de livraison' : 'Créer une zone de livraison'}</DialogTitle>
         </DialogHeader>
         
         <form onSubmit={handleSubmit} className="space-y-6">

@@ -15,6 +15,25 @@ import { useOrders } from '@/hooks/useOrders';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 
+const AFRICAN_FRANCOPHONE_COUNTRIES = [
+  { code: 'BF', name: 'Burkina Faso', flag: '🇧🇫' },
+  { code: 'ML', name: 'Mali', flag: '🇲🇱' },
+  { code: 'NE', name: 'Niger', flag: '🇳🇪' },
+  { code: 'SN', name: 'Sénégal', flag: '🇸🇳' },
+  { code: 'CI', name: 'Côte d\'Ivoire', flag: '🇨🇮' },
+  { code: 'GN', name: 'Guinée', flag: '🇬🇳' },
+  { code: 'BJ', name: 'Bénin', flag: '🇧🇯' },
+  { code: 'TG', name: 'Togo', flag: '🇹🇬' },
+  { code: 'CM', name: 'Cameroun', flag: '🇨🇲' },
+  { code: 'TD', name: 'Tchad', flag: '🇹🇩' },
+  { code: 'CF', name: 'République centrafricaine', flag: '🇨🇫' },
+  { code: 'GA', name: 'Gabon', flag: '🇬🇦' },
+  { code: 'CG', name: 'République du Congo', flag: '🇨🇬' },
+  { code: 'CD', name: 'République démocratique du Congo', flag: '🇨🇩' },
+  { code: 'MG', name: 'Madagascar', flag: '🇲🇬' },
+  { code: 'KM', name: 'Comores', flag: '🇰🇲' }
+];
+
 const Checkout = () => {
   const { items, updateQuantity, removeItem, getTotalPrice, clearCart } = useCart();
   const navigate = useNavigate();
@@ -35,6 +54,10 @@ const Checkout = () => {
     country: '',
     phone: ''
   });
+
+  const [shippingMethods, setShippingMethods] = useState<any[]>([]);
+  const [selectedShippingMethod, setSelectedShippingMethod] = useState<any>(null);
+  const [shippingCost, setShippingCost] = useState(0);
   const [paymentMethod, setPaymentMethod] = useState('card');
   const [isProcessing, setIsProcessing] = useState(false);
 
@@ -45,9 +68,57 @@ const Checkout = () => {
     }));
   };
 
-  // Calculer le total avec livraison (livraison gratuite pour l'instant)
+  // Charger les méthodes de livraison au chargement de la page
+  useEffect(() => {
+    const initializeShipping = async () => {
+      try {
+        const storeInfo = await getStoreInfo();
+        if (storeInfo) {
+          await loadShippingMethods(storeInfo.id);
+        }
+      } catch (error) {
+        console.error('Erreur lors de l\'initialisation des méthodes de livraison:', error);
+      }
+    };
+
+    initializeShipping();
+  }, [storeSlug]);
+
+  // Charger les méthodes de livraison
+  const loadShippingMethods = async (storeId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('shipping_methods')
+        .select(`
+          *,
+          shipping_zones (
+            id,
+            name,
+            countries
+          )
+        `)
+        .eq('store_id', storeId)
+        .eq('is_active', true)
+        .order('sort_order', { ascending: true });
+
+      if (error) throw error;
+
+      console.log('📦 Méthodes de livraison chargées:', data);
+      setShippingMethods(data || []);
+
+      // Sélectionner automatiquement la première méthode si disponible
+      if (data && data.length > 0) {
+        setSelectedShippingMethod(data[0]);
+        setShippingCost(data[0].price || 0);
+      }
+    } catch (error) {
+      console.error('Erreur lors du chargement des méthodes de livraison:', error);
+    }
+  };
+
+  // Calculer le total avec livraison
   const getTotalWithShipping = () => {
-    return getTotalPrice();
+    return getTotalPrice() + shippingCost;
   };
 
   const handleCheckout = async () => {
@@ -65,6 +136,15 @@ const Checkout = () => {
       toast({
         title: "Panier vide",
         description: "Ajoutez des produits avant de passer commande.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (shippingMethods.length > 0 && !selectedShippingMethod) {
+      toast({
+        title: "Méthode de livraison manquante",
+        description: "Veuillez sélectionner une méthode de livraison.",
         variant: "destructive"
       });
       return;
@@ -92,6 +172,11 @@ const Checkout = () => {
         throw new Error('Impossible de récupérer les informations de la boutique');
       }
 
+      // Charger les méthodes de livraison si pas encore fait
+      if (shippingMethods.length === 0) {
+        await loadShippingMethods(storeInfo.id);
+      }
+
       // Préparer les données de commande
       const orderData = {
         storeId: storeInfo.id,
@@ -106,9 +191,10 @@ const Checkout = () => {
         })),
         customerInfo,
         paymentMethod,
-        totalAmount: getTotalPrice(),
+        totalAmount: getTotalWithShipping(),
         currency: 'CFA',
-        shippingCost: 0
+        shippingCost: shippingCost,
+        shippingMethod: selectedShippingMethod
       };
 
       console.log('📝 Création de la commande:', orderData);
@@ -319,6 +405,63 @@ const Checkout = () => {
             </CardContent>
           </Card>
 
+          {/* Méthodes de livraison */}
+          {shippingMethods.length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Truck className="h-5 w-5" />
+                  Méthodes de livraison
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {shippingMethods.map((method) => (
+                  <div
+                    key={method.id}
+                    className={`p-4 border rounded-lg cursor-pointer transition-colors ${
+                      selectedShippingMethod?.id === method.id
+                        ? 'border-blue-500 bg-blue-50'
+                        : 'border-gray-200 hover:border-gray-300'
+                    }`}
+                    onClick={() => {
+                      setSelectedShippingMethod(method);
+                      setShippingCost(method.price || 0);
+                    }}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="w-4 h-4 rounded-full border-2 border-gray-300 flex items-center justify-center">
+                          {selectedShippingMethod?.id === method.id && (
+                            <div className="w-2 h-2 rounded-full bg-blue-500"></div>
+                          )}
+                        </div>
+                        <div>
+                          <h4 className="font-medium">{method.name}</h4>
+                          {method.description && (
+                            <p className="text-sm text-gray-600">{method.description}</p>
+                          )}
+                          <div className="flex items-center gap-2 text-sm text-gray-500 mt-1">
+                            <Clock className="h-4 w-4" />
+                            <span>{method.estimated_days}</span>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <div className="font-semibold">
+                          {method.price === 0 ? (
+                            <span className="text-green-600">Gratuit</span>
+                          ) : (
+                            <span>{method.price} CFA</span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+          )}
+
           {/* Récapitulatif de commande */}
           <Card>
             <CardHeader>
@@ -374,8 +517,21 @@ const Checkout = () => {
 
                   <div className="flex justify-between">
                     <span>Livraison:</span>
-                    <span>Gratuit</span>
+                    <span>
+                      {shippingCost === 0 ? (
+                        <span className="text-green-600">Gratuit</span>
+                      ) : (
+                        `${shippingCost} CFA`
+                      )}
+                    </span>
                   </div>
+
+                  {selectedShippingMethod && (
+                    <div className="flex justify-between text-sm text-gray-600">
+                      <span>Méthode:</span>
+                      <span>{selectedShippingMethod.name}</span>
+                    </div>
+                  )}
 
                   <Separator />
 
@@ -388,7 +544,7 @@ const Checkout = () => {
                 <Button
                   className="w-full"
                   onClick={handleCheckout}
-                  disabled={items.length === 0 || isProcessing || isCreating || !customerInfo.country}
+                  disabled={items.length === 0 || isProcessing || isCreating || !customerInfo.country || (shippingMethods.length > 0 && !selectedShippingMethod)}
                 >
                   {(isProcessing || isCreating) ? (
                     <>
