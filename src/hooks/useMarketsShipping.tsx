@@ -154,20 +154,28 @@ export const useMarketsShipping = (storeId?: string) => {
     },
   });
 
+  // Computed values
+  const enabledCountriesCount = marketSettings?.enabled_countries?.length || 0;
+  const activeShippingMethodsCount = shippingMethods.filter(method => method.is_active).length;
+
   return {
     // Data
     marketSettings,
     shippingMethods,
-    
+
+    // Computed values
+    enabledCountriesCount,
+    activeShippingMethodsCount,
+
     // Loading states
     isLoadingMarketSettings,
     isLoadingShippingMethods,
     isLoading: isLoadingMarketSettings || isLoadingShippingMethods,
-    
+
     // Errors
     marketSettingsError,
     shippingMethodsError,
-    
+
     // Mutations
     updateMarketSettings: updateMarketSettingsMutation.mutate,
     createShippingMethod: createShippingMethodMutation.mutate,
@@ -175,7 +183,7 @@ export const useMarketsShipping = (storeId?: string) => {
     deleteShippingMethod: deleteShippingMethodMutation.mutate,
     toggleShippingMethod: toggleShippingMethodMutation.mutate,
     initializeDefaultSettings: initializeDefaultSettingsMutation.mutate,
-    
+
     // Mutation states
     isUpdatingMarketSettings: updateMarketSettingsMutation.isPending,
     isCreatingShippingMethod: createShippingMethodMutation.isPending,

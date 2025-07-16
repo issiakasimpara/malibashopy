@@ -239,7 +239,15 @@ const MarketConfiguration = ({
               </div>
               <Button
                 disabled={isLoading}
-                onClick={() => onUpdateSettings({ enabled_countries: selectedCountries })}
+                onClick={() => onUpdateSettings({
+                  enabledCountries: selectedCountries,
+                  defaultCurrency: 'XOF',
+                  taxSettings: {
+                    includeTax: false,
+                    taxRate: 0,
+                    taxLabel: 'TVA'
+                  }
+                })}
                 className="ml-6 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg"
               >
                 {isLoading ? (
@@ -359,14 +367,40 @@ const ShippingMethods = ({
 
                   <div className="flex items-center gap-6 text-sm text-gray-500 dark:text-gray-400">
                     <div className="flex items-center gap-1">
+                      <DollarSign className="h-4 w-4" />
                       <span className="font-medium">
                         {method.price === 0 ? 'Gratuit' : formatCurrency(method.price)}
                       </span>
                     </div>
                     <div className="flex items-center gap-1">
+                      <Clock className="h-4 w-4" />
                       <span>{method.estimated_days}</span>
                     </div>
                   </div>
+
+                  {/* Pays disponibles */}
+                  {method.availableCountries && method.availableCountries.length > 0 && (
+                    <div className="mt-3">
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">
+                        Disponible dans {method.availableCountries.length} pays :
+                      </p>
+                      <div className="flex flex-wrap gap-1">
+                        {method.availableCountries.slice(0, 5).map((countryCode: string) => {
+                          const country = AFRICAN_FRANCOPHONE_COUNTRIES.find(c => c.code === countryCode);
+                          return country ? (
+                            <Badge key={countryCode} variant="outline" className="text-xs px-1.5 py-0.5">
+                              {country.flag} {country.name}
+                            </Badge>
+                          ) : null;
+                        })}
+                        {method.availableCountries.length > 5 && (
+                          <Badge variant="outline" className="text-xs px-1.5 py-0.5">
+                            +{method.availableCountries.length - 5} autres
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -410,19 +444,22 @@ const CreateShippingMethodModal = ({
   isOpen,
   onClose,
   onSave,
-  editingMethod = null
+  editingMethod = null,
+  availableCountries = []
 }: {
   isOpen: boolean;
   onClose: () => void;
   onSave: (method: any) => void;
   editingMethod?: any;
+  availableCountries?: string[];
 }) => {
   const [formData, setFormData] = useState({
     name: '',
     description: '',
     price: 0,
     estimatedDays: '',
-    icon: '📦'
+    icon: '📦',
+    availableCountries: [] as string[]
   });
 
   useEffect(() => {
@@ -432,7 +469,8 @@ const CreateShippingMethodModal = ({
         description: editingMethod.description || '',
         price: editingMethod.price || 0,
         estimatedDays: editingMethod.estimated_days || '',
-        icon: editingMethod.icon || '📦'
+        icon: editingMethod.icon || '📦',
+        availableCountries: editingMethod.availableCountries || availableCountries
       });
     } else {
       setFormData({
@@ -440,10 +478,11 @@ const CreateShippingMethodModal = ({
         description: '',
         price: 0,
         estimatedDays: '',
-        icon: '📦'
+        icon: '📦',
+        availableCountries: availableCountries
       });
     }
-  }, [editingMethod, isOpen]);
+  }, [editingMethod, isOpen, availableCountries]);
 
   const SHIPPING_ICONS = [
     { icon: '📦', label: 'Colis standard' },
@@ -478,9 +517,23 @@ const CreateShippingMethodModal = ({
       description: '',
       price: 0,
       estimatedDays: '',
-      icon: '📦'
+      icon: '📦',
+      availableCountries: []
     });
     onClose();
+  };
+
+  const handleCountryToggle = (countryCode: string) => {
+    setFormData(prev => ({
+      ...prev,
+      availableCountries: prev.availableCountries.includes(countryCode)
+        ? prev.availableCountries.filter(code => code !== countryCode)
+        : [...prev.availableCountries, countryCode]
+    }));
+  };
+
+  const getCountryByCode = (code: string) => {
+    return AFRICAN_FRANCOPHONE_COUNTRIES.find(country => country.code === code);
   };
 
   return (
@@ -563,13 +616,60 @@ const CreateShippingMethodModal = ({
             </div>
           </div>
 
+          {/* Sélection des pays disponibles */}
+          {availableCountries.length > 0 && (
+            <div className="space-y-4">
+              <div>
+                <Label className="text-base font-medium">Pays de livraison disponibles</Label>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                  Sélectionnez les pays où cette méthode de livraison sera disponible
+                </p>
+              </div>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-3 max-h-48 overflow-y-auto border rounded-lg p-4">
+                {availableCountries.map((countryCode) => {
+                  const country = getCountryByCode(countryCode);
+                  if (!country) return null;
+
+                  return (
+                    <div key={countryCode} className="flex items-center space-x-2">
+                      <Checkbox
+                        id={`country-${countryCode}`}
+                        checked={formData.availableCountries.includes(countryCode)}
+                        onCheckedChange={() => handleCountryToggle(countryCode)}
+                      />
+                      <label
+                        htmlFor={`country-${countryCode}`}
+                        className="flex items-center gap-2 cursor-pointer text-sm"
+                      >
+                        <span>{country.flag}</span>
+                        <span>{country.name}</span>
+                      </label>
+                    </div>
+                  );
+                })}
+              </div>
+              {formData.availableCountries.length > 0 && (
+                <div className="flex flex-wrap gap-1">
+                  {formData.availableCountries.map(code => {
+                    const country = getCountryByCode(code);
+                    return country ? (
+                      <Badge key={code} variant="secondary" className="text-xs">
+                        {country.flag} {country.name}
+                      </Badge>
+                    ) : null;
+                  })}
+                </div>
+              )}
+            </div>
+          )}
+
           <div className="flex justify-end gap-3">
             <Button type="button" variant="outline" onClick={handleClose}>
               Annuler
             </Button>
             <Button
               type="submit"
-              disabled={!formData.name || !formData.estimatedDays}
+              disabled={!formData.name || !formData.estimatedDays || (availableCountries.length > 0 && formData.availableCountries.length === 0)}
               className="flex items-center gap-2"
             >
               <Save className="h-4 w-4" />
@@ -595,6 +695,7 @@ const MarketsShipping = () => {
     updateShippingMethod,
     deleteShippingMethod,
     toggleShippingMethod,
+    initializeDefaultSettings,
   } = useMarketsShipping(store?.id);
 
   const [activeTab, setActiveTab] = useState('markets');
@@ -647,7 +748,10 @@ const MarketsShipping = () => {
               Gérez vos marchés de vente et vos méthodes de livraison
             </p>
           </div>
-          <Button className="flex items-center gap-2">
+          <Button
+            onClick={() => store?.id && initializeDefaultSettings(store.id)}
+            className="flex items-center gap-2"
+          >
             <Settings className="h-4 w-4" />
             Initialiser les paramètres
           </Button>
@@ -792,6 +896,7 @@ const MarketsShipping = () => {
           onClose={handleCloseModal}
           onSave={editingMethod ? handleUpdateMethod : handleCreateMethod}
           editingMethod={editingMethod}
+          availableCountries={marketSettings?.enabled_countries || []}
         />
       </div>
     </DashboardLayout>

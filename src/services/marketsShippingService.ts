@@ -86,6 +86,7 @@ class MarketsShippingService {
           estimated_days: methodData.estimatedDays,
           icon: methodData.icon,
           conditions: methodData.conditions || null,
+          available_countries: methodData.availableCountries || [],
           is_active: true
         })
         .select()
