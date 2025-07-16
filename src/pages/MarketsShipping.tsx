@@ -35,7 +35,7 @@ import {
 import { useStores } from '@/hooks/useStores';
 import { useMarketsShipping } from '@/hooks/useMarketsShipping';
 import { AFRICAN_FRANCOPHONE_COUNTRIES } from '@/constants/africanCountries';
-import { checkDatabaseStatus, createTestData, createRLSPolicies } from '@/utils/createTablesManually';
+import { checkDatabaseStatus, createTestData } from '@/utils/createTablesManually';
 
 // Composant pour la configuration des marchés
 const MarketConfiguration = ({
@@ -776,42 +776,15 @@ const MarketsShipping = () => {
             </p>
           </div>
           <div className="flex gap-2">
-            <Button
-              onClick={handleSetupDatabase}
-              disabled={isSettingUpDB}
-              variant="outline"
-              className="flex items-center gap-2"
-            >
-              {isSettingUpDB ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
+            {!marketSettings && (
+              <Button
+                onClick={() => store?.id && initializeDefaultSettings(store.id)}
+                className="flex items-center gap-2"
+              >
                 <Settings className="h-4 w-4" />
-              )}
-              {isSettingUpDB ? 'Configuration...' : 'Configurer la DB'}
-            </Button>
-            <Button
-              onClick={() => store?.id && initializeDefaultSettings(store.id)}
-              className="flex items-center gap-2"
-            >
-              <Settings className="h-4 w-4" />
-              Initialiser les paramètres
-            </Button>
-
-            <Button
-              onClick={async () => {
-                try {
-                  await createRLSPolicies();
-                  console.log('✅ RLS désactivé');
-                } catch (error) {
-                  console.error('❌ Erreur RLS:', error);
-                }
-              }}
-              variant="outline"
-              className="flex items-center gap-2"
-            >
-              <Settings className="h-4 w-4" />
-              Désactiver RLS
-            </Button>
+                Initialiser les paramètres
+              </Button>
+            )}
           </div>
         </div>
 
