@@ -263,12 +263,12 @@ const Shipping = () => {
                                 <h4 className="font-semibold">{method.name}</h4>
                                 <div className="flex items-center gap-4 text-sm text-gray-600">
                                   <span className="flex items-center gap-1">
-                                    <DollarSign className="h-4 w-4" />
-                                    {method.price}€
+                                    <span className="text-green-600 font-bold text-sm">CFA</span>
+                                    {method.price}
                                   </span>
                                   <span className="flex items-center gap-1">
                                     <Clock className="h-4 w-4" />
-                                    {method.delivery_time}
+                                    {method.estimated_days}
                                   </span>
                                 </div>
                               </div>

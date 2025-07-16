@@ -58,19 +58,27 @@ const CreateMethodDialog = ({ open, onOpenChange, storeId, onMethodCreated }: Cr
 
     setIsLoading(true);
     try {
+      const priceValue = parseFloat(price);
+      if (isNaN(priceValue) || priceValue < 0) {
+        throw new Error('Prix invalide');
+      }
+
       const { error } = await supabase
         .from('shipping_methods')
         .insert({
           name: name.trim(),
-          description: description.trim(),
-          price: parseFloat(price),
-          delivery_time: deliveryTime,
-          zone_id: zoneId,
+          description: description.trim() || null,
+          price: priceValue,
+          estimated_days: deliveryTime.trim(),
+          shipping_zone_id: zoneId,
           store_id: storeId,
           is_active: true
         });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Erreur Supabase:', error);
+        throw error;
+      }
 
       toast({
         title: "Succès",
@@ -86,11 +94,11 @@ const CreateMethodDialog = ({ open, onOpenChange, storeId, onMethodCreated }: Cr
       
       onMethodCreated();
       onOpenChange(false);
-    } catch (error) {
-      console.error('Erreur:', error);
+    } catch (error: any) {
+      console.error('Erreur complète:', error);
       toast({
         title: "Erreur",
-        description: "Impossible de créer la méthode",
+        description: error.message || "Impossible de créer la méthode",
         variant: "destructive"
       });
     } finally {
@@ -130,7 +138,7 @@ const CreateMethodDialog = ({ open, onOpenChange, storeId, onMethodCreated }: Cr
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="price">Prix (€) *</Label>
+              <Label htmlFor="price">Prix (CFA) *</Label>
               <Input
                 id="price"
                 type="number"
