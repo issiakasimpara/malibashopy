@@ -203,7 +203,7 @@ const ShippingMethods = ({
         <Card
           key={method.id}
           className={`transition-all duration-200 ${
-            method.isActive
+            method.is_active
               ? 'border-green-200 dark:border-green-800 bg-green-50/30 dark:bg-green-950/10'
               : 'border-gray-200 dark:border-gray-700 bg-gray-50/30 dark:bg-gray-800/30'
           }`}
@@ -221,10 +221,10 @@ const ShippingMethods = ({
                       {method.name}
                     </h3>
                     <Badge
-                      variant={method.isActive ? "default" : "secondary"}
-                      className={method.isActive ? "bg-green-500" : ""}
+                      variant={method.is_active ? "default" : "secondary"}
+                      className={method.is_active ? "bg-green-500" : ""}
                     >
-                      {method.isActive ? 'Actif' : 'Inactif'}
+                      {method.is_active ? 'Actif' : 'Inactif'}
                     </Badge>
                   </div>
 
@@ -239,7 +239,7 @@ const ShippingMethods = ({
                       </span>
                     </div>
                     <div className="flex items-center gap-1">
-                      <span>{method.estimatedDays}</span>
+                      <span>{method.estimated_days}</span>
                     </div>
                   </div>
                 </div>
@@ -251,9 +251,9 @@ const ShippingMethods = ({
                   variant="outline"
                   size="sm"
                   onClick={() => toggleMethodStatus(method.id)}
-                  className={method.isActive ? "text-red-600 hover:text-red-700" : "text-green-600 hover:text-green-700"}
+                  className={method.is_active ? "text-red-600 hover:text-red-700" : "text-green-600 hover:text-green-700"}
                 >
-                  {method.isActive ? 'Désactiver' : 'Activer'}
+                  {method.is_active ? 'Désactiver' : 'Activer'}
                 </Button>
               </div>
             </div>
