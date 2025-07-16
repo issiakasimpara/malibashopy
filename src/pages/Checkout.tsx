@@ -60,6 +60,17 @@ const Checkout = () => {
       console.log('✅ Première méthode sélectionnée automatiquement:', shippingMethods[0].name);
     }
   }, [shippingMethods, selectedShippingMethod]);
+
+  // DEBUG: Afficher les informations de debug
+  useEffect(() => {
+    console.log('🔍 DEBUG CHECKOUT:');
+    console.log('- Store Slug:', storeSlug);
+    console.log('- Current Store ID:', currentStoreId);
+    console.log('- Detected Country:', detectedCountry, detectedCountryCode);
+    console.log('- Shipping Methods:', shippingMethods);
+    console.log('- Is Loading Shipping:', isLoadingShipping);
+    console.log('- Selected Method:', selectedShippingMethod);
+  }, [storeSlug, currentStoreId, detectedCountry, detectedCountryCode, shippingMethods, isLoadingShipping, selectedShippingMethod]);
   const [isProcessing, setIsProcessing] = useState(false);
 
   const handleCustomerInfoChange = (field: string, value: string) => {
