@@ -14,6 +14,8 @@ export async function diagnosticDatabase() {
 
     if (countriesError) {
       console.error('❌ Erreur african_countries:', countriesError);
+      console.error('Détails:', countriesError.message);
+      console.error('Code:', countriesError.code);
     } else {
       console.log('✅ Table african_countries OK:', countries?.length, 'pays trouvés');
       console.log('Exemple:', countries?.[0]);
@@ -28,6 +30,8 @@ export async function diagnosticDatabase() {
 
     if (marketError) {
       console.error('❌ Erreur market_settings:', marketError);
+      console.error('Détails:', marketError.message);
+      console.error('Code:', marketError.code);
     } else {
       console.log('✅ Table market_settings OK:', marketSettings?.length, 'entrées trouvées');
     }
