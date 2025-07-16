@@ -1,4 +1,5 @@
 
+import React, { memo, useMemo } from 'react';
 import { TemplateBlock } from '@/types/template';
 import { useProducts } from '@/hooks/useProducts';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
@@ -6,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Eye, ShoppingCart, Heart } from 'lucide-react';
 import AddToCartButton from './AddToCartButton';
+import OptimizedImage from '@/components/ui/optimized-image';
 import type { Tables } from '@/integrations/supabase/types';
 
 type Store = Tables<'stores'>;

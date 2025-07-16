@@ -23,16 +23,26 @@ interface ProductDetailBlockProps {
   onProductClick?: (productId: string) => void;
 }
 
-const ProductDetailBlock = ({ 
-  block, 
-  isEditing, 
-  viewMode = 'desktop', 
+const ProductDetailBlock = ({
+  block,
+  isEditing,
+  viewMode = 'desktop',
   selectedStore,
   productId,
   onProductClick
 }: ProductDetailBlockProps) => {
+  // TOUS LES HOOKS EN PREMIER - ORDRE FIXE ET STABLE
   const { products, isLoading } = useProducts(selectedStore?.id);
   const [currentImages, setCurrentImages] = useState<string[]>([]);
+
+  // Calculer le productId stable AVANT d'appeler useProductVariants
+  const firstProductId = products && products.length > 0 ? products[0].id : '';
+  const stableProductId = productId || firstProductId;
+
+  // TOUJOURS appeler useProductVariants avec une valeur stable
+  const { variants } = useProductVariants(stableProductId);
+
+  try {
   
   console.log('ProductDetailBlock - Debug info:');
   console.log('- Received productId:', productId);
@@ -66,14 +76,12 @@ const ProductDetailBlock = ({
     images: selectedProduct?.images?.length || 0
   });
 
-  // Si aucun produit n'est disponible
+  // Les variantes sont déjà chargées en haut du composant
+
   if (!selectedProduct) {
     console.log('ProductDetailBlock - No product found');
     return <ProductDetailEmptyState productId={productId} />;
   }
-
-  // Charger les variantes du produit sélectionné
-  const { variants } = useProductVariants(selectedProduct.id);
   
   // Gérer la sélection des variantes
   const {
@@ -146,6 +154,19 @@ const ProductDetailBlock = ({
       </section>
     </div>
   );
+  } catch (error) {
+    console.error('ProductDetailBlock - Erreur critique:', error);
+    return (
+      <div className="p-8 text-center">
+        <h3 className="text-lg font-semibold text-gray-900 mb-2">
+          Erreur de chargement du produit
+        </h3>
+        <p className="text-gray-600">
+          Une erreur est survenue lors du chargement des détails du produit.
+        </p>
+      </div>
+    );
+  }
 };
 
 export default ProductDetailBlock;

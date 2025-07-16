@@ -1,13 +1,33 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, memo, useMemo, Suspense } from 'react';
 import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Store, ShoppingBag, ArrowLeft, Home } from 'lucide-react';
+import { Store, ShoppingBag, ArrowLeft, Home, Loader2 } from 'lucide-react';
 import { useCart } from '@/contexts/CartContext';
 import BlockRenderer from '@/components/site-builder/BlockRenderer';
 import CartWidget from '@/components/site-builder/blocks/CartWidget';
 import { Template } from '@/types/template';
 import { supabase } from '@/integrations/supabase/client';
+import { useOptimizedQuery } from '@/hooks/useOptimizedQuery';
 import type { Tables } from '@/integrations/supabase/types';
+
+// Composant de chargement sophistiqué
+const StorefrontLoader = memo(() => (
+  <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-purple-50">
+    <div className="text-center animate-fade-in-up">
+      <div className="relative mb-6">
+        <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full blur-lg opacity-30 animate-pulse"></div>
+        <div className="relative p-4 bg-white rounded-full shadow-lg">
+          <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+        </div>
+      </div>
+      <h2 className="text-2xl font-bold text-gray-900 mb-2">Chargement de votre boutique</h2>
+      <p className="text-gray-600">Préparation de l'expérience shopping...</p>
+      <div className="mt-4 w-48 h-1 bg-gray-200 rounded-full mx-auto overflow-hidden">
+        <div className="h-full bg-gradient-to-r from-blue-600 to-purple-600 rounded-full animate-shimmer"></div>
+      </div>
+    </div>
+  </div>
+));
 
 type StoreType = Tables<'stores'>;
 type ProductType = Tables<'products'>;
@@ -46,8 +66,8 @@ const Storefront = () => {
       // Simuler un hostname basé sur le slug pour utiliser la même logique
       const hostname = `${storeSlug}.localhost`;
 
-      const { data, error: routerError } = await supabase.functions.invoke('domain-router', {
-        body: { hostname },
+      const { data, error: routerError } = await supabase.functions.invoke(`domain-router?hostname=${encodeURIComponent(hostname)}`, {
+        method: 'GET',
       });
 
       if (routerError) {
@@ -305,14 +325,7 @@ const Storefront = () => {
   };
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Chargement de la boutique...</p>
-        </div>
-      </div>
-    );
+    return <StorefrontLoader />;
   }
 
   if (error || !store || !template) {
@@ -334,24 +347,31 @@ const Storefront = () => {
   const currentPageBlocks = getPageBlocks(currentPage);
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
       {renderNavigation()}
       {renderBreadcrumb()}
 
-      {/* Contenu principal */}
-      <div className="min-h-screen">
-        {currentPageBlocks.map((block) => (
-          <BlockRenderer
-            key={`${block.id}-${block.order}`}
-            block={block}
-            isEditing={false}
-            viewMode="desktop"
-            selectedStore={store}
-            productId={selectedProductId}
-            onProductClick={handleProductClick}
-          />
-        ))}
-      </div>
+      {/* Contenu principal avec animations */}
+      <Suspense fallback={<StorefrontLoader />}>
+        <div className="min-h-screen animate-fade-in-up">
+          {currentPageBlocks.map((block, index) => (
+            <div
+              key={`${block.id}-${block.order}`}
+              className="animate-scale-in"
+              style={{ animationDelay: `${index * 100}ms` }}
+            >
+              <BlockRenderer
+                block={block}
+                isEditing={false}
+                viewMode="desktop"
+                selectedStore={store}
+                productId={selectedProductId}
+                onProductClick={handleProductClick}
+              />
+            </div>
+          ))}
+        </div>
+      </Suspense>
 
       <CartWidget />
     </div>

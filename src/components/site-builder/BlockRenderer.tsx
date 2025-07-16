@@ -1,24 +1,32 @@
 
+import React, { Suspense, memo } from 'react';
 import { TemplateBlock } from '@/types/template';
-import HeroBlock from './blocks/HeroBlock';
-import ProductsBlock from './blocks/ProductsBlock';
-import ProductDetailBlock from './blocks/ProductDetailBlock';
-import TextImageBlock from './blocks/TextImageBlock';
-import TextVideoBlock from './blocks/TextVideoBlock';
-import ContactBlock from './blocks/ContactBlock';
-import GalleryBlock from './blocks/GalleryBlock';
-import VideoBlock from './blocks/VideoBlock';
-import FooterBlock from './blocks/FooterBlock';
-import FeaturesBlock from './blocks/FeaturesBlock';
-import TestimonialsBlock from './blocks/TestimonialsBlock';
-import FAQBlock from './blocks/FAQBlock';
-import BeforeAfterBlock from './blocks/BeforeAfterBlock';
-import ComparisonBlock from './blocks/ComparisonBlock';
-import CartBlock from './blocks/CartBlock';
-import CheckoutBlock from './blocks/CheckoutBlock';
-import GuaranteesBlock from './blocks/GuaranteesBlock';
-import DefaultBlock from './blocks/DefaultBlock';
 import type { Tables } from '@/integrations/supabase/types';
+
+// LAZY LOADING pour des performances ultra-rapides ⚡
+const HeroBlock = React.lazy(() => import('./blocks/HeroBlock'));
+const ProductsBlock = React.lazy(() => import('./blocks/ProductsBlock'));
+const ProductDetailBlock = React.lazy(() => import('./blocks/ProductDetailBlock'));
+const TextImageBlock = React.lazy(() => import('./blocks/TextImageBlock'));
+const TextVideoBlock = React.lazy(() => import('./blocks/TextVideoBlock'));
+const ContactBlock = React.lazy(() => import('./blocks/ContactBlock'));
+const GalleryBlock = React.lazy(() => import('./blocks/GalleryBlock'));
+const VideoBlock = React.lazy(() => import('./blocks/VideoBlock'));
+const FooterBlock = React.lazy(() => import('./blocks/FooterBlock'));
+const FeaturesBlock = React.lazy(() => import('./blocks/FeaturesBlock'));
+const TestimonialsBlock = React.lazy(() => import('./blocks/TestimonialsBlock'));
+const FAQBlock = React.lazy(() => import('./blocks/FAQBlock'));
+const BeforeAfterBlock = React.lazy(() => import('./blocks/BeforeAfterBlock'));
+const ComparisonBlock = React.lazy(() => import('./blocks/ComparisonBlock'));
+const CartBlock = React.lazy(() => import('./blocks/CartBlock'));
+const CheckoutBlock = React.lazy(() => import('./blocks/CheckoutBlock'));
+const GuaranteesBlock = React.lazy(() => import('./blocks/GuaranteesBlock'));
+const DefaultBlock = React.lazy(() => import('./blocks/DefaultBlock'));
+
+// Composant de chargement sophistiqué
+const BlockLoadingFallback = memo(() => (
+  <div className="animate-pulse bg-gradient-to-r from-gray-200 via-gray-300 to-gray-200 bg-[length:200%_100%] animate-shimmer rounded-lg h-32 w-full" />
+));
 
 type Store = Tables<'stores'>;
 
@@ -33,7 +41,7 @@ interface BlockRendererProps {
   onNavigate?: (page: string) => void;
 }
 
-const BlockRenderer = ({
+const BlockRenderer = memo(({
   block,
   isEditing = false,
   viewMode = 'desktop',
@@ -44,7 +52,7 @@ const BlockRenderer = ({
   onNavigate
 }: BlockRendererProps) => {
   console.log('BlockRenderer - Rendering block:', block.type, 'with productId:', productId);
-  
+
   const blockProps = {
     block,
     isEditing,
@@ -55,6 +63,8 @@ const BlockRenderer = ({
     onProductClick,
     onNavigate
   };
+
+  const renderBlock = () => {
 
   switch (block.type) {
     case 'hero':
@@ -94,7 +104,16 @@ const BlockRenderer = ({
       return <GuaranteesBlock {...blockProps} />;
     default:
       return <DefaultBlock {...blockProps} />;
-  }
-};
+    }
+  };
+
+  return (
+    <Suspense fallback={<BlockLoadingFallback />}>
+      {renderBlock()}
+    </Suspense>
+  );
+});
+
+BlockRenderer.displayName = 'BlockRenderer';
 
 export default BlockRenderer;

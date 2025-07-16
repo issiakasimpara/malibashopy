@@ -30,13 +30,22 @@ export const useCartSessions = () => {
   const [sessionId, setSessionId] = useState<string>('');
   const { toast } = useToast();
 
-  useEffect(() => {
-    // Générer ou récupérer l'ID de session
+  // Fonction pour générer ou récupérer l'ID de session de manière synchrone
+  const getOrCreateSessionId = (): string => {
     let currentSessionId = localStorage.getItem('cart_session_id');
     if (!currentSessionId) {
       currentSessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
       localStorage.setItem('cart_session_id', currentSessionId);
+      console.log('🆔 Nouvelle session créée:', currentSessionId);
+    } else {
+      console.log('🆔 Session existante récupérée:', currentSessionId);
     }
+    return currentSessionId;
+  };
+
+  useEffect(() => {
+    // Initialiser la session au démarrage
+    const currentSessionId = getOrCreateSessionId();
     setSessionId(currentSessionId);
   }, []);
 
@@ -56,8 +65,11 @@ export const useCartSessions = () => {
 
   // Récupérer la session de panier
   const getCartSession = async (storeId?: string): Promise<CartSession | null> => {
-    if (!sessionId) {
-      console.warn('getCartSession: sessionId manquant');
+    // Assurer qu'on a un sessionId, même si l'état n'est pas encore mis à jour
+    const currentSessionId = sessionId || getOrCreateSessionId();
+
+    if (!currentSessionId) {
+      console.warn('getCartSession: Impossible de créer sessionId');
       return null;
     }
     
@@ -68,17 +80,22 @@ export const useCartSessions = () => {
     
     try {
       setIsLoading(true);
-      console.log('getCartSession: Recherche session', { sessionId, storeId });
-      
+      console.log('getCartSession: Recherche session', { sessionId: currentSessionId, storeId });
+
       const { data, error } = await supabase
         .from('cart_sessions')
         .select('*')
-        .eq('session_id', sessionId)
+        .eq('session_id', currentSessionId)
         .eq('store_id', storeId)
         .maybeSingle();
-      
+
       if (error && error.code !== 'PGRST116') {
         console.error('getCartSession: Erreur Supabase:', error);
+        // Si c'est une erreur de table manquante, on retourne null au lieu de planter
+        if (error.code === '42P01') {
+          console.warn('⚠️ Table cart_sessions non trouvée, retour null');
+          return null;
+        }
         throw error;
       }
       
@@ -106,7 +123,8 @@ export const useCartSessions = () => {
     items: CartItem[],
     customerInfo?: any
   ): Promise<CartSession | null> => {
-    if (!sessionId) return null;
+    const currentSessionId = sessionId || getOrCreateSessionId();
+    if (!currentSessionId) return null;
     
     try {
       setIsLoading(true);
@@ -115,7 +133,7 @@ export const useCartSessions = () => {
       const existingSession = await getCartSession(storeId);
       
       const sessionData = {
-        session_id: sessionId,
+        session_id: currentSessionId,
         store_id: storeId,
         items: items as any,
         customer_info: customerInfo || null
@@ -167,8 +185,9 @@ export const useCartSessions = () => {
     storeId: string,
     item: CartItem
   ): Promise<boolean> => {
-    console.log('addToCart: Début', { storeId, item, sessionId });
-    
+    const currentSessionId = sessionId || getOrCreateSessionId();
+    console.log('addToCart: Début', { storeId, item, sessionId: currentSessionId });
+
     if (!storeId) {
       console.error('addToCart: storeId manquant');
       toast({
@@ -178,9 +197,9 @@ export const useCartSessions = () => {
       });
       return false;
     }
-    
-    if (!sessionId) {
-      console.error('addToCart: sessionId manquant');
+
+    if (!currentSessionId) {
+      console.error('addToCart: Impossible de créer sessionId');
       toast({
         title: "Erreur",
         description: "Session non initialisée.",

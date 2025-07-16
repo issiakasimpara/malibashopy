@@ -14,25 +14,7 @@ import { useNavigate, useLocation, useParams } from 'react-router-dom';
 import { useOrders } from '@/hooks/useOrders';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-
-const AFRICAN_FRANCOPHONE_COUNTRIES = [
-  { code: 'BF', name: 'Burkina Faso', flag: '🇧🇫' },
-  { code: 'ML', name: 'Mali', flag: '🇲🇱' },
-  { code: 'NE', name: 'Niger', flag: '🇳🇪' },
-  { code: 'SN', name: 'Sénégal', flag: '🇸🇳' },
-  { code: 'CI', name: 'Côte d\'Ivoire', flag: '🇨🇮' },
-  { code: 'GN', name: 'Guinée', flag: '🇬🇳' },
-  { code: 'BJ', name: 'Bénin', flag: '🇧🇯' },
-  { code: 'TG', name: 'Togo', flag: '🇹🇬' },
-  { code: 'CM', name: 'Cameroun', flag: '🇨🇲' },
-  { code: 'TD', name: 'Tchad', flag: '🇹🇩' },
-  { code: 'CF', name: 'République centrafricaine', flag: '🇨🇫' },
-  { code: 'GA', name: 'Gabon', flag: '🇬🇦' },
-  { code: 'CG', name: 'République du Congo', flag: '🇨🇬' },
-  { code: 'CD', name: 'République démocratique du Congo', flag: '🇨🇩' },
-  { code: 'MG', name: 'Madagascar', flag: '🇲🇬' },
-  { code: 'KM', name: 'Comores', flag: '🇰🇲' }
-];
+import { detectUserCountry, SUPPORTED_COUNTRIES, type CountryCode } from '@/utils/countryDetection';
 
 const Checkout = () => {
   const { items, updateQuantity, removeItem, getTotalPrice, clearCart } = useCart();
@@ -58,6 +40,8 @@ const Checkout = () => {
   const [shippingMethods, setShippingMethods] = useState<any[]>([]);
   const [selectedShippingMethod, setSelectedShippingMethod] = useState<any>(null);
   const [shippingCost, setShippingCost] = useState(0);
+  const [detectedCountry, setDetectedCountry] = useState<string>('');
+  const [isLoadingLocation, setIsLoadingLocation] = useState(true);
   const [paymentMethod, setPaymentMethod] = useState('card');
   const [isProcessing, setIsProcessing] = useState(false);
 
@@ -68,51 +52,131 @@ const Checkout = () => {
     }));
   };
 
+  // Détecter automatiquement le pays de l'utilisateur
+  const detectUserCountryForCheckout = async () => {
+    setIsLoadingLocation(true);
+    try {
+      const countryCode = await detectUserCountry();
+      const countryName = SUPPORTED_COUNTRIES[countryCode]?.name || 'Mali';
+
+      console.log('🌍 Pays détecté:', countryName, `(${countryCode})`);
+
+      setDetectedCountry(countryName);
+
+      // Mettre à jour automatiquement les informations client
+      setCustomerInfo(prev => ({
+        ...prev,
+        country: countryName
+      }));
+
+      return countryCode;
+    } catch (error) {
+      console.error('❌ Erreur détection pays:', error);
+      // Fallback vers Mali si la détection échoue
+      setDetectedCountry('Mali');
+      setCustomerInfo(prev => ({
+        ...prev,
+        country: 'Mali'
+      }));
+      return 'ML' as CountryCode;
+    } finally {
+      setIsLoadingLocation(false);
+    }
+  };
+
   // Charger les méthodes de livraison au chargement de la page
   useEffect(() => {
     const initializeShipping = async () => {
       try {
+        // 1. Détecter le pays de l'utilisateur
+        const userCountryCode = await detectUserCountryForCheckout();
+
+        // 2. Récupérer les infos de la boutique
         const storeInfo = await getStoreInfo();
-        if (storeInfo) {
-          await loadShippingMethods(storeInfo.id);
+        if (storeInfo && userCountryCode) {
+          // 3. Charger les méthodes de livraison pour ce pays
+          await loadShippingMethods(storeInfo.id, userCountryCode);
         }
       } catch (error) {
-        console.error('Erreur lors de l\'initialisation des méthodes de livraison:', error);
+        console.error('Erreur lors de l\'initialisation:', error);
       }
     };
 
     initializeShipping();
   }, [storeSlug]);
 
-  // Charger les méthodes de livraison
-  const loadShippingMethods = async (storeId: string) => {
+  // Charger les méthodes de livraison pour un pays spécifique
+  const loadShippingMethods = async (storeId: string, userCountryCode: CountryCode) => {
     try {
-      const { data, error } = await supabase
+      console.log('🔍 Test requêtes simples...');
+
+      // 1. Test zones
+      const { data: zones, error: zonesError } = await supabase
+        .from('shipping_zones')
+        .select('*')
+        .eq('store_id', storeId);
+
+      if (zonesError) {
+        console.error('❌ Erreur zones:', zonesError);
+        setShippingMethods([]);
+        return;
+      }
+      console.log('🌍 ZONES:', zones);
+
+      // 2. Test méthodes sans JOIN
+      const { data: methods, error: methodsError } = await supabase
         .from('shipping_methods')
-        .select(`
-          *,
-          shipping_zones (
-            id,
-            name,
-            countries
-          )
-        `)
+        .select('*')
         .eq('store_id', storeId)
-        .eq('is_active', true)
-        .order('sort_order', { ascending: true });
+        .eq('is_active', true);
 
-      if (error) throw error;
+      if (methodsError) {
+        console.error('❌ Erreur méthodes:', methodsError);
+        setShippingMethods([]);
+        return;
+      }
+      console.log('📦 MÉTHODES:', methods);
 
-      console.log('📦 Méthodes de livraison chargées:', data);
-      setShippingMethods(data || []);
+      // 3. Filtrer les méthodes par pays de l'utilisateur
+      console.log('🎯 Filtrage intelligent pour le pays:', userCountryCode);
+
+      let availableMethods: any[] = [];
+
+      if (methods && methods.length > 0) {
+        for (const method of methods) {
+          // Si la méthode n'a pas de zone (globale), elle est disponible partout
+          if (!method.shipping_zone_id) {
+            console.log(`🌍 ${method.name} - Méthode GLOBALE (disponible partout)`);
+            availableMethods.push(method);
+            continue;
+          }
+
+          // Sinon, vérifier si le pays de l'utilisateur est dans la zone
+          const zone = zones?.find(z => z.id === method.shipping_zone_id);
+          if (zone && zone.countries && zone.countries.includes(userCountryCode)) {
+            console.log(`✅ ${method.name} - Disponible pour ${userCountryCode} (Zone: ${zone.name})`);
+            availableMethods.push(method);
+          } else {
+            console.log(`❌ ${method.name} - NON disponible pour ${userCountryCode}`);
+          }
+        }
+      }
+
+      console.log('\n🎯 RÉSULTAT FINAL:', availableMethods.length, 'méthodes disponibles pour', userCountryCode);
+
+      setShippingMethods(availableMethods);
 
       // Sélectionner automatiquement la première méthode si disponible
-      if (data && data.length > 0) {
-        setSelectedShippingMethod(data[0]);
-        setShippingCost(data[0].price || 0);
+      if (availableMethods.length > 0) {
+        setSelectedShippingMethod(availableMethods[0]);
+        setShippingCost(availableMethods[0].price || 0);
+      } else {
+        setSelectedShippingMethod(null);
+        setShippingCost(0);
       }
     } catch (error) {
-      console.error('Erreur lors du chargement des méthodes de livraison:', error);
+      console.error('❌ Erreur chargement méthodes:', error);
+      setShippingMethods([]);
     }
   };
 
@@ -123,7 +187,7 @@ const Checkout = () => {
 
   const handleCheckout = async () => {
     // Validation des champs requis
-    if (!customerInfo.email || !customerInfo.firstName || !customerInfo.lastName || !customerInfo.address || !customerInfo.country) {
+    if (!customerInfo.email || !customerInfo.firstName || !customerInfo.lastName || !customerInfo.address) {
       toast({
         title: "Informations manquantes",
         description: "Veuillez remplir tous les champs obligatoires.",
@@ -173,8 +237,8 @@ const Checkout = () => {
       }
 
       // Charger les méthodes de livraison si pas encore fait
-      if (shippingMethods.length === 0) {
-        await loadShippingMethods(storeInfo.id);
+      if (shippingMethods.length === 0 && detectedCountry) {
+        await loadShippingMethods(storeInfo.id, detectedCountry);
       }
 
       // Préparer les données de commande
@@ -383,22 +447,21 @@ const Checkout = () => {
               </div>
 
               <div>
-                <Label htmlFor="country">Pays *</Label>
-                <Select value={customerInfo.country} onValueChange={(value) => handleCustomerInfoChange('country', value)}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Sélectionnez votre pays" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {AFRICAN_FRANCOPHONE_COUNTRIES.map((country) => (
-                      <SelectItem key={country.code} value={country.code}>
-                        <div className="flex items-center gap-2">
-                          <span>{country.flag}</span>
-                          <span>{country.name}</span>
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <Label htmlFor="country">Pays de livraison</Label>
+                <div className="p-3 border rounded-md bg-gray-50 flex items-center gap-2">
+                  {isLoadingLocation ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      <span className="text-gray-600">Détection de votre localisation...</span>
+                    </>
+                  ) : (
+                    <>
+                      <span className="text-green-600">📍</span>
+                      <span className="font-medium">{detectedCountry}</span>
+                      <span className="text-sm text-gray-500">(détecté automatiquement)</span>
+                    </>
+                  )}
+                </div>
               </div>
 
 
@@ -406,7 +469,7 @@ const Checkout = () => {
           </Card>
 
           {/* Méthodes de livraison */}
-          {shippingMethods.length > 0 && (
+          {!isLoadingLocation && (
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -415,49 +478,59 @@ const Checkout = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
-                {shippingMethods.map((method) => (
-                  <div
-                    key={method.id}
-                    className={`p-4 border rounded-lg cursor-pointer transition-colors ${
-                      selectedShippingMethod?.id === method.id
-                        ? 'border-blue-500 bg-blue-50'
-                        : 'border-gray-200 hover:border-gray-300'
-                    }`}
-                    onClick={() => {
-                      setSelectedShippingMethod(method);
-                      setShippingCost(method.price || 0);
-                    }}
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="w-4 h-4 rounded-full border-2 border-gray-300 flex items-center justify-center">
-                          {selectedShippingMethod?.id === method.id && (
-                            <div className="w-2 h-2 rounded-full bg-blue-500"></div>
-                          )}
+                {shippingMethods.length > 0 ? (
+                  shippingMethods.map((method) => (
+                    <div
+                      key={method.id}
+                      className={`p-4 border rounded-lg cursor-pointer transition-colors ${
+                        selectedShippingMethod?.id === method.id
+                          ? 'border-blue-500 bg-blue-50'
+                          : 'border-gray-200 hover:border-gray-300'
+                      }`}
+                      onClick={() => {
+                        setSelectedShippingMethod(method);
+                        setShippingCost(method.price || 0);
+                      }}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="w-4 h-4 rounded-full border-2 border-gray-300 flex items-center justify-center">
+                            {selectedShippingMethod?.id === method.id && (
+                              <div className="w-2 h-2 rounded-full bg-blue-500"></div>
+                            )}
+                          </div>
+                          <div>
+                            <h4 className="font-medium">{method.name}</h4>
+                            {method.description && (
+                              <p className="text-sm text-gray-600">{method.description}</p>
+                            )}
+                            <div className="flex items-center gap-2 text-sm text-gray-500 mt-1">
+                              <Clock className="h-4 w-4" />
+                              <span>{method.estimated_days}</span>
+                            </div>
+                          </div>
                         </div>
-                        <div>
-                          <h4 className="font-medium">{method.name}</h4>
-                          {method.description && (
-                            <p className="text-sm text-gray-600">{method.description}</p>
-                          )}
-                          <div className="flex items-center gap-2 text-sm text-gray-500 mt-1">
-                            <Clock className="h-4 w-4" />
-                            <span>{method.estimated_days}</span>
+                        <div className="text-right">
+                          <div className="font-semibold">
+                            {method.price === 0 ? (
+                              <span className="text-green-600">Gratuit</span>
+                            ) : (
+                              <span>{method.price} CFA</span>
+                            )}
                           </div>
                         </div>
                       </div>
-                      <div className="text-right">
-                        <div className="font-semibold">
-                          {method.price === 0 ? (
-                            <span className="text-green-600">Gratuit</span>
-                          ) : (
-                            <span>{method.price} CFA</span>
-                          )}
-                        </div>
-                      </div>
                     </div>
+                  ))
+                ) : (
+                  <div className="text-center py-6">
+                    <Truck className="h-12 w-12 text-gray-400 mx-auto mb-3" />
+                    <h3 className="font-medium text-gray-900 mb-1">Aucune livraison disponible</h3>
+                    <p className="text-sm text-gray-600">
+                      Désolé, nous ne livrons pas encore dans votre pays ({detectedCountry}).
+                    </p>
                   </div>
-                ))}
+                )}
               </CardContent>
             </Card>
           )}
@@ -544,7 +617,7 @@ const Checkout = () => {
                 <Button
                   className="w-full"
                   onClick={handleCheckout}
-                  disabled={items.length === 0 || isProcessing || isCreating || !customerInfo.country || (shippingMethods.length > 0 && !selectedShippingMethod)}
+                  disabled={items.length === 0 || isProcessing || isCreating || isLoadingLocation || (shippingMethods.length > 0 && !selectedShippingMethod)}
                 >
                   {(isProcessing || isCreating) ? (
                     <>
