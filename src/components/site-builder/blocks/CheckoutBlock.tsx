@@ -49,7 +49,7 @@ const CheckoutBlock = ({ block, isEditing, selectedStore }: CheckoutBlockProps) 
   const [detectedCountry, setDetectedCountry] = useState<string>('');
   const [detectedCountryCode, setDetectedCountryCode] = useState<CountryCode>('ML');
 
-  // Hook automatique pour les méthodes de livraison
+  // Hook automatique pour les méthodes de livraison COMPLÈTES
   const { methods: shippingMethods, isLoading: isLoadingShipping } = useShippingWithAutoSetup(
     selectedStore?.id,
     detectedCountryCode

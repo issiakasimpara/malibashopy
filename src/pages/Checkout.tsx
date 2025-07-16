@@ -15,6 +15,7 @@ import { useOrders } from '@/hooks/useOrders';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { detectUserCountry, SUPPORTED_COUNTRIES, type CountryCode } from '@/utils/countryDetection';
+import { useShippingWithAutoSetup } from '@/hooks/useAutoShipping';
 
 const Checkout = () => {
   const { items, updateQuantity, removeItem, getTotalPrice, clearCart } = useCart();
@@ -37,12 +38,20 @@ const Checkout = () => {
     phone: ''
   });
 
-  const [shippingMethods, setShippingMethods] = useState<any[]>([]);
+  // États pour les méthodes de livraison
   const [selectedShippingMethod, setSelectedShippingMethod] = useState<any>(null);
   const [shippingCost, setShippingCost] = useState(0);
   const [detectedCountry, setDetectedCountry] = useState<string>('');
+  const [detectedCountryCode, setDetectedCountryCode] = useState<CountryCode>('ML');
   const [isLoadingLocation, setIsLoadingLocation] = useState(true);
+  const [currentStoreId, setCurrentStoreId] = useState<string>('');
   const [paymentMethod, setPaymentMethod] = useState('card');
+
+  // Hook automatique pour les méthodes de livraison
+  const { methods: shippingMethods, isLoading: isLoadingShipping } = useShippingWithAutoSetup(
+    currentStoreId,
+    detectedCountryCode
+  );
   const [isProcessing, setIsProcessing] = useState(false);
 
   const handleCustomerInfoChange = (field: string, value: string) => {
@@ -62,6 +71,7 @@ const Checkout = () => {
       console.log('🌍 Pays détecté:', countryName, `(${countryCode})`);
 
       setDetectedCountry(countryName);
+      setDetectedCountryCode(countryCode);
 
       // Mettre à jour automatiquement les informations client
       setCustomerInfo(prev => ({
@@ -93,9 +103,9 @@ const Checkout = () => {
 
         // 2. Récupérer les infos de la boutique
         const storeInfo = await getStoreInfo();
-        if (storeInfo && userCountryCode) {
-          // 3. Charger les méthodes de livraison pour ce pays
-          await loadShippingMethods(storeInfo.id, userCountryCode);
+        if (storeInfo) {
+          setCurrentStoreId(storeInfo.id);
+          console.log('🏪 Store configuré:', storeInfo.id);
         }
       } catch (error) {
         console.error('Erreur lors de l\'initialisation:', error);
