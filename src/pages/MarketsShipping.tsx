@@ -30,22 +30,27 @@ import {
   Trash2,
   CheckCircle,
   Search,
-  Filter
+  Filter,
+  AlertCircle
 } from 'lucide-react';
 import { useStores } from '@/hooks/useStores';
 import { useMarketsShipping } from '@/hooks/useMarketsShipping';
+import { useAfricanCountries } from '@/hooks/useAfricanCountries';
 import { AFRICAN_FRANCOPHONE_COUNTRIES } from '@/constants/africanCountries';
 import { checkDatabaseStatus, createTestData } from '@/utils/createTablesManually';
+import { diagnosticDatabase, repairDatabase } from '@/utils/diagnosticDatabase';
 
 // Composant pour la configuration des marchés
 const MarketConfiguration = ({
   marketSettings,
   onUpdateSettings,
-  isLoading
+  isLoading,
+  africanCountries
 }: {
   marketSettings: any;
   onUpdateSettings: (data: any) => void;
   isLoading: boolean;
+  africanCountries: any[];
 }) => {
   const [selectedCountries, setSelectedCountries] = useState<string[]>(
     marketSettings?.enabled_countries || []
@@ -68,7 +73,7 @@ const MarketConfiguration = ({
   };
 
   const handleSelectAll = () => {
-    setSelectedCountries(AFRICAN_FRANCOPHONE_COUNTRIES.map(country => country.code));
+    setSelectedCountries(africanCountries.map(country => country.code));
   };
 
   const handleDeselectAll = () => {
@@ -76,12 +81,12 @@ const MarketConfiguration = ({
   };
 
   const getCountryByCode = (code: string) => {
-    return AFRICAN_FRANCOPHONE_COUNTRIES.find(country => country.code === code);
+    return africanCountries.find(country => country.code === code);
   };
 
   // Filtrer les pays selon le terme de recherche
-  const filteredCountries = AFRICAN_FRANCOPHONE_COUNTRIES.filter(country =>
-    country.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+  const filteredCountries = africanCountries.filter(country =>
+    country.name_fr.toLowerCase().includes(searchTerm.toLowerCase()) ||
     country.code.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
@@ -165,14 +170,14 @@ const MarketConfiguration = ({
                   <div className="text-3xl">{country.flag}</div>
                   <div>
                     <h4 className="font-semibold text-gray-900 dark:text-gray-100 text-sm leading-tight">
-                      {country.name}
+                      {country.name_fr}
                     </h4>
                     <div className="flex items-center justify-between mt-2">
                       <span className="text-xs text-gray-500 dark:text-gray-400 uppercase font-medium">
                         {country.code}
                       </span>
                       <span className="text-xs text-gray-600 dark:text-gray-300 font-medium">
-                        {country.currencySymbol}
+                        {country.currency}
                       </span>
                     </div>
                   </div>
@@ -387,10 +392,10 @@ const ShippingMethods = ({
                       </p>
                       <div className="flex flex-wrap gap-1">
                         {method.availableCountries.slice(0, 5).map((countryCode: string) => {
-                          const country = AFRICAN_FRANCOPHONE_COUNTRIES.find(c => c.code === countryCode);
+                          const country = africanCountries.find(c => c.code === countryCode);
                           return country ? (
                             <Badge key={countryCode} variant="outline" className="text-xs px-1.5 py-0.5">
-                              {country.flag} {country.name}
+                              {country.flag} {country.name_fr}
                             </Badge>
                           ) : null;
                         })}
@@ -446,13 +451,15 @@ const CreateShippingMethodModal = ({
   onClose,
   onSave,
   editingMethod = null,
-  availableCountries = []
+  availableCountries = [],
+  africanCountries = []
 }: {
   isOpen: boolean;
   onClose: () => void;
   onSave: (method: any) => void;
   editingMethod?: any;
   availableCountries?: string[];
+  africanCountries?: any[];
 }) => {
   const [formData, setFormData] = useState({
     name: '',
@@ -533,8 +540,8 @@ const CreateShippingMethodModal = ({
     }));
   };
 
-  const getCountryByCode = (code: string) => {
-    return AFRICAN_FRANCOPHONE_COUNTRIES.find(country => country.code === code);
+  const getCountryByCode = (code: string, countries: any[]) => {
+    return countries.find(country => country.code === code);
   };
 
   return (
@@ -628,7 +635,7 @@ const CreateShippingMethodModal = ({
               </div>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-3 max-h-48 overflow-y-auto border rounded-lg p-4">
                 {availableCountries.map((countryCode) => {
-                  const country = getCountryByCode(countryCode);
+                  const country = getCountryByCode(countryCode, africanCountries);
                   if (!country) return null;
 
                   return (
@@ -643,7 +650,7 @@ const CreateShippingMethodModal = ({
                         className="flex items-center gap-2 cursor-pointer text-sm"
                       >
                         <span>{country.flag}</span>
-                        <span>{country.name}</span>
+                        <span>{country.name_fr}</span>
                       </label>
                     </div>
                   );
@@ -652,10 +659,10 @@ const CreateShippingMethodModal = ({
               {formData.availableCountries.length > 0 && (
                 <div className="flex flex-wrap gap-1">
                   {formData.availableCountries.map(code => {
-                    const country = getCountryByCode(code);
+                    const country = getCountryByCode(code, africanCountries);
                     return country ? (
                       <Badge key={code} variant="secondary" className="text-xs">
-                        {country.flag} {country.name}
+                        {country.flag} {country.name_fr}
                       </Badge>
                     ) : null;
                   })}
@@ -685,6 +692,7 @@ const CreateShippingMethodModal = ({
 
 const MarketsShipping = () => {
   const { store } = useStores();
+  const { countries: africanCountries, isLoading: isLoadingCountries } = useAfricanCountries();
   const {
     marketSettings,
     shippingMethods,
@@ -703,6 +711,7 @@ const MarketsShipping = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingMethod, setEditingMethod] = useState<any>(null);
   const [isSettingUpDB, setIsSettingUpDB] = useState(false);
+  const [isDiagnosing, setIsDiagnosing] = useState(false);
 
   const handleCreateMethod = async (methodData: any) => {
     if (!store?.id) return;
@@ -762,6 +771,23 @@ const MarketsShipping = () => {
     }
   };
 
+  const handleDiagnostic = async () => {
+    setIsDiagnosing(true);
+    try {
+      const result = await diagnosticDatabase();
+      if (result.success) {
+        alert('✅ Diagnostic réussi ! Consultez la console pour les détails.');
+      } else {
+        alert('❌ Problèmes détectés ! Consultez la console pour les détails.');
+      }
+    } catch (error) {
+      console.error('Erreur diagnostic:', error);
+      alert('Erreur lors du diagnostic. Consultez la console.');
+    } finally {
+      setIsDiagnosing(false);
+    }
+  };
+
   return (
     <DashboardLayout>
       <div className="space-y-6">
@@ -785,6 +811,19 @@ const MarketsShipping = () => {
                 Initialiser les paramètres
               </Button>
             )}
+            <Button
+              onClick={handleDiagnostic}
+              disabled={isDiagnosing}
+              variant="outline"
+              className="flex items-center gap-2"
+            >
+              {isDiagnosing ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <AlertCircle className="h-4 w-4" />
+              )}
+              {isDiagnosing ? 'Diagnostic...' : 'Diagnostic DB'}
+            </Button>
           </div>
         </div>
 
@@ -840,7 +879,7 @@ const MarketsShipping = () => {
                     Couverture
                   </p>
                   <p className="text-3xl font-bold text-purple-700 dark:text-purple-300">
-                    {Math.round((enabledCountriesCount / AFRICAN_FRANCOPHONE_COUNTRIES.length) * 100)}%
+                    {africanCountries.length > 0 ? Math.round((enabledCountriesCount / africanCountries.length) * 100) : 0}%
                   </p>
                   <p className="text-xs text-purple-600/70 dark:text-purple-400/70">
                     de l'Afrique francophone
@@ -887,6 +926,7 @@ const MarketsShipping = () => {
                   marketSettings={marketSettings}
                   onUpdateSettings={(settings) => store?.id && updateMarketSettings({ storeId: store.id, settings })}
                   isLoading={isLoading}
+                  africanCountries={africanCountries}
                 />
               </TabsContent>
 
@@ -928,6 +968,7 @@ const MarketsShipping = () => {
           onSave={editingMethod ? handleUpdateMethod : handleCreateMethod}
           editingMethod={editingMethod}
           availableCountries={marketSettings?.enabled_countries || []}
+          africanCountries={africanCountries}
         />
       </div>
     </DashboardLayout>

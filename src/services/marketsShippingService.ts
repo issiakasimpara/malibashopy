@@ -7,7 +7,39 @@ import {
 } from '@/types/marketsShipping';
 import { setupMarketsShippingTables } from '@/utils/setupDatabase';
 
+// Interface pour les pays africains
+export interface AfricanCountry {
+  id: string;
+  code: string;
+  name_fr: string;
+  name_en: string;
+  flag: string;
+  currency: string;
+  is_active: boolean;
+}
+
 class MarketsShippingService {
+  // Récupérer tous les pays africains francophones
+  async getAfricanCountries(): Promise<AfricanCountry[]> {
+    try {
+      const { data, error } = await supabase
+        .from('african_countries')
+        .select('*')
+        .eq('is_active', true)
+        .order('name_fr');
+
+      if (error) {
+        console.error('Erreur lors de la récupération des pays:', error);
+        throw error;
+      }
+
+      return data || [];
+    } catch (error) {
+      console.error('Erreur dans getAfricanCountries:', error);
+      throw error;
+    }
+  }
+
   // Récupérer les paramètres de marché d'une boutique
   async getMarketSettings(storeId: string): Promise<MarketSettings | null> {
     try {
