@@ -27,7 +27,10 @@ import {
   DollarSign,
   Loader2,
   Edit,
-  Trash2
+  Trash2,
+  CheckCircle,
+  Search,
+  Filter
 } from 'lucide-react';
 import { useStores } from '@/hooks/useStores';
 import { useMarketsShipping } from '@/hooks/useMarketsShipping';
@@ -46,6 +49,7 @@ const MarketConfiguration = ({
   const [selectedCountries, setSelectedCountries] = useState<string[]>(
     marketSettings?.enabled_countries || []
   );
+  const [searchTerm, setSearchTerm] = useState('');
 
   // Mettre à jour les pays sélectionnés quand les données changent
   useEffect(() => {
@@ -74,86 +78,198 @@ const MarketConfiguration = ({
     return AFRICAN_FRANCOPHONE_COUNTRIES.find(country => country.code === code);
   };
 
+  // Filtrer les pays selon le terme de recherche
+  const filteredCountries = AFRICAN_FRANCOPHONE_COUNTRIES.filter(country =>
+    country.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    country.code.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   return (
-    <div className="space-y-6">
-      {/* Sélection des pays */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Globe className="h-5 w-5" />
-            Pays de vente
-          </CardTitle>
+    <div className="space-y-8">
+      {/* En-tête avec barre de recherche */}
+      <div className="space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
+              Sélection des marchés
+            </h3>
+            <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+              Choisissez les pays d'Afrique francophone où vous souhaitez vendre vos produits
+            </p>
+          </div>
           <div className="flex gap-2">
-            <Button variant="outline" size="sm" onClick={handleSelectAll}>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleSelectAll}
+              className="text-xs font-medium"
+            >
               Tout sélectionner
             </Button>
-            <Button variant="outline" size="sm" onClick={handleDeselectAll}>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleDeselectAll}
+              className="text-xs font-medium"
+            >
               Tout désélectionner
             </Button>
           </div>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {AFRICAN_FRANCOPHONE_COUNTRIES.map((country) => (
+        </div>
+
+        {/* Barre de recherche */}
+        <div className="relative max-w-md">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+          <Input
+            placeholder="Rechercher un pays..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-10 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700"
+          />
+        </div>
+      </div>
+
+      {/* Grille des pays avec design moderne */}
+      <div className="space-y-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          {filteredCountries.map((country) => {
+            const isSelected = selectedCountries.includes(country.code);
+            return (
               <div
                 key={country.code}
-                className="flex items-center space-x-3 p-3 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                onClick={() => handleCountryToggle(country.code)}
+                className={`
+                  group relative p-5 rounded-2xl border-2 cursor-pointer transition-all duration-300 hover:shadow-lg hover:-translate-y-1
+                  ${isSelected
+                    ? 'border-blue-500 bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950/30 dark:to-blue-900/20 shadow-md'
+                    : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:border-blue-300 dark:hover:border-blue-600'
+                  }
+                `}
               >
-                <Checkbox
-                  id={country.code}
-                  checked={selectedCountries.includes(country.code)}
-                  onCheckedChange={() => handleCountryToggle(country.code)}
-                />
-                <div className="flex-1">
-                  <label
-                    htmlFor={country.code}
-                    className="flex items-center gap-2 cursor-pointer"
-                  >
-                    <span className="text-2xl">{country.flag}</span>
-                    <div>
-                      <p className="font-medium">{country.name}</p>
-                      <p className="text-sm text-gray-500">
-                        {country.currencySymbol} ({country.currency})
-                      </p>
+                {/* Indicateur de sélection */}
+                <div className={`
+                  absolute top-3 right-3 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all duration-200
+                  ${isSelected
+                    ? 'border-blue-500 bg-blue-500 scale-110'
+                    : 'border-gray-300 dark:border-gray-600 group-hover:border-blue-400'
+                  }
+                `}>
+                  {isSelected && (
+                    <CheckCircle className="w-4 h-4 text-white" />
+                  )}
+                </div>
+
+                {/* Contenu du pays */}
+                <div className="space-y-3">
+                  <div className="text-3xl">{country.flag}</div>
+                  <div>
+                    <h4 className="font-semibold text-gray-900 dark:text-gray-100 text-sm leading-tight">
+                      {country.name}
+                    </h4>
+                    <div className="flex items-center justify-between mt-2">
+                      <span className="text-xs text-gray-500 dark:text-gray-400 uppercase font-medium">
+                        {country.code}
+                      </span>
+                      <span className="text-xs text-gray-600 dark:text-gray-300 font-medium">
+                        {country.currencySymbol}
+                      </span>
                     </div>
-                  </label>
+                  </div>
+                </div>
+
+                {/* Effet de survol */}
+                <div className={`
+                  absolute inset-0 rounded-2xl transition-opacity duration-200
+                  ${isSelected
+                    ? 'bg-blue-500/5'
+                    : 'bg-blue-500/0 group-hover:bg-blue-500/5'
+                  }
+                `} />
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Message si aucun résultat */}
+        {filteredCountries.length === 0 && (
+          <div className="text-center py-12">
+            <Search className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+            <h4 className="font-medium text-gray-900 dark:text-gray-100 mb-2">
+              Aucun pays trouvé
+            </h4>
+            <p className="text-sm text-gray-600 dark:text-gray-400">
+              Essayez avec un autre terme de recherche
+            </p>
+          </div>
+        )}
+      </div>
+
+      {/* Résumé de la sélection */}
+      {selectedCountries.length > 0 && (
+        <Card className="bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 dark:from-blue-950/20 dark:via-indigo-950/20 dark:to-purple-950/20 border-blue-200 dark:border-blue-800 shadow-lg">
+          <CardContent className="p-6">
+            <div className="flex items-start justify-between">
+              <div className="flex-1">
+                <div className="flex items-center gap-2 mb-3">
+                  <CheckCircle className="h-5 w-5 text-blue-600" />
+                  <h4 className="font-semibold text-blue-900 dark:text-blue-100">
+                    {selectedCountries.length} marché{selectedCountries.length > 1 ? 's' : ''} sélectionné{selectedCountries.length > 1 ? 's' : ''}
+                  </h4>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {selectedCountries.slice(0, 8).map(code => {
+                    const country = getCountryByCode(code);
+                    return country ? (
+                      <Badge
+                        key={code}
+                        variant="secondary"
+                        className="bg-white/90 dark:bg-gray-800/90 text-blue-800 dark:text-blue-200 border border-blue-200 dark:border-blue-700"
+                      >
+                        <span className="mr-1.5">{country.flag}</span>
+                        {country.name}
+                      </Badge>
+                    ) : null;
+                  })}
+                  {selectedCountries.length > 8 && (
+                    <Badge variant="secondary" className="bg-white/90 dark:bg-gray-800/90 border border-blue-200 dark:border-blue-700">
+                      +{selectedCountries.length - 8} autres
+                    </Badge>
+                  )}
                 </div>
               </div>
-            ))}
-          </div>
-
-          {selectedCountries.length > 0 && (
-            <div className="mt-4 p-4 bg-blue-50 dark:bg-blue-950/20 rounded-lg">
-              <h4 className="font-medium text-blue-800 dark:text-blue-200 mb-2">
-                Pays sélectionnés ({selectedCountries.length})
-              </h4>
-              <div className="flex flex-wrap gap-2">
-                {selectedCountries.map(code => {
-                  const country = getCountryByCode(code);
-                  return country ? (
-                    <Badge key={code} variant="secondary" className="flex items-center gap-1">
-                      <span>{country.flag}</span>
-                      {country.name}
-                    </Badge>
-                  ) : null;
-                })}
-              </div>
+              <Button
+                disabled={isLoading}
+                onClick={() => onUpdateSettings({ enabled_countries: selectedCountries })}
+                className="ml-6 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg"
+              >
+                {isLoading ? (
+                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                ) : (
+                  <Save className="h-4 w-4 mr-2" />
+                )}
+                {isLoading ? 'Sauvegarde...' : 'Sauvegarder'}
+              </Button>
             </div>
-          )}
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      )}
 
-      {/* Bouton de sauvegarde */}
-      <div className="flex justify-end">
-        <Button
-          disabled={selectedCountries.length === 0 || isLoading}
-          onClick={() => onUpdateSettings({ enabled_countries: selectedCountries })}
-          className="flex items-center gap-2"
-        >
-          <Save className="h-4 w-4" />
-          {isLoading ? 'Sauvegarde...' : 'Sauvegarder les paramètres'}
-        </Button>
-      </div>
+      {/* Message si aucun pays sélectionné */}
+      {selectedCountries.length === 0 && (
+        <Card className="border-dashed border-2 border-gray-300 dark:border-gray-600 bg-gray-50/50 dark:bg-gray-800/50">
+          <CardContent className="p-12 text-center">
+            <div className="p-4 bg-gray-100 dark:bg-gray-700 rounded-full w-fit mx-auto mb-6">
+              <Globe className="h-12 w-12 text-gray-400" />
+            </div>
+            <h4 className="font-semibold text-gray-900 dark:text-gray-100 mb-2 text-lg">
+              Aucun marché sélectionné
+            </h4>
+            <p className="text-sm text-gray-600 dark:text-gray-400 max-w-md mx-auto">
+              Sélectionnez au moins un pays pour commencer à vendre vos produits dans les marchés d'Afrique francophone
+            </p>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 };
@@ -305,7 +421,7 @@ const CreateShippingMethodModal = ({
     name: '',
     description: '',
     price: 0,
-    estimated_days: '',
+    estimatedDays: '',
     icon: '📦'
   });
 
@@ -315,7 +431,7 @@ const CreateShippingMethodModal = ({
         name: editingMethod.name || '',
         description: editingMethod.description || '',
         price: editingMethod.price || 0,
-        estimated_days: editingMethod.estimated_days || '',
+        estimatedDays: editingMethod.estimated_days || '',
         icon: editingMethod.icon || '📦'
       });
     } else {
@@ -323,7 +439,7 @@ const CreateShippingMethodModal = ({
         name: '',
         description: '',
         price: 0,
-        estimated_days: '',
+        estimatedDays: '',
         icon: '📦'
       });
     }
@@ -340,17 +456,20 @@ const CreateShippingMethodModal = ({
     { icon: '📮', label: 'Poste' },
   ];
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const newMethod = {
-      id: Date.now().toString(),
+    const methodData = {
       ...formData,
-      isActive: true
+      is_active: true
     };
 
-    onSave(newMethod);
-    handleClose();
+    try {
+      await onSave(methodData);
+      handleClose();
+    } catch (error) {
+      console.error('Erreur lors de la sauvegarde:', error);
+    }
   };
 
   const handleClose = () => {
@@ -358,7 +477,7 @@ const CreateShippingMethodModal = ({
       name: '',
       description: '',
       price: 0,
-      estimated_days: '',
+      estimatedDays: '',
       icon: '📦'
     });
     onClose();
@@ -387,11 +506,11 @@ const CreateShippingMethodModal = ({
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="estimated_days">Délai de livraison *</Label>
+              <Label htmlFor="estimatedDays">Délai de livraison *</Label>
               <Input
-                id="estimated_days"
-                value={formData.estimated_days}
-                onChange={(e) => setFormData(prev => ({ ...prev, estimated_days: e.target.value }))}
+                id="estimatedDays"
+                value={formData.estimatedDays}
+                onChange={(e) => setFormData(prev => ({ ...prev, estimatedDays: e.target.value }))}
                 placeholder="Ex: 2-3 jours"
                 required
               />
@@ -450,7 +569,7 @@ const CreateShippingMethodModal = ({
             </Button>
             <Button
               type="submit"
-              disabled={!formData.name || !formData.estimated_days}
+              disabled={!formData.name || !formData.estimatedDays}
               className="flex items-center gap-2"
             >
               <Save className="h-4 w-4" />
@@ -476,15 +595,21 @@ const MarketsShipping = () => {
     updateShippingMethod,
     deleteShippingMethod,
     toggleShippingMethod,
-  } = useMarketsShipping();
+  } = useMarketsShipping(store?.id);
 
   const [activeTab, setActiveTab] = useState('markets');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingMethod, setEditingMethod] = useState<any>(null);
 
-  const handleCreateMethod = (methodData: any) => {
-    createShippingMethod(methodData);
-    setIsModalOpen(false);
+  const handleCreateMethod = async (methodData: any) => {
+    if (!store?.id) return;
+
+    try {
+      await createShippingMethod({ storeId: store.id, methodData });
+      setIsModalOpen(false);
+    } catch (error) {
+      console.error('Erreur lors de la création:', error);
+    }
   };
 
   const handleEditMethod = (method: any) => {
@@ -492,11 +617,15 @@ const MarketsShipping = () => {
     setIsModalOpen(true);
   };
 
-  const handleUpdateMethod = (methodData: any) => {
+  const handleUpdateMethod = async (methodData: any) => {
     if (editingMethod) {
-      updateShippingMethod(editingMethod.id, methodData);
-      setEditingMethod(null);
-      setIsModalOpen(false);
+      try {
+        await updateShippingMethod({ methodId: editingMethod.id, methodData });
+        setEditingMethod(null);
+        setIsModalOpen(false);
+      } catch (error) {
+        console.error('Erreur lors de la modification:', error);
+      }
     }
   };
 
@@ -621,7 +750,7 @@ const MarketsShipping = () => {
 
                 <MarketConfiguration
                   marketSettings={marketSettings}
-                  onUpdateSettings={updateMarketSettings}
+                  onUpdateSettings={(settings) => store?.id && updateMarketSettings({ storeId: store.id, settings })}
                   isLoading={isLoading}
                 />
               </TabsContent>
