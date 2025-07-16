@@ -16,8 +16,7 @@ import {
   LogOut,
   MessageSquare,
   Grid3X3,
-  Globe,
-  Truck
+  Globe
 } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
@@ -48,7 +47,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
     { name: "Catégories", href: "/categories", icon: Grid3X3 },
     { name: "Commandes", href: "/orders", icon: ShoppingCart },
     { name: "Clients", href: "/customers", icon: Users },
-    { name: "Marchés et Livraisons", href: "/markets-shipping", icon: Truck },
+
     { name: "Témoignages", href: "/testimonials", icon: MessageSquare },
     { name: "Analyses", href: "/analytics", icon: BarChart3 },
     { name: "Paiements", href: "/payments", icon: CreditCard },

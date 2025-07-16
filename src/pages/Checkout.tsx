@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { useCart } from '@/contexts/CartContext';
@@ -13,9 +13,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useLocation, useParams } from 'react-router-dom';
 import { useOrders } from '@/hooks/useOrders';
 import { useToast } from '@/hooks/use-toast';
-import { useCheckoutShipping } from '@/hooks/usePublicShipping';
 import { supabase } from '@/integrations/supabase/client';
-import { AFRICAN_FRANCOPHONE_COUNTRIES } from '@/constants/africanCountries';
 
 const Checkout = () => {
   const { items, updateQuantity, removeItem, getTotalPrice, clearCart } = useCart();
@@ -38,15 +36,7 @@ const Checkout = () => {
     phone: ''
   });
   const [paymentMethod, setPaymentMethod] = useState('card');
-  const [selectedShippingMethod, setSelectedShippingMethod] = useState<string>('');
   const [isProcessing, setIsProcessing] = useState(false);
-
-  // Hook pour récupérer les méthodes de livraison
-  const { shippingOptions, isLoading: isLoadingShipping } = useCheckoutShipping(
-    storeSlug,
-    customerInfo.country,
-    getTotalPrice()
-  );
 
   const handleCustomerInfoChange = (field: string, value: string) => {
     setCustomerInfo(prev => ({
@@ -55,29 +45,10 @@ const Checkout = () => {
     }));
   };
 
-  // Calculer le coût de livraison sélectionné
-  const getShippingCost = () => {
-    if (!selectedShippingMethod) return 0;
-    const method = shippingOptions.find(m => m.id === selectedShippingMethod);
-    return method ? method.calculatedPrice : 0;
-  };
-
-  // Calculer le total avec livraison
+  // Calculer le total avec livraison (livraison gratuite pour l'instant)
   const getTotalWithShipping = () => {
-    return getTotalPrice() + getShippingCost();
+    return getTotalPrice();
   };
-
-  // Réinitialiser la méthode de livraison quand le pays change
-  useEffect(() => {
-    setSelectedShippingMethod('');
-  }, [customerInfo.country]);
-
-  // Sélectionner automatiquement la première méthode disponible
-  useEffect(() => {
-    if (shippingOptions.length > 0 && !selectedShippingMethod) {
-      setSelectedShippingMethod(shippingOptions[0].id);
-    }
-  }, [shippingOptions, selectedShippingMethod]);
 
   const handleCheckout = async () => {
     // Validation des champs requis
@@ -99,14 +70,7 @@ const Checkout = () => {
       return;
     }
 
-    if (!selectedShippingMethod) {
-      toast({
-        title: "Méthode de livraison manquante",
-        description: "Veuillez sélectionner une méthode de livraison.",
-        variant: "destructive"
-      });
-      return;
-    }
+
 
     setIsProcessing(true);
 
@@ -351,68 +315,7 @@ const Checkout = () => {
                 </Select>
               </div>
 
-              {/* Section méthodes de livraison */}
-              {customerInfo.country && (
-                <div className="space-y-4 pt-4 border-t">
-                  <div>
-                    <Label className="text-base font-medium flex items-center gap-2">
-                      <Truck className="h-4 w-4" />
-                      Méthode de livraison *
-                    </Label>
-                    <p className="text-sm text-gray-600 mt-1">
-                      Choisissez comment vous souhaitez recevoir votre commande
-                    </p>
-                  </div>
 
-                  {isLoadingShipping ? (
-                    <div className="flex items-center justify-center py-8">
-                      <Loader2 className="h-6 w-6 animate-spin" />
-                      <span className="ml-2">Chargement des options de livraison...</span>
-                    </div>
-                  ) : shippingOptions.length > 0 ? (
-                    <RadioGroup value={selectedShippingMethod} onValueChange={setSelectedShippingMethod}>
-                      {shippingOptions.map((method) => (
-                        <div key={method.id} className="flex items-center space-x-3 p-4 border rounded-lg hover:bg-gray-50">
-                          <RadioGroupItem value={method.id} id={method.id} />
-                          <label htmlFor={method.id} className="flex-1 cursor-pointer">
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center gap-3">
-                                <span className="text-2xl">{method.icon}</span>
-                                <div>
-                                  <p className="font-medium">{method.name}</p>
-                                  <p className="text-sm text-gray-600">{method.description}</p>
-                                  <div className="flex items-center gap-4 mt-1">
-                                    <Badge variant="outline" className="text-xs">
-                                      <Clock className="h-3 w-3 mr-1" />
-                                      {method.estimatedDays}
-                                    </Badge>
-                                  </div>
-                                </div>
-                              </div>
-                              <div className="text-right">
-                                <p className="font-semibold">
-                                  {method.calculatedPrice === 0 ? 'Gratuit' : `${method.calculatedPrice.toFixed(0)} CFA`}
-                                </p>
-                                {method.calculatedPrice !== method.price && method.price > 0 && (
-                                  <p className="text-sm text-gray-500 line-through">
-                                    {method.price.toFixed(0)} CFA
-                                  </p>
-                                )}
-                              </div>
-                            </div>
-                          </label>
-                        </div>
-                      ))}
-                    </RadioGroup>
-                  ) : (
-                    <div className="text-center py-8 text-gray-500">
-                      <Truck className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-                      <p>Aucune méthode de livraison disponible pour ce pays</p>
-                      <p className="text-sm">Veuillez contacter le vendeur</p>
-                    </div>
-                  )}
-                </div>
-              )}
             </CardContent>
           </Card>
 
@@ -469,14 +372,10 @@ const Checkout = () => {
                     <span>{getTotalPrice().toFixed(0)} CFA</span>
                   </div>
 
-                  {selectedShippingMethod && (
-                    <div className="flex justify-between">
-                      <span>Livraison:</span>
-                      <span>
-                        {getShippingCost() === 0 ? 'Gratuit' : `${getShippingCost().toFixed(0)} CFA`}
-                      </span>
-                    </div>
-                  )}
+                  <div className="flex justify-between">
+                    <span>Livraison:</span>
+                    <span>Gratuit</span>
+                  </div>
 
                   <Separator />
 
@@ -489,7 +388,7 @@ const Checkout = () => {
                 <Button
                   className="w-full"
                   onClick={handleCheckout}
-                  disabled={items.length === 0 || isProcessing || isCreating || !selectedShippingMethod || !customerInfo.country}
+                  disabled={items.length === 0 || isProcessing || isCreating || !customerInfo.country}
                 >
                   {(isProcessing || isCreating) ? (
                     <>
