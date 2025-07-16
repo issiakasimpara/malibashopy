@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import DashboardLayout from '@/components/DashboardLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -24,12 +24,30 @@ import {
   RefreshCw,
   Save
 } from 'lucide-react';
-// import { useStores } from '@/hooks/useStores'; // Temporairement désactivé
+import { useStores } from '@/hooks/useStores';
+import { useMarketsShipping } from '@/hooks/useMarketsShipping';
 import { AFRICAN_FRANCOPHONE_COUNTRIES } from '@/constants/africanCountries';
 
 // Composant pour la configuration des marchés
-const MarketConfiguration = () => {
-  const [selectedCountries, setSelectedCountries] = useState<string[]>([]);
+const MarketConfiguration = ({
+  marketSettings,
+  onUpdateSettings,
+  isLoading
+}: {
+  marketSettings: any;
+  onUpdateSettings: (data: any) => void;
+  isLoading: boolean;
+}) => {
+  const [selectedCountries, setSelectedCountries] = useState<string[]>(
+    marketSettings?.enabled_countries || []
+  );
+
+  // Mettre à jour les pays sélectionnés quand les données changent
+  useEffect(() => {
+    if (marketSettings?.enabled_countries) {
+      setSelectedCountries(marketSettings.enabled_countries);
+    }
+  }, [marketSettings]);
 
   const handleCountryToggle = (countryCode: string) => {
     setSelectedCountries(prev =>
@@ -123,11 +141,12 @@ const MarketConfiguration = () => {
       {/* Bouton de sauvegarde */}
       <div className="flex justify-end">
         <Button
-          disabled={selectedCountries.length === 0}
+          disabled={selectedCountries.length === 0 || isLoading}
+          onClick={() => onUpdateSettings({ enabled_countries: selectedCountries })}
           className="flex items-center gap-2"
         >
           <Save className="h-4 w-4" />
-          Sauvegarder les paramètres
+          {isLoading ? 'Sauvegarde...' : 'Sauvegarder les paramètres'}
         </Button>
       </div>
     </div>
@@ -135,9 +154,14 @@ const MarketConfiguration = () => {
 };
 
 // Composant pour les méthodes de livraison
-const ShippingMethods = ({ methods, onUpdateMethods }: {
+const ShippingMethods = ({
+  methods,
+  onToggleMethod,
+  isLoading
+}: {
   methods: any[];
-  onUpdateMethods: (methods: any[]) => void;
+  onToggleMethod: (id: string, isActive: boolean) => void;
+  isLoading: boolean;
 }) => {
 
   const formatCurrency = (amount: number) => {
@@ -149,12 +173,10 @@ const ShippingMethods = ({ methods, onUpdateMethods }: {
   };
 
   const toggleMethodStatus = (id: string) => {
-    const updatedMethods = methods.map(method =>
-      method.id === id
-        ? { ...method, isActive: !method.isActive }
-        : method
-    );
-    onUpdateMethods(updatedMethods);
+    const method = methods.find(m => m.id === id);
+    if (method) {
+      onToggleMethod(id, !method.is_active);
+    }
   };
 
   if (methods.length === 0) {
@@ -391,45 +413,23 @@ const CreateShippingMethodModal = ({ isOpen, onClose, onSave }: {
 };
 
 const MarketsShipping = () => {
-  // const { store } = useStores(); // Temporairement désactivé
+  const { store } = useStores();
+  const {
+    marketSettings,
+    shippingMethods,
+    enabledCountriesCount,
+    activeShippingMethodsCount,
+    isLoading,
+    createShippingMethod,
+    updateMarketSettings,
+    toggleShippingMethod,
+  } = useMarketsShipping();
+
   const [activeTab, setActiveTab] = useState('markets');
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const [shippingMethods, setShippingMethods] = useState([
-    {
-      id: '1',
-      name: 'Livraison standard',
-      description: 'Livraison par transporteur local dans les principales villes',
-      price: 2500,
-      estimatedDays: '3-7 jours',
-      icon: '📦',
-      isActive: true
-    },
-    {
-      id: '2',
-      name: 'Livraison express',
-      description: 'Livraison rapide en 24-48h dans les grandes villes',
-      price: 5000,
-      estimatedDays: '1-2 jours',
-      icon: '⚡',
-      isActive: true
-    },
-    {
-      id: '3',
-      name: 'Retrait en magasin',
-      description: 'Récupération directe dans notre boutique',
-      price: 0,
-      estimatedDays: 'Immédiat',
-      icon: '🏪',
-      isActive: false
-    }
-  ]);
-
-  // Données simulées pour l'instant
-  const enabledCountriesCount = 0;
-  const activeShippingMethodsCount = shippingMethods.filter(method => method.isActive).length;
 
   const handleAddShippingMethod = (newMethod: any) => {
-    setShippingMethods(prev => [...prev, newMethod]);
+    createShippingMethod(newMethod);
   };
 
   return (
