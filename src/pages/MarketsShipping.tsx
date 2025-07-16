@@ -414,22 +414,27 @@ const CreateShippingMethodModal = ({ isOpen, onClose, onSave }: {
 
 const MarketsShipping = () => {
   const { store } = useStores();
-  const {
-    marketSettings,
-    shippingMethods,
-    enabledCountriesCount,
-    activeShippingMethodsCount,
-    isLoading,
-    createShippingMethod,
-    updateMarketSettings,
-    toggleShippingMethod,
-  } = useMarketsShipping();
+
+  // Données temporaires pour tester
+  const marketSettings = null;
+  const shippingMethods: any[] = [];
+  const enabledCountriesCount = 0;
+  const activeShippingMethodsCount = 0;
+  const isLoading = false;
 
   const [activeTab, setActiveTab] = useState('markets');
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
   const handleAddShippingMethod = (newMethod: any) => {
-    createShippingMethod(newMethod);
+    console.log('Add shipping method:', newMethod);
+  };
+
+  const handleUpdateMarketSettings = (data: any) => {
+    console.log('Update market settings:', data);
+  };
+
+  const handleToggleShippingMethod = (id: string, isActive: boolean) => {
+    console.log('Toggle shipping method:', id, isActive);
   };
 
   return (
@@ -546,7 +551,11 @@ const MarketsShipping = () => {
                   </div>
                 </div>
 
-                <MarketConfiguration />
+                <MarketConfiguration
+                  marketSettings={marketSettings}
+                  onUpdateSettings={handleUpdateMarketSettings}
+                  isLoading={isLoading}
+                />
               </TabsContent>
 
               <TabsContent value="shipping" className="p-6 space-y-6">
@@ -570,7 +579,8 @@ const MarketsShipping = () => {
 
                 <ShippingMethods
                   methods={shippingMethods}
-                  onUpdateMethods={setShippingMethods}
+                  onToggleMethod={handleToggleShippingMethod}
+                  isLoading={isLoading}
                 />
               </TabsContent>
             </Tabs>
