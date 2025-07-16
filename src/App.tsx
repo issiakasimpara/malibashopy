@@ -24,6 +24,7 @@ import SiteBuilder from "./pages/SiteBuilder";
 import TemplateEditor from "./pages/TemplateEditor";
 import Testimonials from "./pages/Testimonials";
 import Payments from "./pages/Payments";
+import Shipping from "./pages/Shipping";
 
 import Cart from "./pages/Cart";
 import Checkout from "./pages/Checkout";
@@ -45,7 +46,7 @@ const CartWidgetConditional = () => {
     '/categories',
     '/orders',
     '/customers',
-
+    '/shipping',
     '/analytics',
     '/settings',
     '/store-config',
@@ -133,7 +134,14 @@ const App = () => (
                   </ProtectedRoute>
                 }
               />
-
+              <Route
+                path="/shipping"
+                element={
+                  <ProtectedRoute>
+                    <Shipping />
+                  </ProtectedRoute>
+                }
+              />
               <Route
                 path="/analytics"
                 element={
