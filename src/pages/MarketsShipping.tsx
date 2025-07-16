@@ -30,11 +30,13 @@ import {
   Trash2,
   CheckCircle,
   Search,
-  Filter
+  Filter,
+  Loader2
 } from 'lucide-react';
 import { useStores } from '@/hooks/useStores';
 import { useMarketsShipping } from '@/hooks/useMarketsShipping';
 import { AFRICAN_FRANCOPHONE_COUNTRIES } from '@/constants/africanCountries';
+import { checkDatabaseStatus, createTestData } from '@/utils/createTablesManually';
 
 // Composant pour la configuration des marchés
 const MarketConfiguration = ({
@@ -701,6 +703,7 @@ const MarketsShipping = () => {
   const [activeTab, setActiveTab] = useState('markets');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingMethod, setEditingMethod] = useState<any>(null);
+  const [isSettingUpDB, setIsSettingUpDB] = useState(false);
 
   const handleCreateMethod = async (methodData: any) => {
     if (!store?.id) return;
@@ -735,6 +738,31 @@ const MarketsShipping = () => {
     setEditingMethod(null);
   };
 
+  const handleSetupDatabase = async () => {
+    setIsSettingUpDB(true);
+    try {
+      // Vérifier d'abord l'état de la DB
+      const status = await checkDatabaseStatus();
+      console.log('État DB:', status);
+
+      if (!status.marketSettings || !status.shippingMethods) {
+        // Créer des données de test
+        const success = await createTestData();
+        if (success) {
+          // Recharger les données après la création
+          window.location.reload();
+        }
+      } else {
+        alert('Les tables existent déjà !');
+      }
+    } catch (error) {
+      console.error('Erreur setup DB:', error);
+      alert('Erreur lors de la configuration. Consultez la console.');
+    } finally {
+      setIsSettingUpDB(false);
+    }
+  };
+
   return (
     <DashboardLayout>
       <div className="space-y-6">
@@ -748,13 +776,28 @@ const MarketsShipping = () => {
               Gérez vos marchés de vente et vos méthodes de livraison
             </p>
           </div>
-          <Button
-            onClick={() => store?.id && initializeDefaultSettings(store.id)}
-            className="flex items-center gap-2"
-          >
-            <Settings className="h-4 w-4" />
-            Initialiser les paramètres
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              onClick={handleSetupDatabase}
+              disabled={isSettingUpDB}
+              variant="outline"
+              className="flex items-center gap-2"
+            >
+              {isSettingUpDB ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Settings className="h-4 w-4" />
+              )}
+              {isSettingUpDB ? 'Configuration...' : 'Configurer la DB'}
+            </Button>
+            <Button
+              onClick={() => store?.id && initializeDefaultSettings(store.id)}
+              className="flex items-center gap-2"
+            >
+              <Settings className="h-4 w-4" />
+              Initialiser les paramètres
+            </Button>
+          </div>
         </div>
 
         {/* Stats Cards */}

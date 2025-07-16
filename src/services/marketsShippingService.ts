@@ -234,17 +234,27 @@ class MarketsShippingService {
       const defaultMethods: CreateShippingMethodData[] = [
         {
           name: 'Livraison standard',
-          description: 'Livraison par transporteur local',
+          description: 'Livraison par transporteur local dans les principales villes',
           price: 2500,
           estimatedDays: '3-7 jours',
-          icon: '📦'
+          icon: '📦',
+          availableCountries: ['BF', 'CI', 'SN']
+        },
+        {
+          name: 'Livraison express',
+          description: 'Livraison rapide en 24-48h',
+          price: 5000,
+          estimatedDays: '1-2 jours',
+          icon: '⚡',
+          availableCountries: ['BF', 'CI', 'SN']
         },
         {
           name: 'Retrait en magasin',
           description: 'Récupération directe en boutique',
           price: 0,
           estimatedDays: 'Immédiat',
-          icon: '🏪'
+          icon: '🏪',
+          availableCountries: ['BF', 'CI', 'SN']
         }
       ];
 
