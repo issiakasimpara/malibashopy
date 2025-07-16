@@ -9,6 +9,7 @@ import { AuthProvider } from "@/hooks/useAuth";
 import CartWidget from "@/components/site-builder/blocks/CartWidget";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import Index from "./pages/Index";
+import SimpleIndex from "./pages/SimpleIndex";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
 import Products from "./pages/Products";
@@ -25,6 +26,7 @@ import TemplateEditor from "./pages/TemplateEditor";
 import Testimonials from "./pages/Testimonials";
 import Payments from "./pages/Payments";
 import Shipping from "./pages/Shipping";
+import TestPage from "./pages/TestPage";
 
 import Cart from "./pages/Cart";
 import Checkout from "./pages/Checkout";
@@ -77,6 +79,9 @@ const App = () => (
             <Sonner />
             <BrowserRouter>
             <Routes>
+              {/* Route de test */}
+              <Route path="/test" element={<TestPage />} />
+
               {/* Routes publiques/clients */}
               <Route path="/" element={<Index />} />
               <Route path="/cart" element={<Cart />} />
@@ -142,6 +147,7 @@ const App = () => (
                   </ProtectedRoute>
                 }
               />
+
               <Route
                 path="/analytics"
                 element={

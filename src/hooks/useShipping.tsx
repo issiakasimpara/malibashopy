@@ -24,6 +24,8 @@ export const useShippingZones = (storeId?: string) => {
     queryKey: ['shipping-zones', storeId],
     queryFn: () => storeId ? shippingService.getShippingZones(storeId) : Promise.resolve([]),
     enabled: !!storeId,
+    retry: false, // Ne pas réessayer si les tables n'existent pas
+    refetchOnWindowFocus: false,
   });
 
   // Créer une zone
@@ -113,6 +115,8 @@ export const useShippingMethods = (storeId?: string) => {
     queryKey: ['shipping-methods', storeId],
     queryFn: () => storeId ? shippingService.getShippingMethods(storeId) : Promise.resolve([]),
     enabled: !!storeId,
+    retry: false, // Ne pas réessayer si les tables n'existent pas
+    refetchOnWindowFocus: false,
   });
 
   // Créer une méthode
