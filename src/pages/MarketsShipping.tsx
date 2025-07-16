@@ -22,7 +22,12 @@ import {
   MapPin,
   Package,
   RefreshCw,
-  Save
+  Save,
+  Clock,
+  DollarSign,
+  Loader2,
+  Edit,
+  Trash2
 } from 'lucide-react';
 import { useStores } from '@/hooks/useStores';
 import { useMarketsShipping } from '@/hooks/useMarketsShipping';
@@ -157,10 +162,14 @@ const MarketConfiguration = ({
 const ShippingMethods = ({
   methods,
   onToggleMethod,
+  onEditMethod,
+  onDeleteMethod,
   isLoading
 }: {
   methods: any[];
   onToggleMethod: (id: string, isActive: boolean) => void;
+  onEditMethod: (method: any) => void;
+  onDeleteMethod: (id: string) => void;
   isLoading: boolean;
 }) => {
 
@@ -246,7 +255,15 @@ const ShippingMethods = ({
               </div>
 
               {/* Actions */}
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => onEditMethod(method)}
+                  className="text-blue-600 hover:text-blue-700"
+                >
+                  Modifier
+                </Button>
                 <Button
                   variant="outline"
                   size="sm"
@@ -254,6 +271,14 @@ const ShippingMethods = ({
                   className={method.is_active ? "text-red-600 hover:text-red-700" : "text-green-600 hover:text-green-700"}
                 >
                   {method.is_active ? 'Désactiver' : 'Activer'}
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => onDeleteMethod(method.id)}
+                  className="text-red-600 hover:text-red-700"
+                >
+                  Supprimer
                 </Button>
               </div>
             </div>
@@ -264,19 +289,45 @@ const ShippingMethods = ({
   );
 };
 
-// Modal pour créer une nouvelle méthode de livraison
-const CreateShippingMethodModal = ({ isOpen, onClose, onSave }: {
+// Modal pour créer/éditer une méthode de livraison
+const CreateShippingMethodModal = ({
+  isOpen,
+  onClose,
+  onSave,
+  editingMethod = null
+}: {
   isOpen: boolean;
   onClose: () => void;
   onSave: (method: any) => void;
+  editingMethod?: any;
 }) => {
   const [formData, setFormData] = useState({
     name: '',
     description: '',
     price: 0,
-    estimatedDays: '',
+    estimated_days: '',
     icon: '📦'
   });
+
+  useEffect(() => {
+    if (editingMethod) {
+      setFormData({
+        name: editingMethod.name || '',
+        description: editingMethod.description || '',
+        price: editingMethod.price || 0,
+        estimated_days: editingMethod.estimated_days || '',
+        icon: editingMethod.icon || '📦'
+      });
+    } else {
+      setFormData({
+        name: '',
+        description: '',
+        price: 0,
+        estimated_days: '',
+        icon: '📦'
+      });
+    }
+  }, [editingMethod, isOpen]);
 
   const SHIPPING_ICONS = [
     { icon: '📦', label: 'Colis standard' },
@@ -307,7 +358,7 @@ const CreateShippingMethodModal = ({ isOpen, onClose, onSave }: {
       name: '',
       description: '',
       price: 0,
-      estimatedDays: '',
+      estimated_days: '',
       icon: '📦'
     });
     onClose();
@@ -319,7 +370,7 @@ const CreateShippingMethodModal = ({ isOpen, onClose, onSave }: {
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Package className="h-5 w-5" />
-            Créer une méthode de livraison
+            {editingMethod ? 'Modifier la méthode' : 'Créer une méthode de livraison'}
           </DialogTitle>
         </DialogHeader>
 
@@ -336,11 +387,11 @@ const CreateShippingMethodModal = ({ isOpen, onClose, onSave }: {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="estimatedDays">Délai de livraison *</Label>
+              <Label htmlFor="estimated_days">Délai de livraison *</Label>
               <Input
-                id="estimatedDays"
-                value={formData.estimatedDays}
-                onChange={(e) => setFormData(prev => ({ ...prev, estimatedDays: e.target.value }))}
+                id="estimated_days"
+                value={formData.estimated_days}
+                onChange={(e) => setFormData(prev => ({ ...prev, estimated_days: e.target.value }))}
                 placeholder="Ex: 2-3 jours"
                 required
               />
@@ -399,11 +450,11 @@ const CreateShippingMethodModal = ({ isOpen, onClose, onSave }: {
             </Button>
             <Button
               type="submit"
-              disabled={!formData.name || !formData.estimatedDays}
+              disabled={!formData.name || !formData.estimated_days}
               className="flex items-center gap-2"
             >
               <Save className="h-4 w-4" />
-              Créer la méthode
+              {editingMethod ? 'Modifier' : 'Créer la méthode'}
             </Button>
           </div>
         </form>
@@ -414,27 +465,44 @@ const CreateShippingMethodModal = ({ isOpen, onClose, onSave }: {
 
 const MarketsShipping = () => {
   const { store } = useStores();
-
-  // Données temporaires pour tester
-  const marketSettings = null;
-  const shippingMethods: any[] = [];
-  const enabledCountriesCount = 0;
-  const activeShippingMethodsCount = 0;
-  const isLoading = false;
+  const {
+    marketSettings,
+    shippingMethods,
+    enabledCountriesCount,
+    activeShippingMethodsCount,
+    isLoading,
+    createShippingMethod,
+    updateMarketSettings,
+    updateShippingMethod,
+    deleteShippingMethod,
+    toggleShippingMethod,
+  } = useMarketsShipping();
 
   const [activeTab, setActiveTab] = useState('markets');
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingMethod, setEditingMethod] = useState<any>(null);
 
-  const handleAddShippingMethod = (newMethod: any) => {
-    console.log('Add shipping method:', newMethod);
+  const handleCreateMethod = (methodData: any) => {
+    createShippingMethod(methodData);
+    setIsModalOpen(false);
   };
 
-  const handleUpdateMarketSettings = (data: any) => {
-    console.log('Update market settings:', data);
+  const handleEditMethod = (method: any) => {
+    setEditingMethod(method);
+    setIsModalOpen(true);
   };
 
-  const handleToggleShippingMethod = (id: string, isActive: boolean) => {
-    console.log('Toggle shipping method:', id, isActive);
+  const handleUpdateMethod = (methodData: any) => {
+    if (editingMethod) {
+      updateShippingMethod(editingMethod.id, methodData);
+      setEditingMethod(null);
+      setIsModalOpen(false);
+    }
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setEditingMethod(null);
   };
 
   return (
@@ -553,7 +621,7 @@ const MarketsShipping = () => {
 
                 <MarketConfiguration
                   marketSettings={marketSettings}
-                  onUpdateSettings={handleUpdateMarketSettings}
+                  onUpdateSettings={updateMarketSettings}
                   isLoading={isLoading}
                 />
               </TabsContent>
@@ -569,7 +637,7 @@ const MarketsShipping = () => {
                     </p>
                   </div>
                   <Button
-                    onClick={() => setIsCreateModalOpen(true)}
+                    onClick={() => setIsModalOpen(true)}
                     className="flex items-center gap-2"
                   >
                     <Plus className="h-4 w-4" />
@@ -579,7 +647,9 @@ const MarketsShipping = () => {
 
                 <ShippingMethods
                   methods={shippingMethods}
-                  onToggleMethod={handleToggleShippingMethod}
+                  onToggleMethod={toggleShippingMethod}
+                  onEditMethod={handleEditMethod}
+                  onDeleteMethod={deleteShippingMethod}
                   isLoading={isLoading}
                 />
               </TabsContent>
@@ -587,11 +657,12 @@ const MarketsShipping = () => {
           </CardContent>
         </Card>
 
-        {/* Create Shipping Method Modal */}
+        {/* Shipping Method Modal */}
         <CreateShippingMethodModal
-          isOpen={isCreateModalOpen}
-          onClose={() => setIsCreateModalOpen(false)}
-          onSave={handleAddShippingMethod}
+          isOpen={isModalOpen}
+          onClose={handleCloseModal}
+          onSave={editingMethod ? handleUpdateMethod : handleCreateMethod}
+          editingMethod={editingMethod}
         />
       </div>
     </DashboardLayout>

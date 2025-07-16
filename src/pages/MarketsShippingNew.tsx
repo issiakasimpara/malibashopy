@@ -292,3 +292,362 @@ const ShippingMethods = ({
     </div>
   );
 };
+
+// Modal pour créer/éditer une méthode de livraison
+const ShippingMethodModal = ({
+  isOpen,
+  onClose,
+  onSave,
+  editingMethod = null,
+  isLoading = false
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  onSave: (method: ShippingMethodForm) => void;
+  editingMethod?: any;
+  isLoading?: boolean;
+}) => {
+  const [formData, setFormData] = useState<ShippingMethodForm>({
+    name: '',
+    description: '',
+    price: 0,
+    estimated_days: '',
+    icon: '📦'
+  });
+
+  useEffect(() => {
+    if (editingMethod) {
+      setFormData({
+        name: editingMethod.name || '',
+        description: editingMethod.description || '',
+        price: editingMethod.price || 0,
+        estimated_days: editingMethod.estimated_days || '',
+        icon: editingMethod.icon || '📦'
+      });
+    } else {
+      setFormData({
+        name: '',
+        description: '',
+        price: 0,
+        estimated_days: '',
+        icon: '📦'
+      });
+    }
+  }, [editingMethod, isOpen]);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onSave(formData);
+  };
+
+  const iconOptions = [
+    { value: '📦', label: '📦 Standard' },
+    { value: '⚡', label: '⚡ Express' },
+    { value: '🚚', label: '🚚 Camion' },
+    { value: '🏪', label: '🏪 Magasin' },
+    { value: '✈️', label: '✈️ Aérien' },
+    { value: '🚢', label: '🚢 Maritime' }
+  ];
+
+  return (
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="sm:max-w-[500px]">
+        <DialogHeader>
+          <DialogTitle>
+            {editingMethod ? 'Modifier la méthode' : 'Nouvelle méthode de livraison'}
+          </DialogTitle>
+          <DialogDescription>
+            {editingMethod
+              ? 'Modifiez les informations de cette méthode de livraison.'
+              : 'Créez une nouvelle méthode de livraison pour votre boutique.'
+            }
+          </DialogDescription>
+        </DialogHeader>
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="name">Nom de la méthode</Label>
+              <Input
+                id="name"
+                value={formData.name}
+                onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                placeholder="Ex: Livraison standard"
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="icon">Icône</Label>
+              <Select
+                value={formData.icon}
+                onValueChange={(value) => setFormData(prev => ({ ...prev, icon: value }))}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {iconOptions.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="description">Description</Label>
+            <Textarea
+              id="description"
+              value={formData.description}
+              onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+              placeholder="Décrivez cette méthode de livraison..."
+              rows={3}
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="price">Prix (XOF)</Label>
+              <Input
+                id="price"
+                type="number"
+                min="0"
+                value={formData.price}
+                onChange={(e) => setFormData(prev => ({ ...prev, price: Number(e.target.value) }))}
+                placeholder="0"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="estimated_days">Délai estimé</Label>
+              <Input
+                id="estimated_days"
+                value={formData.estimated_days}
+                onChange={(e) => setFormData(prev => ({ ...prev, estimated_days: e.target.value }))}
+                placeholder="Ex: 2-3 jours"
+                required
+              />
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={onClose}>
+              Annuler
+            </Button>
+            <Button type="submit" disabled={isLoading}>
+              {isLoading ? (
+                <Loader2 className="h-4 w-4 animate-spin mr-2" />
+              ) : null}
+              {editingMethod ? 'Modifier' : 'Créer'}
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+};
+
+// Composant principal
+const MarketsShippingNew = () => {
+  const { store } = useStores();
+  const {
+    marketSettings,
+    shippingMethods,
+    enabledCountriesCount,
+    activeShippingMethodsCount,
+    isLoading,
+    createShippingMethod,
+    updateMarketSettings,
+    updateShippingMethod,
+    deleteShippingMethod,
+    toggleShippingMethod,
+  } = useMarketsShipping();
+
+  const [activeTab, setActiveTab] = useState('markets');
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingMethod, setEditingMethod] = useState<any>(null);
+
+  const handleCreateMethod = (methodData: ShippingMethodForm) => {
+    createShippingMethod(methodData);
+    setIsModalOpen(false);
+  };
+
+  const handleEditMethod = (method: any) => {
+    setEditingMethod(method);
+    setIsModalOpen(true);
+  };
+
+  const handleUpdateMethod = (methodData: ShippingMethodForm) => {
+    if (editingMethod) {
+      updateShippingMethod(editingMethod.id, methodData);
+      setEditingMethod(null);
+      setIsModalOpen(false);
+    }
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setEditingMethod(null);
+  };
+
+  return (
+    <DashboardLayout>
+      <div className="space-y-8">
+        {/* En-tête */}
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
+            Marchés et Livraisons
+          </h1>
+          <p className="text-gray-600 dark:text-gray-400 mt-2">
+            Configurez vos marchés cibles et méthodes de livraison
+          </p>
+        </div>
+
+        {/* Statistiques */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-blue-600 dark:text-blue-400">
+                    Marchés actifs
+                  </p>
+                  <p className="text-3xl font-bold text-blue-700 dark:text-blue-300">
+                    {enabledCountriesCount}
+                  </p>
+                  <p className="text-xs text-gray-500 mt-1">
+                    sur {AFRICAN_FRANCOPHONE_COUNTRIES.length} disponibles
+                  </p>
+                </div>
+                <div className="p-3 bg-blue-500/10 rounded-full">
+                  <Globe className="h-8 w-8 text-blue-600" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-green-600 dark:text-green-400">
+                    Méthodes actives
+                  </p>
+                  <p className="text-3xl font-bold text-green-700 dark:text-green-300">
+                    {activeShippingMethodsCount}
+                  </p>
+                  <p className="text-xs text-gray-500 mt-1">
+                    sur {shippingMethods.length} créées
+                  </p>
+                </div>
+                <div className="p-3 bg-green-500/10 rounded-full">
+                  <Truck className="h-8 w-8 text-green-600" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-purple-600 dark:text-purple-400">
+                    Couverture
+                  </p>
+                  <p className="text-3xl font-bold text-purple-700 dark:text-purple-300">
+                    {Math.round((enabledCountriesCount / AFRICAN_FRANCOPHONE_COUNTRIES.length) * 100)}%
+                  </p>
+                  <p className="text-xs text-gray-500 mt-1">
+                    des marchés disponibles
+                  </p>
+                </div>
+                <div className="p-3 bg-purple-500/10 rounded-full">
+                  <MapPin className="h-8 w-8 text-purple-600" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Contenu principal */}
+        <Card>
+          <CardContent className="p-0">
+            <Tabs value={activeTab} onValueChange={setActiveTab}>
+              <div className="border-b border-gray-200 dark:border-gray-700 px-6 py-4">
+                <TabsList className="grid w-full grid-cols-2">
+                  <TabsTrigger value="markets" className="flex items-center gap-2">
+                    <Globe className="h-4 w-4" />
+                    Marchés
+                  </TabsTrigger>
+                  <TabsTrigger value="shipping" className="flex items-center gap-2">
+                    <Truck className="h-4 w-4" />
+                    Méthodes de livraison
+                  </TabsTrigger>
+                </TabsList>
+              </div>
+
+              <TabsContent value="markets" className="p-6 space-y-6">
+                <div className="flex justify-between items-center">
+                  <div>
+                    <h3 className="text-xl font-semibold text-gray-800 dark:text-gray-200">
+                      Configuration des marchés
+                    </h3>
+                    <p className="text-gray-600 dark:text-gray-400">
+                      Sélectionnez les pays où vous souhaitez vendre vos produits
+                    </p>
+                  </div>
+                </div>
+
+                <MarketConfiguration
+                  marketSettings={marketSettings}
+                  onUpdateSettings={updateMarketSettings}
+                  isLoading={isLoading}
+                />
+              </TabsContent>
+
+              <TabsContent value="shipping" className="p-6 space-y-6">
+                <div className="flex justify-between items-center">
+                  <div>
+                    <h3 className="text-xl font-semibold text-gray-800 dark:text-gray-200">
+                      Méthodes de livraison
+                    </h3>
+                    <p className="text-gray-600 dark:text-gray-400">
+                      Configurez vos options de livraison et leurs tarifs
+                    </p>
+                  </div>
+                  <Button
+                    onClick={() => setIsModalOpen(true)}
+                    className="flex items-center gap-2"
+                  >
+                    <Plus className="h-4 w-4" />
+                    Ajouter une méthode
+                  </Button>
+                </div>
+
+                <ShippingMethods
+                  methods={shippingMethods}
+                  onToggleMethod={toggleShippingMethod}
+                  onEditMethod={handleEditMethod}
+                  onDeleteMethod={deleteShippingMethod}
+                  isLoading={isLoading}
+                />
+              </TabsContent>
+            </Tabs>
+          </CardContent>
+        </Card>
+
+        {/* Modal */}
+        <ShippingMethodModal
+          isOpen={isModalOpen}
+          onClose={handleCloseModal}
+          onSave={editingMethod ? handleUpdateMethod : handleCreateMethod}
+          editingMethod={editingMethod}
+          isLoading={isLoading}
+        />
+      </div>
+    </DashboardLayout>
+  );
+};
+
+export default MarketsShippingNew;
