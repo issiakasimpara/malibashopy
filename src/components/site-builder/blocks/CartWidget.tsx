@@ -28,14 +28,40 @@ const CartWidget = () => {
     }).format(price);
   };
 
+  const getStoreBasedUrl = (path: string) => {
+    // Si nous sommes dans une boutique spécifique
+    if (storeSlug) {
+      return `/store/${storeSlug}${path}`;
+    }
+
+    // Si nous sommes sur une page de boutique mais sans slug dans l'URL
+    if (location.pathname.includes('/store/')) {
+      const pathParts = location.pathname.split('/');
+      const slugIndex = pathParts.indexOf('store') + 1;
+      if (slugIndex < pathParts.length) {
+        const currentSlug = pathParts[slugIndex];
+        return `/store/${currentSlug}${path}`;
+      }
+    }
+
+    // Sinon, utiliser la première boutique disponible
+    if (stores.length > 0) {
+      const firstStore = stores[0];
+      return `/store/${firstStore.slug || firstStore.id}${path}`;
+    }
+
+    // Fallback vers l'URL simple
+    return path;
+  };
+
   const handleViewCart = () => {
     toggleCart();
-    navigate('/cart');
+    navigate(getStoreBasedUrl('/cart'));
   };
 
   const handleCheckout = () => {
     toggleCart();
-    navigate('/checkout');
+    navigate(getStoreBasedUrl('/checkout'));
   };
 
   return (
