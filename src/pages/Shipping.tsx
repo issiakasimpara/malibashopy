@@ -37,6 +37,8 @@ const Shipping = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [showCreateZone, setShowCreateZone] = useState(false);
   const [showCreateMethod, setShowCreateMethod] = useState(false);
+  const [editingZone, setEditingZone] = useState<any>(null);
+  const [editingMethod, setEditingMethod] = useState<any>(null);
   const { toast } = useToast();
 
   // Sélectionner automatiquement la première boutique
@@ -82,6 +84,60 @@ const Shipping = () => {
   const handleStoreCreated = (newStore: any) => {
     setSelectedStore(newStore);
     setShowCreateStore(false);
+  };
+
+  const handleDeleteZone = async (zoneId: string) => {
+    if (!confirm('Êtes-vous sûr de vouloir supprimer cette zone ?')) return;
+
+    try {
+      const { error } = await supabase
+        .from('shipping_zones')
+        .delete()
+        .eq('id', zoneId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Succès",
+        description: "Zone supprimée avec succès"
+      });
+
+      loadShippingData();
+    } catch (error) {
+      console.error('Erreur:', error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de supprimer la zone",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleDeleteMethod = async (methodId: string) => {
+    if (!confirm('Êtes-vous sûr de vouloir supprimer cette méthode ?')) return;
+
+    try {
+      const { error } = await supabase
+        .from('shipping_methods')
+        .delete()
+        .eq('id', methodId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Succès",
+        description: "Méthode supprimée avec succès"
+      });
+
+      loadShippingData();
+    } catch (error) {
+      console.error('Erreur:', error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de supprimer la méthode",
+        variant: "destructive"
+      });
+    }
   };
 
   if (isLoadingStores) {
@@ -209,10 +265,19 @@ const Shipping = () => {
                                 <p className="text-sm text-gray-600">{zone.countries?.join(', ')}</p>
                               </div>
                               <div className="flex gap-2">
-                                <Button variant="outline" size="sm">
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => setEditingZone(zone)}
+                                >
                                   <Edit className="h-4 w-4" />
                                 </Button>
-                                <Button variant="outline" size="sm">
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => handleDeleteZone(zone.id)}
+                                  className="text-red-600 hover:text-red-700"
+                                >
                                   <Trash2 className="h-4 w-4" />
                                 </Button>
                               </div>
@@ -273,10 +338,19 @@ const Shipping = () => {
                                 </div>
                               </div>
                               <div className="flex gap-2">
-                                <Button variant="outline" size="sm">
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => setEditingMethod(method)}
+                                >
                                   <Edit className="h-4 w-4" />
                                 </Button>
-                                <Button variant="outline" size="sm">
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => handleDeleteMethod(method.id)}
+                                  className="text-red-600 hover:text-red-700"
+                                >
                                   <Trash2 className="h-4 w-4" />
                                 </Button>
                               </div>
@@ -320,6 +394,26 @@ const Shipping = () => {
               storeId={selectedStore.id}
               onMethodCreated={loadShippingData}
             />
+
+            {editingZone && (
+              <CreateZoneDialog
+                open={!!editingZone}
+                onOpenChange={() => setEditingZone(null)}
+                storeId={selectedStore.id}
+                onZoneCreated={loadShippingData}
+                editingZone={editingZone}
+              />
+            )}
+
+            {editingMethod && (
+              <CreateMethodDialog
+                open={!!editingMethod}
+                onOpenChange={() => setEditingMethod(null)}
+                storeId={selectedStore.id}
+                onMethodCreated={loadShippingData}
+                editingMethod={editingMethod}
+              />
+            )}
           </>
         )}
       </div>
