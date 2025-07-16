@@ -19,11 +19,12 @@ interface CreateZoneDialogProps {
   onOpenChange: (open: boolean) => void;
   storeId: string;
   onZoneCreated: () => void;
+  editingZone?: any;
 }
 
-const CreateZoneDialog = ({ open, onOpenChange, storeId, onZoneCreated }: CreateZoneDialogProps) => {
-  const [name, setName] = useState('');
-  const [selectedCountries, setSelectedCountries] = useState<string[]>([]);
+const CreateZoneDialog = ({ open, onOpenChange, storeId, onZoneCreated, editingZone }: CreateZoneDialogProps) => {
+  const [name, setName] = useState(editingZone?.name || '');
+  const [selectedCountries, setSelectedCountries] = useState<string[]>(editingZone?.countries || []);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
@@ -41,30 +42,46 @@ const CreateZoneDialog = ({ open, onOpenChange, storeId, onZoneCreated }: Create
 
     setIsLoading(true);
     try {
-      const { error } = await supabase
-        .from('shipping_zones')
-        .insert({
-          name: name.trim(),
-          countries: selectedCountries,
-          store_id: storeId
-        });
+      if (editingZone) {
+        // Mode édition
+        const { error } = await supabase
+          .from('shipping_zones')
+          .update({
+            name: name.trim(),
+            countries: selectedCountries
+          })
+          .eq('id', editingZone.id);
 
-      if (error) throw error;
+        if (error) throw error;
+      } else {
+        // Mode création
+        const { error } = await supabase
+          .from('shipping_zones')
+          .insert({
+            name: name.trim(),
+            countries: selectedCountries,
+            store_id: storeId
+          });
+
+        if (error) throw error;
+      }
 
       toast({
         title: "Succès",
-        description: "Zone de livraison créée avec succès"
+        description: editingZone ? "Zone modifiée avec succès" : "Zone de livraison créée avec succès"
       });
 
-      setName('');
-      setSelectedCountries([]);
+      if (!editingZone) {
+        setName('');
+        setSelectedCountries([]);
+      }
       onZoneCreated();
       onOpenChange(false);
     } catch (error) {
       console.error('Erreur:', error);
       toast({
         title: "Erreur",
-        description: "Impossible de créer la zone",
+        description: editingZone ? "Impossible de modifier la zone" : "Impossible de créer la zone",
         variant: "destructive"
       });
     } finally {
