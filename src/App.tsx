@@ -25,7 +25,7 @@ import SiteBuilder from "./pages/SiteBuilder";
 import TemplateEditor from "./pages/TemplateEditor";
 import Testimonials from "./pages/Testimonials";
 import Payments from "./pages/Payments";
-import Shipping from "./pages/Shipping";
+import MarketsShipping from "./pages/MarketsShipping";
 import TestPage from "./pages/TestPage";
 
 import Cart from "./pages/Cart";
@@ -143,7 +143,7 @@ const App = () => (
                 path="/shipping"
                 element={
                   <ProtectedRoute>
-                    <Shipping />
+                    <MarketsShipping />
                   </ProtectedRoute>
                 }
               />
