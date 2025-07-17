@@ -88,8 +88,8 @@ export const useAutoShipping = (storeId?: string) => {
 };
 
 /**
- * Hook pour récupérer UNIQUEMENT les méthodes créées par l'admin
- * PAS de création automatique - utilise seulement ce que l'admin a configuré
+ * Hook simple pour récupérer les méthodes de livraison de l'admin
+ * VERSION PROPRE - RESTART FROM ZERO
  */
 export const useShippingWithAutoSetup = (storeId?: string, countryCode?: string) => {
   const [methods, setMethods] = useState<any[]>([]);
@@ -100,59 +100,27 @@ export const useShippingWithAutoSetup = (storeId?: string, countryCode?: string)
 
     try {
       setIsLoading(true);
-      console.log('🔍 Chargement méthodes ADMIN pour store:', storeId, 'pays:', countryCode);
+      console.log('🚚 Chargement méthodes pour boutique:', storeId);
 
-      // Récupérer UNIQUEMENT les méthodes créées par l'admin
-      const { data: adminMethods, error: methodsError } = await supabase
+      // Récupérer les méthodes de cette boutique
+      const { data: shippingMethods, error } = await supabase
         .from('shipping_methods')
-        .select(`
-          *,
-          shipping_zones(*)
-        `)
+        .select('*')
         .eq('store_id', storeId)
         .eq('is_active', true)
         .order('sort_order');
 
-      if (methodsError) {
-        console.error('❌ Erreur récupération méthodes admin:', methodsError);
+      if (error) {
+        console.error('❌ Erreur:', error);
         setMethods([]);
         return;
       }
 
-      if (!adminMethods || adminMethods.length === 0) {
-        console.log('⚠️ Aucune méthode configurée par l\'admin');
-        setMethods([]);
-        return;
-      }
-
-      // Filtrer par pays si spécifié
-      let availableMethods = adminMethods;
-
-      if (countryCode) {
-        availableMethods = adminMethods.filter(method => {
-          // Méthodes globales (sans zone) - disponibles partout
-          if (!method.shipping_zone_id || !method.shipping_zones) {
-            console.log(`✅ ${method.name} - Méthode GLOBALE (disponible partout)`);
-            return true;
-          }
-
-          // Méthodes avec zone spécifique
-          const zone = method.shipping_zones;
-          if (zone && zone.countries && zone.countries.includes(countryCode)) {
-            console.log(`✅ ${method.name} - Disponible pour ${countryCode} (Zone: ${zone.name})`);
-            return true;
-          }
-
-          console.log(`❌ ${method.name} - Non disponible pour ${countryCode}`);
-          return false;
-        });
-      }
-
-      console.log('✅ Méthodes admin disponibles:', availableMethods.length);
-      setMethods(availableMethods);
+      console.log('✅ Méthodes trouvées:', shippingMethods?.length || 0);
+      setMethods(shippingMethods || []);
 
     } catch (error) {
-      console.error('💥 Erreur chargement méthodes admin:', error);
+      console.error('💥 Erreur:', error);
       setMethods([]);
     } finally {
       setIsLoading(false);
