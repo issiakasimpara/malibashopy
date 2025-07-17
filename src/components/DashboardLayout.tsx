@@ -17,11 +17,13 @@ import {
   MessageSquare,
   Grid3X3,
   Globe,
-  Truck
+  Truck,
+  ExternalLink
 } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
 interface DashboardLayoutProps {
@@ -33,6 +35,84 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   const location = useLocation();
   const { user, signOut } = useAuth();
   const { toast } = useToast();
+
+  // Fonction pour ouvrir la boutique dans une nouvelle fenêtre
+  const handleViewStore = async () => {
+    try {
+      if (!user) {
+        toast({
+          title: "Erreur",
+          description: "Vous devez être connecté pour voir votre boutique.",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      // D'abord récupérer le profil de l'utilisateur (comme dans useStores)
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('user_id', user.id)
+        .single();
+
+      if (profileError || !profile) {
+        console.error('Profile error:', profileError);
+        toast({
+          title: "Erreur",
+          description: "Profil utilisateur non trouvé.",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      // Maintenant récupérer les boutiques de ce profil
+      const { data: stores, error } = await supabase
+        .from('stores')
+        .select('*')
+        .eq('merchant_id', profile.id)
+        .eq('status', 'active')
+        .limit(1);
+
+      if (error) {
+        console.error('Erreur lors de la récupération de la boutique:', error);
+        toast({
+          title: "Erreur",
+          description: "Impossible de récupérer les informations de la boutique.",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      if (!stores || stores.length === 0) {
+        toast({
+          title: "Aucune boutique",
+          description: "Vous devez d'abord créer une boutique pour la voir.",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      const currentStore = stores[0];
+
+      // Créer le slug de la boutique (nom en minuscules, espaces remplacés par des tirets)
+      const storeSlug = currentStore.name
+        ?.toLowerCase()
+        .replace(/\s+/g, '-')
+        .replace(/[^a-z0-9-]/g, '') || 'ma-boutique';
+
+      // Ouvrir la boutique dans une nouvelle fenêtre
+      const storeUrl = `/store/${storeSlug}`;
+      window.open(storeUrl, '_blank');
+
+    } catch (error) {
+      console.error('Erreur lors de l\'ouverture de la boutique:', error);
+      toast({
+        title: "Erreur",
+        description: "Impossible d'ouvrir la boutique.",
+        variant: "destructive"
+      });
+    }
+  };
 
   const handleSignOut = async () => {
     await signOut();
@@ -183,10 +263,14 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
               <Bell className="h-5 w-5" />
               <span className="absolute -top-1 -right-1 h-3 w-3 bg-gradient-to-br from-red-400 to-red-500 rounded-full shadow-lg animate-pulse"></span>
             </Button>
-            <Button variant="outline" size="sm" asChild className="hover:bg-primary hover:text-primary-foreground transition-all duration-200 border-border/60">
-              <Link to="/">
-                Voir le site
-              </Link>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleViewStore}
+              className="hover:bg-primary hover:text-primary-foreground transition-all duration-200 border-border/60 flex items-center gap-2"
+            >
+              <ExternalLink className="h-4 w-4" />
+              Voir le site
             </Button>
           </div>
         </div>
