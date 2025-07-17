@@ -1,7 +1,7 @@
 import React, { useEffect, useState, memo, useMemo, Suspense } from 'react';
 import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Store, ShoppingBag, ArrowLeft, Home, Loader2 } from 'lucide-react';
+import { Store, ShoppingBag, ArrowLeft, Home, Loader2, Menu, X } from 'lucide-react';
 import { useCart } from '@/contexts/CartContext';
 import BlockRenderer from '@/components/site-builder/BlockRenderer';
 import CartWidget from '@/components/site-builder/blocks/CartWidget';
@@ -43,6 +43,7 @@ const Storefront = () => {
   const [products, setProducts] = useState<ProductType[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const { setStoreId } = useCart();
 
@@ -268,8 +269,47 @@ const Storefront = () => {
               >
                 <ShoppingBag className="h-5 w-5" />
               </Button>
+
+              {/* Menu hamburger mobile */}
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                className="md:hidden"
+              >
+                {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+              </Button>
             </div>
           </div>
+
+          {/* Menu mobile déroulant */}
+          {mobileMenuOpen && (
+            <div className="md:hidden border-t bg-white">
+              <div className="px-4 py-2 space-y-1">
+                {mainPages.map((page) => (
+                  <button
+                    key={page}
+                    onClick={() => {
+                      handlePageNavigation(page);
+                      setMobileMenuOpen(false);
+                    }}
+                    className={`block w-full text-left px-3 py-2 rounded-md text-base font-medium transition-colors ${
+                      currentPage === page
+                        ? 'text-white'
+                        : 'text-gray-700 hover:text-gray-900 hover:bg-gray-50'
+                    }`}
+                    style={{
+                      backgroundColor: currentPage === page ? template.styles.primaryColor : 'transparent'
+                    }}
+                  >
+                    {page === 'home' ? 'Accueil' :
+                     page === 'product' ? 'Boutique' :
+                     page === 'category' ? 'Catégories' : 'Contact'}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </nav>
     );

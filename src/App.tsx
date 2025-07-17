@@ -40,9 +40,10 @@ const queryClient = new QueryClient();
 
 const CartWidgetConditional = () => {
   const location = useLocation();
-  
-  // Liste des routes où le panier ne doit PAS apparaître (routes admin/marchands)
-  const adminRoutes = [
+
+  // Liste des routes où le panier ne doit PAS apparaître
+  const excludedRoutes = [
+    // Routes admin/marchands
     '/dashboard',
     '/products',
     '/categories',
@@ -55,17 +56,27 @@ const CartWidgetConditional = () => {
     '/domains',
     '/testimonials',
     '/payments',
-    '/auth'
+    '/auth',
+    '/site-builder',
+    '/template-editor',
+    // Pages où le panier est déjà intégré ou non pertinent
+    '/cart',
+    '/checkout',
+    '/payment-success',
+    '/mes-commandes'
   ];
-  
-  // Vérifier si la route actuelle est une route admin/marchande
-  const isAdminRoute = adminRoutes.some(route => location.pathname.startsWith(route));
-  
-  // Afficher le panier seulement sur les pages publiques/clients
-  if (isAdminRoute) {
+
+  // Vérifier si la route actuelle doit exclure le panier
+  const shouldExclude = excludedRoutes.some(route => location.pathname.startsWith(route));
+
+  // Vérifier si nous sommes sur la page d'accueil principale (pas une boutique)
+  const isMainHomePage = location.pathname === '/';
+
+  // Afficher le panier seulement sur les pages de boutiques publiques
+  if (shouldExclude || isMainHomePage) {
     return null;
   }
-  
+
   return <CartWidget />;
 };
 

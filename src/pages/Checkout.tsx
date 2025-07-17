@@ -255,7 +255,9 @@ const Checkout = () => {
       if (isInPreview) {
         console.log('📱 Mode aperçu - simulation de commande');
         await new Promise(resolve => setTimeout(resolve, 2000)); // Simuler le traitement
-        const successUrl = '/payment-success?preview=true';
+        const successUrl = storeSlug
+          ? `/store/${storeSlug}/payment-success?preview=true`
+          : '/payment-success?preview=true';
         navigate(successUrl);
         return;
       }
@@ -302,7 +304,10 @@ const Checkout = () => {
           clearCart();
 
           // Rediriger vers la page de succès avec le numéro de commande
-          navigate(`/payment-success?order=${order.order_number}`);
+          const successUrl = storeSlug
+            ? `/store/${storeSlug}/payment-success?order=${order.order_number}`
+            : `/payment-success?order=${order.order_number}`;
+          navigate(successUrl);
         },
         onError: (error) => {
           console.error('❌ Erreur création commande:', error);
@@ -396,17 +401,17 @@ const Checkout = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
-      <div className="container mx-auto px-4 max-w-4xl">
-        <h1 className="text-3xl font-bold mb-8">Finaliser votre commande</h1>
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-4xl">
+        <h1 className="text-2xl sm:text-3xl font-bold mb-6 sm:mb-8">Finaliser votre commande</h1>
         
-        <div className="grid md:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
           {/* Informations client */}
           <Card>
             <CardHeader>
               <CardTitle>Informations de livraison</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="firstName">Prénom</Label>
                   <Input

@@ -27,7 +27,19 @@ const PaymentSuccess = () => {
     console.log('🔘 Button clicked - handleReturnToShop');
     console.log('🖼️ isInPreview:', isInPreview);
     console.log('🏪 isInStorefront:', isInStorefront);
-    console.log('🏪 storeSlug:', storeSlug);
+    console.log('🏪 storeSlug from params:', storeSlug);
+    console.log('🌐 Current pathname:', location.pathname);
+
+    // Extraire le storeSlug depuis l'URL si pas disponible dans les params
+    let detectedStoreSlug = storeSlug;
+    if (!detectedStoreSlug && location.pathname.includes('/store/')) {
+      const pathParts = location.pathname.split('/');
+      const storeIndex = pathParts.indexOf('store');
+      if (storeIndex !== -1 && pathParts[storeIndex + 1]) {
+        detectedStoreSlug = pathParts[storeIndex + 1];
+        console.log('🔍 Detected storeSlug from URL:', detectedStoreSlug);
+      }
+    }
 
     if (isInPreview) {
       console.log('📤 In preview mode - sending message to parent');
@@ -38,10 +50,10 @@ const PaymentSuccess = () => {
       } catch (error) {
         console.error('❌ Error sending message:', error);
       }
-    } else if (isInStorefront && storeSlug) {
-      console.log('🏪 In storefront - navigating to store home');
+    } else if (isInStorefront && detectedStoreSlug) {
+      console.log('🏪 In storefront - navigating to store home:', detectedStoreSlug);
       // Si nous sommes dans une boutique publique, retourner à l'accueil de cette boutique
-      navigate(`/store/${storeSlug}`);
+      navigate(`/store/${detectedStoreSlug}`);
     } else {
       console.log('🔄 Default navigation to platform home');
       // Navigation par défaut vers la page d'accueil de la plateforme
