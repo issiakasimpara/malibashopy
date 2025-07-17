@@ -9,13 +9,52 @@ import { useMarkets } from '@/hooks/useMarkets';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
-import { Plus, Truck, Globe, Store } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { Plus, Truck, Globe, Store, Edit, Trash2, MoreHorizontal } from 'lucide-react';
 import NoStoreSelected from '@/components/products/NoStoreSelected';
+import CreateMarketDialog from '@/components/markets/CreateMarketDialog';
+import CreateShippingMethodDialog from '@/components/markets/CreateShippingMethodDialog';
+import InitializeMarketsDatabase from '@/components/markets/InitializeMarketsDatabase';
+
+// Mapping des codes pays vers les noms complets
+const COUNTRY_NAMES: Record<string, string> = {
+  'BJ': 'Bénin',
+  'BF': 'Burkina Faso',
+  'BI': 'Burundi',
+  'CM': 'Cameroun',
+  'CF': 'Centrafrique',
+  'KM': 'Comores',
+  'CG': 'Congo',
+  'CD': 'Congo (RDC)',
+  'CI': "Côte d'Ivoire",
+  'DJ': 'Djibouti',
+  'GA': 'Gabon',
+  'GN': 'Guinée',
+  'GQ': 'Guinée équatoriale',
+  'MG': 'Madagascar',
+  'ML': 'Mali',
+  'MA': 'Maroc',
+  'MU': 'Maurice',
+  'MR': 'Mauritanie',
+  'NE': 'Niger',
+  'RW': 'Rwanda',
+  'SN': 'Sénégal',
+  'SC': 'Seychelles',
+  'TD': 'Tchad',
+  'TG': 'Togo',
+  'TN': 'Tunisie'
+};
 
 const MarketsShipping = () => {
   const { stores, isLoading: isLoadingStores } = useStores();
   const [createMarketOpen, setCreateMarketOpen] = useState(false);
   const [createMethodOpen, setCreateMethodOpen] = useState(false);
+  const [editingShippingMethod, setEditingShippingMethod] = useState<any>(null);
 
   // Sélectionner automatiquement la première boutique
   const currentStore = stores.length > 0 ? stores[0] : null;
@@ -27,9 +66,31 @@ const MarketsShipping = () => {
     isLoading,
     createMarket,
     createShippingMethod,
+    updateShippingMethod,
+    deleteShippingMethod,
     isCreatingMarket,
-    isCreatingMethod
+    isCreatingMethod,
+    isUpdatingMethod,
+    isDeletingMethod,
+    marketsError,
+    methodsError
   } = useMarkets(storeId);
+
+  // Handlers pour les méthodes de livraison
+  const handleEditShippingMethod = (method: any) => {
+    setEditingShippingMethod(method);
+    setCreateMethodOpen(true);
+  };
+
+  const handleDeleteShippingMethod = (methodId: string) => {
+    if (window.confirm('Êtes-vous sûr de vouloir supprimer cette méthode de livraison ?')) {
+      deleteShippingMethod(methodId);
+    }
+  };
+
+  // Vérifier si les tables existent (erreur de table non trouvée)
+  const tablesNotExist = marketsError?.message?.includes('relation "public.markets" does not exist') ||
+                        methodsError?.message?.includes('relation "public.shipping_methods" does not exist');
 
   if (isLoadingStores) {
     return (
@@ -48,6 +109,23 @@ const MarketsShipping = () => {
     return (
       <DashboardLayout>
         <NoStoreSelected />
+      </DashboardLayout>
+    );
+  }
+
+  // Si les tables n'existent pas, afficher le composant d'initialisation
+  if (tablesNotExist) {
+    return (
+      <DashboardLayout>
+        <div className="space-y-6">
+          <div className="text-center">
+            <h1 className="text-3xl font-bold">Marchés et Livraisons</h1>
+            <p className="text-gray-600 mt-1">
+              Configuration initiale requise
+            </p>
+          </div>
+          <InitializeMarketsDatabase />
+        </div>
       </DashboardLayout>
     );
   }
@@ -178,13 +256,13 @@ const MarketsShipping = () => {
                           <div>
                             <h3 className="font-medium">{market.name}</h3>
                             <p className="text-sm text-gray-600">
-                              {market.countries.length} pays : {market.countries.join(', ')}
+                              {market.countries.length} pays : {market.countries.map(code => COUNTRY_NAMES[code] || code).join(', ')}
                             </p>
                           </div>
                           <div className="flex items-center gap-2">
                             <span className={`px-2 py-1 rounded-full text-xs ${
-                              market.is_active 
-                                ? 'bg-green-100 text-green-800' 
+                              market.is_active
+                                ? 'bg-green-100 text-green-800'
                                 : 'bg-gray-100 text-gray-800'
                             }`}>
                               {market.is_active ? 'Actif' : 'Inactif'}
@@ -267,12 +345,36 @@ const MarketsShipping = () => {
                           </div>
                           <div className="flex items-center gap-2">
                             <span className={`px-2 py-1 rounded-full text-xs ${
-                              method.is_active 
-                                ? 'bg-green-100 text-green-800' 
+                              method.is_active
+                                ? 'bg-green-100 text-green-800'
                                 : 'bg-gray-100 text-gray-800'
                             }`}>
                               {method.is_active ? 'Actif' : 'Inactif'}
                             </span>
+
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                                  <MoreHorizontal className="h-4 w-4" />
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end">
+                                <DropdownMenuItem
+                                  onClick={() => handleEditShippingMethod(method)}
+                                  className="flex items-center gap-2"
+                                >
+                                  <Edit className="h-4 w-4" />
+                                  Modifier
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                  onClick={() => handleDeleteShippingMethod(method.id)}
+                                  className="flex items-center gap-2 text-red-600"
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                  Supprimer
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
                           </div>
                         </div>
                       </div>
@@ -283,6 +385,22 @@ const MarketsShipping = () => {
             </Card>
           </TabsContent>
         </Tabs>
+
+        {/* Dialogues de création */}
+        <CreateMarketDialog
+          open={createMarketOpen}
+          onOpenChange={setCreateMarketOpen}
+          storeId={storeId}
+          onSuccess={() => setCreateMarketOpen(false)}
+        />
+
+        <CreateShippingMethodDialog
+          open={createMethodOpen}
+          onOpenChange={setCreateMethodOpen}
+          storeId={storeId}
+          markets={markets}
+          onSuccess={() => setCreateMethodOpen(false)}
+        />
       </div>
     </DashboardLayout>
   );
