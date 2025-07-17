@@ -552,6 +552,7 @@ export type Database = {
           status: Database["public"]["Enums"]["product_status"]
           store_id: string
           tags: string[] | null
+          track_inventory: boolean | null
           updated_at: string
           weight: number | null
         }
@@ -571,6 +572,7 @@ export type Database = {
           status?: Database["public"]["Enums"]["product_status"]
           store_id: string
           tags?: string[] | null
+          track_inventory?: boolean | null
           updated_at?: string
           weight?: number | null
         }
@@ -590,6 +592,7 @@ export type Database = {
           status?: Database["public"]["Enums"]["product_status"]
           store_id?: string
           tags?: string[] | null
+          track_inventory?: boolean | null
           updated_at?: string
           weight?: number | null
         }

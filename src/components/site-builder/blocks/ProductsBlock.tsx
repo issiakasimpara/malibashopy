@@ -127,8 +127,8 @@ const ProductsBlock = ({
                       </Badge>
                     )}
 
-                    {/* Badge de stock */}
-                    {(product.inventory_quantity || 0) <= 5 && (product.inventory_quantity || 0) > 0 && (
+                    {/* Badge de stock amélioré */}
+                    {product.track_inventory && (product.inventory_quantity || 0) <= 5 && (product.inventory_quantity || 0) > 0 && (
                       <Badge variant="outline" className="absolute top-2 right-2 bg-white/90 text-orange-600 border-orange-200">
                         Plus que {product.inventory_quantity}
                       </Badge>
@@ -158,11 +158,18 @@ const ProductsBlock = ({
                       )}
                     </div>
                     
-                    <Badge 
-                      variant={(product.inventory_quantity || 0) > 0 ? "default" : "secondary"}
-                      className={`text-xs ${(product.inventory_quantity || 0) > 0 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}
+                    <Badge
+                      variant={
+                        !product.track_inventory ? "default" :
+                        (product.inventory_quantity || 0) > 0 ? "default" : "secondary"
+                      }
+                      className={`text-xs ${
+                        !product.track_inventory ? 'bg-green-100 text-green-800' :
+                        (product.inventory_quantity || 0) > 0 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                      }`}
                     >
-                      {(product.inventory_quantity || 0) > 0 ? 'En stock' : 'Rupture'}
+                      {!product.track_inventory ? 'En stock' :
+                       (product.inventory_quantity || 0) > 0 ? 'En stock' : 'Rupture'}
                     </Badge>
                   </div>
                 </CardContent>

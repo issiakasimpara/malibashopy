@@ -54,6 +54,11 @@ export const useProductVariantSelection = ({ product, variants }: UseProductVari
   };
 
   const isInStock = () => {
+    // Si le suivi de stock n'est pas activé, toujours en stock
+    if (!product.track_inventory) {
+      return true;
+    }
+    // Si le suivi est activé, vérifier la quantité
     return getCurrentStock() > 0;
   };
 

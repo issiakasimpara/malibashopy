@@ -39,7 +39,27 @@ const ProductDetailInfo = ({
   });
 
   const stockQuantity = product.inventory_quantity || 0;
-  const isLowStock = stockQuantity <= 5 && stockQuantity > 0;
+
+  // Logique de stock améliorée
+  const getStockStatus = () => {
+    // Si le produit n'a pas de suivi de stock activé, toujours en stock
+    if (!product.track_inventory) {
+      return { status: 'in_stock', message: 'En stock', color: 'green' };
+    }
+
+    // Si suivi activé, vérifier la quantité
+    if (stockQuantity === 0) {
+      return { status: 'out_of_stock', message: 'Rupture de stock', color: 'red' };
+    } else if (stockQuantity <= 3) {
+      return { status: 'low_stock', message: `Plus que ${stockQuantity} en stock`, color: 'orange' };
+    } else if (stockQuantity <= 10) {
+      return { status: 'limited_stock', message: 'Stock limité', color: 'yellow' };
+    } else {
+      return { status: 'in_stock', message: 'En stock', color: 'green' };
+    }
+  };
+
+  const stockStatus = getStockStatus();
 
   return (
     <div className="space-y-6">
@@ -71,19 +91,20 @@ const ProductDetailInfo = ({
         </div>
       </div>
 
-      {/* Statut de stock */}
+      {/* Statut de stock amélioré */}
       <div className="flex items-center gap-2 mb-6">
-        <Badge 
-          variant={isInStock ? 'default' : 'secondary'}
-          className={isInStock ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}
+        <Badge
+          variant={stockStatus.status === 'out_of_stock' ? 'secondary' : 'default'}
+          className={
+            stockStatus.color === 'green' ? 'bg-green-100 text-green-800' :
+            stockStatus.color === 'red' ? 'bg-red-100 text-red-800' :
+            stockStatus.color === 'orange' ? 'bg-orange-100 text-orange-800' :
+            stockStatus.color === 'yellow' ? 'bg-yellow-100 text-yellow-800' :
+            'bg-gray-100 text-gray-800'
+          }
         >
-          {isInStock ? '✓ En stock' : '✗ Rupture de stock'}
+          {stockStatus.status === 'out_of_stock' ? '✗' : '✓'} {stockStatus.message}
         </Badge>
-        {isLowStock && (
-          <Badge variant="outline" className="text-orange-600 border-orange-200">
-            Plus que {stockQuantity} en stock
-          </Badge>
-        )}
       </div>
 
       {/* Sélecteur de variantes avec vraies données */}

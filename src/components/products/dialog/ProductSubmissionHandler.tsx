@@ -87,6 +87,9 @@ export const useProductSubmission = ({ storeId, formData, onSuccess }: ProductSu
         productData.cost_price = parseFloat(formData.costPrice);
       }
 
+      // Ajouter le champ track_inventory
+      productData.track_inventory = formData.trackInventory;
+
       console.log('ProductSubmission - Final product data:', productData);
 
       // 1. Créer le produit principal
