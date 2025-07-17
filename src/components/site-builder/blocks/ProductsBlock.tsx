@@ -5,7 +5,7 @@ import { useProducts } from '@/hooks/useProducts';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Eye, ShoppingCart, Heart } from 'lucide-react';
+import { ShoppingCart, Heart } from 'lucide-react';
 import AddToCartButton from './AddToCartButton';
 import OptimizedImage from '@/components/ui/optimized-image';
 import type { Tables } from '@/integrations/supabase/types';
@@ -175,29 +175,18 @@ const ProductsBlock = ({
                 </CardContent>
 
                 <CardFooter className="p-4 pt-0">
-                  <div className="w-full space-y-2">
-                    <AddToCartButton 
-                      product={{
-                        id: product.id,
-                        name: product.name,
-                        price: Number(product.price),
-                        images: product.images || [],
-                        sku: product.sku || ''
-                      }}
-                      storeId={selectedStore?.id || ''}
-                      className="w-full"
-                      disabled={(product.inventory_quantity || 0) <= 0}
-                    />
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      className="w-full"
-                      onClick={() => handleProductClick(product.id)}
-                    >
-                      <Eye className="h-4 w-4 mr-2" />
-                      Voir les détails
-                    </Button>
-                  </div>
+                  <AddToCartButton
+                    product={{
+                      id: product.id,
+                      name: product.name,
+                      price: Number(product.price),
+                      images: product.images || [],
+                      sku: product.sku || ''
+                    }}
+                    storeId={selectedStore?.id || ''}
+                    className="w-full"
+                    disabled={(product.inventory_quantity || 0) <= 0}
+                  />
                 </CardFooter>
               </Card>
             ))}
