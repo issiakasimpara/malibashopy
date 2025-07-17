@@ -186,27 +186,64 @@ const Storefront = () => {
     const page = searchParams.get('page') || 'home';
     const productId = searchParams.get('product');
 
+    console.log('Storefront: URL params changed', { page, productId });
+
+    // Vérifier que le produit existe si on est sur la page produit-detail
+    if (page === 'product-detail' && productId && products.length > 0) {
+      const productExists = products.find(p => p.id === productId);
+      if (!productExists) {
+        console.log('Storefront: Product not found, redirecting to boutique');
+        navigate('?page=product', { replace: true });
+        return;
+      }
+    }
+
     setCurrentPage(page);
     setSelectedProductId(productId);
-  }, [searchParams]);
+  }, [searchParams, products, navigate]);
+
+  // Écouter les changements d'historique (bouton retour du navigateur)
+  useEffect(() => {
+    const handlePopState = (event: PopStateEvent) => {
+      console.log('Storefront: Browser back/forward detected');
+      // Forcer la re-lecture des paramètres URL
+      const urlParams = new URLSearchParams(window.location.search);
+      const page = urlParams.get('page') || 'home';
+      const productId = urlParams.get('product');
+
+      console.log('Storefront: Restoring state from URL', { page, productId });
+
+      setCurrentPage(page);
+      setSelectedProductId(productId);
+    };
+
+    window.addEventListener('popstate', handlePopState);
+
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+    };
+  }, []);
 
   const handleProductClick = (productId: string) => {
+    console.log('Storefront: Product clicked', productId);
     setSelectedProductId(productId);
     setCurrentPage('product-detail');
-    // Mettre à jour l'URL sans recharger la page
-    window.history.pushState({}, '', `?page=product-detail&product=${productId}`);
+    // Utiliser navigate pour une meilleure synchronisation avec React Router
+    navigate(`?page=product-detail&product=${productId}`, { replace: false });
   };
 
   const handlePageNavigation = (page: string) => {
+    console.log('Storefront: Page navigation', page);
     setCurrentPage(page);
     setSelectedProductId(null);
-    window.history.pushState({}, '', page === 'home' ? '' : `?page=${page}`);
+    navigate(page === 'home' ? '' : `?page=${page}`, { replace: false });
   };
 
   const handleCartNavigation = () => {
+    console.log('Storefront: Cart navigation');
     setCurrentPage('cart');
     setSelectedProductId(null);
-    window.history.pushState({}, '', '?page=cart');
+    navigate('?page=cart', { replace: false });
   };
 
   const getPageBlocks = (pageName: string) => {
