@@ -290,7 +290,15 @@ const Checkout = () => {
         totalAmount: getTotalWithShipping(),
         currency: 'CFA',
         shippingCost: shippingCost,
-        shippingMethod: selectedShippingMethod
+        shippingMethod: selectedShippingMethod ? {
+          id: selectedShippingMethod.id,
+          name: selectedShippingMethod.name,
+          delivery_time: selectedShippingMethod.estimated_days ||
+                        selectedShippingMethod.conditions?.display_text ||
+                        'Délai non spécifié',
+          price: selectedShippingMethod.price || 0
+        } : null,
+        shippingCountry: detectedCountryCode
       };
 
       console.log('📝 Création de la commande:', orderData);

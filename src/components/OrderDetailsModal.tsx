@@ -8,15 +8,16 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { 
-  Calendar, 
-  Mail, 
-  Phone, 
-  MapPin, 
-  Package, 
+import {
+  Calendar,
+  Mail,
+  Phone,
+  MapPin,
+  Package,
   CreditCard,
   User,
-  Hash
+  Hash,
+  Truck
 } from 'lucide-react';
 import { Order } from '@/services/orderService';
 import { getOrderStatusBadge, formatCurrency } from '@/utils/orderUtils';
@@ -50,7 +51,7 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
 
   const subtotal = calculateSubtotal();
   const taxes = 0; // À implémenter si nécessaire
-  const shipping = 0; // À implémenter si nécessaire
+  const shipping = order.shipping_cost || 0;
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -156,6 +157,43 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
                         <p>{order.billing_address.street}</p>
                         <p>{order.billing_address.postal_code} {order.billing_address.city}</p>
                         <p>{order.billing_address.country}</p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Informations de livraison */}
+          {(order.shipping_method || order.shipping_country) && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Truck className="h-5 w-5" />
+                  Informations de livraison
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {order.shipping_method && (
+                    <div className="space-y-2">
+                      <h4 className="font-medium text-gray-900">Méthode de livraison</h4>
+                      <div className="text-sm text-gray-600 space-y-1">
+                        <p className="font-medium">{order.shipping_method.name}</p>
+                        <p>Délai: {order.shipping_method.delivery_time}</p>
+                        <p>Prix: {order.shipping_method.price === 0 ? 'Gratuit' : `${order.shipping_method.price} CFA`}</p>
+                      </div>
+                    </div>
+                  )}
+                  {order.shipping_country && (
+                    <div className="space-y-2">
+                      <h4 className="font-medium text-gray-900">Pays de livraison</h4>
+                      <div className="text-sm text-gray-600">
+                        <p>{order.shipping_country}</p>
+                        {order.shipping_cost !== undefined && (
+                          <p className="font-medium">Coût total: {order.shipping_cost === 0 ? 'Gratuit' : `${order.shipping_cost} CFA`}</p>
+                        )}
                       </div>
                     </div>
                   )}

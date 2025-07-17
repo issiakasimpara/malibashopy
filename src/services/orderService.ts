@@ -29,6 +29,13 @@ export interface CreateOrderData {
   totalAmount: number;
   currency: string;
   shippingCost?: number;
+  shippingMethod?: {
+    id: string;
+    name: string;
+    delivery_time: string;
+    price: number;
+  };
+  shippingCountry?: string;
 }
 
 export interface Order {
@@ -44,6 +51,13 @@ export interface Order {
   status: string;
   shipping_address?: any;
   billing_address?: any;
+  shipping_method?: {
+    id: string;
+    name: string;
+    delivery_time: string;
+    price: number;
+  };
+  shipping_country?: string;
   created_at: string;
   updated_at: string;
 }
@@ -88,7 +102,10 @@ class OrderService {
             city: orderData.customerInfo.city,
             postal_code: orderData.customerInfo.postalCode,
             country: orderData.customerInfo.country
-          }
+          },
+          shipping_method: orderData.shippingMethod || null,
+          shipping_country: orderData.shippingCountry || orderData.customerInfo.country,
+          shipping_cost: orderData.shippingCost || 0
         })
         .select()
         .single();
