@@ -65,14 +65,18 @@ ALTER TABLE public.shipping_addresses ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Users can view markets of their stores" ON public.markets
     FOR SELECT USING (
         store_id IN (
-            SELECT id FROM public.stores WHERE user_id = auth.uid()
+            SELECT s.id FROM public.stores s
+            JOIN public.profiles p ON s.merchant_id = p.id
+            WHERE p.user_id = auth.uid()
         )
     );
 
 CREATE POLICY "Users can manage markets of their stores" ON public.markets
     FOR ALL USING (
         store_id IN (
-            SELECT id FROM public.stores WHERE user_id = auth.uid()
+            SELECT s.id FROM public.stores s
+            JOIN public.profiles p ON s.merchant_id = p.id
+            WHERE p.user_id = auth.uid()
         )
     );
 
@@ -80,14 +84,18 @@ CREATE POLICY "Users can manage markets of their stores" ON public.markets
 CREATE POLICY "Users can view shipping methods of their stores" ON public.shipping_methods
     FOR SELECT USING (
         store_id IN (
-            SELECT id FROM public.stores WHERE user_id = auth.uid()
+            SELECT s.id FROM public.stores s
+            JOIN public.profiles p ON s.merchant_id = p.id
+            WHERE p.user_id = auth.uid()
         )
     );
 
 CREATE POLICY "Users can manage shipping methods of their stores" ON public.shipping_methods
     FOR ALL USING (
         store_id IN (
-            SELECT id FROM public.stores WHERE user_id = auth.uid()
+            SELECT s.id FROM public.stores s
+            JOIN public.profiles p ON s.merchant_id = p.id
+            WHERE p.user_id = auth.uid()
         )
     );
 
