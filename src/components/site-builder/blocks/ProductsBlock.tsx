@@ -5,7 +5,7 @@ import { useProducts } from '@/hooks/useProducts';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { ShoppingCart, Heart } from 'lucide-react';
+import { ShoppingCart } from 'lucide-react';
 import AddToCartButton from './AddToCartButton';
 import OptimizedImage from '@/components/ui/optimized-image';
 import type { Tables } from '@/integrations/supabase/types';
@@ -107,18 +107,7 @@ const ProductsBlock = ({
                         </div>
                       </div>
                     )}
-                    
-                    {/* Overlay avec actions rapides */}
-                    <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition-all duration-300 flex items-center justify-center">
-                      <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 space-x-3">
-                        <Button size="sm" variant="secondary" className="bg-white/90 hover:bg-white">
-                          <Eye className="h-4 w-4" />
-                        </Button>
-                        <Button size="sm" variant="secondary" className="bg-white/90 hover:bg-white">
-                          <Heart className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
+
 
                     {/* Badge de réduction */}
                     {product.compare_price && product.compare_price > product.price && (

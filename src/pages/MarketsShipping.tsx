@@ -381,7 +381,12 @@ const MarketsShipping = () => {
                           <div>
                             <h3 className="font-medium">{method.name}</h3>
                             <p className="text-sm text-gray-600">
-                              {method.market?.name} • {method.price} CFA • {method.estimated_min_days}-{method.estimated_max_days} jours
+                              {method.market?.name} • {method.price} CFA • {
+                                method.conditions?.display_text ||
+                                (method.estimated_min_days === 0 && method.estimated_max_days === 0
+                                  ? 'Instantané'
+                                  : `${method.estimated_min_days}-${method.estimated_max_days} jours`)
+                              }
                             </p>
                           </div>
                           <div className="flex items-center gap-2">

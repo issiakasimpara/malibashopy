@@ -541,7 +541,13 @@ const Checkout = () => {
                             )}
                             <div className="flex items-center gap-2 text-sm text-gray-500 mt-1">
                               <Clock className="h-4 w-4" />
-                              <span>{method.estimated_days}</span>
+                              <span>
+                                {method.conditions?.display_text ||
+                                 (method.estimated_min_days === 0 && method.estimated_max_days === 0
+                                   ? 'Instantané'
+                                   : method.estimated_days || `${method.estimated_min_days || 1}-${method.estimated_max_days || 3} jours`)
+                                }
+                              </span>
                             </div>
                           </div>
                         </div>
