@@ -2,7 +2,7 @@
 // DIALOGUE DE CRÉATION DE MÉTHODE DE LIVRAISON
 // ========================================
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useMarkets } from '@/hooks/useMarkets';
 import { Market } from '@/types/markets';
 import {
@@ -48,6 +48,19 @@ const CreateShippingMethodDialog = ({
     estimated_max_days: editingMethod?.estimated_max_days?.toString() || '',
     is_active: editingMethod?.is_active ?? true
   });
+
+  // Réinitialiser le formulaire quand editingMethod change
+  useEffect(() => {
+    setFormData({
+      name: editingMethod?.name || '',
+      description: editingMethod?.description || '',
+      market_id: editingMethod?.market_id || '',
+      price: editingMethod?.price?.toString() || '',
+      estimated_min_days: editingMethod?.estimated_min_days?.toString() || '',
+      estimated_max_days: editingMethod?.estimated_max_days?.toString() || '',
+      is_active: editingMethod?.is_active ?? true
+    });
+  }, [editingMethod]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -139,10 +152,13 @@ const CreateShippingMethodDialog = ({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Truck className="h-5 w-5" />
-            Créer une méthode de livraison
+            {editingMethod ? 'Modifier la méthode de livraison' : 'Créer une méthode de livraison'}
           </DialogTitle>
           <DialogDescription>
-            Ajoutez une nouvelle option de livraison pour un de vos marchés.
+            {editingMethod
+              ? 'Modifiez les détails de cette méthode de livraison.'
+              : 'Ajoutez une nouvelle option de livraison pour un de vos marchés.'
+            }
           </DialogDescription>
         </DialogHeader>
 
@@ -239,12 +255,12 @@ const CreateShippingMethodDialog = ({
             <Button type="button" variant="outline" onClick={handleClose}>
               Annuler
             </Button>
-            <Button 
-              type="submit" 
-              disabled={isCreatingMethod || !formData.name.trim() || !formData.market_id || !formData.price}
+            <Button
+              type="submit"
+              disabled={(isCreatingMethod || isUpdatingMethod) || !formData.name.trim() || !formData.market_id || !formData.price}
             >
-              {isCreatingMethod && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-              Créer la méthode
+              {(isCreatingMethod || isUpdatingMethod) && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+              {editingMethod ? 'Modifier la méthode' : 'Créer la méthode'}
             </Button>
           </DialogFooter>
         </form>

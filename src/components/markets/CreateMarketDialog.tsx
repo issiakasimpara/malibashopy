@@ -2,7 +2,7 @@
 // DIALOGUE DE CRÉATION DE MARCHÉ
 // ========================================
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useMarkets } from '@/hooks/useMarkets';
 import { SUPPORTED_COUNTRIES } from '@/types/markets';
 import {
@@ -52,16 +52,26 @@ interface CreateMarketDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   storeId: string;
+  editingMarket?: any; // Marché à éditer (optionnel)
   onSuccess?: () => void;
 }
 
-const CreateMarketDialog = ({ open, onOpenChange, storeId, onSuccess }: CreateMarketDialogProps) => {
-  const { createMarket, isCreatingMarket } = useMarkets(storeId);
+const CreateMarketDialog = ({ open, onOpenChange, storeId, editingMarket, onSuccess }: CreateMarketDialogProps) => {
+  const { createMarket, updateMarket, isCreatingMarket, isUpdatingMarket } = useMarkets(storeId);
   const [formData, setFormData] = useState({
-    name: '',
-    countries: [] as string[],
-    is_active: true
+    name: editingMarket?.name || '',
+    countries: editingMarket?.countries || [] as string[],
+    is_active: editingMarket?.is_active ?? true
   });
+
+  // Réinitialiser le formulaire quand editingMarket change
+  useEffect(() => {
+    setFormData({
+      name: editingMarket?.name || '',
+      countries: editingMarket?.countries || [] as string[],
+      is_active: editingMarket?.is_active ?? true
+    });
+  }, [editingMarket]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -75,19 +85,34 @@ const CreateMarketDialog = ({ open, onOpenChange, storeId, onSuccess }: CreateMa
     }
 
     try {
-      await createMarket({
-        store_id: storeId,
-        name: formData.name.trim(),
-        countries: formData.countries,
-        is_active: formData.is_active
-      });
+      if (editingMarket) {
+        // Mode édition
+        await updateMarket({
+          id: editingMarket.id,
+          updates: {
+            name: formData.name.trim(),
+            countries: formData.countries,
+            is_active: formData.is_active
+          }
+        });
+      } else {
+        // Mode création
+        await createMarket({
+          store_id: storeId,
+          name: formData.name.trim(),
+          countries: formData.countries,
+          is_active: formData.is_active
+        });
+      }
 
       // Reset form
-      setFormData({
-        name: '',
-        countries: [],
-        is_active: true
-      });
+      if (!editingMarket) {
+        setFormData({
+          name: '',
+          countries: [],
+          is_active: true
+        });
+      }
 
       onSuccess?.();
     } catch (error) {
@@ -105,11 +130,13 @@ const CreateMarketDialog = ({ open, onOpenChange, storeId, onSuccess }: CreateMa
   };
 
   const handleClose = () => {
-    setFormData({
-      name: '',
-      countries: [],
-      is_active: true
-    });
+    if (!editingMarket) {
+      setFormData({
+        name: '',
+        countries: [],
+        is_active: true
+      });
+    }
     onOpenChange(false);
   };
 
@@ -119,10 +146,13 @@ const CreateMarketDialog = ({ open, onOpenChange, storeId, onSuccess }: CreateMa
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Globe className="h-5 w-5" />
-            Créer un nouveau marché
+            {editingMarket ? 'Modifier le marché' : 'Créer un nouveau marché'}
           </DialogTitle>
           <DialogDescription>
-            Définissez une zone de vente pour vos produits en sélectionnant les pays où vous souhaitez vendre.
+            {editingMarket
+              ? 'Modifiez les détails de ce marché et les pays couverts.'
+              : 'Définissez une zone de vente pour vos produits en sélectionnant les pays où vous souhaitez vendre.'
+            }
           </DialogDescription>
         </DialogHeader>
 
@@ -176,12 +206,12 @@ const CreateMarketDialog = ({ open, onOpenChange, storeId, onSuccess }: CreateMa
             <Button type="button" variant="outline" onClick={handleClose}>
               Annuler
             </Button>
-            <Button 
-              type="submit" 
-              disabled={isCreatingMarket || !formData.name.trim() || formData.countries.length === 0}
+            <Button
+              type="submit"
+              disabled={(isCreatingMarket || isUpdatingMarket) || !formData.name.trim() || formData.countries.length === 0}
             >
-              {isCreatingMarket && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-              Créer le marché
+              {(isCreatingMarket || isUpdatingMarket) && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+              {editingMarket ? 'Modifier le marché' : 'Créer le marché'}
             </Button>
           </DialogFooter>
         </form>

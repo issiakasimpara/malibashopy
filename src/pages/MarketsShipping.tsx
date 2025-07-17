@@ -55,6 +55,7 @@ const MarketsShipping = () => {
   const [createMarketOpen, setCreateMarketOpen] = useState(false);
   const [createMethodOpen, setCreateMethodOpen] = useState(false);
   const [editingShippingMethod, setEditingShippingMethod] = useState<any>(null);
+  const [editingMarket, setEditingMarket] = useState<any>(null);
 
   // Sélectionner automatiquement la première boutique
   const currentStore = stores.length > 0 ? stores[0] : null;
@@ -65,16 +66,32 @@ const MarketsShipping = () => {
     allShippingMethods,
     isLoading,
     createMarket,
+    updateMarket,
+    deleteMarket,
     createShippingMethod,
     updateShippingMethod,
     deleteShippingMethod,
     isCreatingMarket,
+    isUpdatingMarket,
+    isDeletingMarket,
     isCreatingMethod,
     isUpdatingMethod,
     isDeletingMethod,
     marketsError,
     methodsError
   } = useMarkets(storeId);
+
+  // Handlers pour les marchés
+  const handleEditMarket = (market: any) => {
+    setEditingMarket(market);
+    setCreateMarketOpen(true);
+  };
+
+  const handleDeleteMarket = (marketId: string) => {
+    if (window.confirm('Êtes-vous sûr de vouloir supprimer ce marché ? Toutes les méthodes de livraison associées seront également supprimées.')) {
+      deleteMarket(marketId);
+    }
+  };
 
   // Handlers pour les méthodes de livraison
   const handleEditShippingMethod = (method: any) => {
@@ -267,6 +284,30 @@ const MarketsShipping = () => {
                             }`}>
                               {market.is_active ? 'Actif' : 'Inactif'}
                             </span>
+
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                                  <MoreHorizontal className="h-4 w-4" />
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end">
+                                <DropdownMenuItem
+                                  onClick={() => handleEditMarket(market)}
+                                  className="flex items-center gap-2"
+                                >
+                                  <Edit className="h-4 w-4" />
+                                  Modifier
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                  onClick={() => handleDeleteMarket(market.id)}
+                                  className="flex items-center gap-2 text-red-600"
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                  Supprimer
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
                           </div>
                         </div>
                       </div>
@@ -389,17 +430,35 @@ const MarketsShipping = () => {
         {/* Dialogues de création */}
         <CreateMarketDialog
           open={createMarketOpen}
-          onOpenChange={setCreateMarketOpen}
+          onOpenChange={(open) => {
+            setCreateMarketOpen(open);
+            if (!open) {
+              setEditingMarket(null);
+            }
+          }}
           storeId={storeId}
-          onSuccess={() => setCreateMarketOpen(false)}
+          editingMarket={editingMarket}
+          onSuccess={() => {
+            setCreateMarketOpen(false);
+            setEditingMarket(null);
+          }}
         />
 
         <CreateShippingMethodDialog
           open={createMethodOpen}
-          onOpenChange={setCreateMethodOpen}
+          onOpenChange={(open) => {
+            setCreateMethodOpen(open);
+            if (!open) {
+              setEditingShippingMethod(null);
+            }
+          }}
           storeId={storeId}
           markets={markets}
-          onSuccess={() => setCreateMethodOpen(false)}
+          editingMethod={editingShippingMethod}
+          onSuccess={() => {
+            setCreateMethodOpen(false);
+            setEditingShippingMethod(null);
+          }}
         />
       </div>
     </DashboardLayout>
