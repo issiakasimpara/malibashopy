@@ -163,9 +163,22 @@ const FooterBlock = ({ block, isEditing, viewMode, onUpdate }: FooterBlockProps)
             )}
             {block.content.showSocialMedia && (
               <div className="flex gap-3">
-                <span className="text-2xl hover:opacity-80 transition-opacity cursor-pointer">📘</span>
-                <span className="text-2xl hover:opacity-80 transition-opacity cursor-pointer">📷</span>
-                <span className="text-2xl hover:opacity-80 transition-opacity cursor-pointer">🐦</span>
+                {(block.content.socialLinks || [
+                  { platform: 'facebook', url: '#', label: 'Facebook' },
+                  { platform: 'instagram', url: '#', label: 'Instagram' },
+                  { platform: 'twitter', url: '#', label: 'Twitter' }
+                ]).map((social, index) => (
+                  <a
+                    key={index}
+                    href={social.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="p-2 bg-gray-700 hover:bg-gray-600 rounded-lg transition-colors"
+                    title={social.label || social.platform}
+                  >
+                    {getSocialIcon(social.platform)}
+                  </a>
+                ))}
               </div>
             )}
           </div>

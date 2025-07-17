@@ -142,6 +142,11 @@ export const createFooterBlock = (category: string): TemplateBlock => {
       newsletterTitle: 'Restez Informé',
       newsletterDescription: 'Recevez nos dernières actualités et offres exclusives',
       showSocialMedia: true,
+      socialLinks: [
+        { platform: 'facebook', url: '#', label: 'Facebook' },
+        { platform: 'instagram', url: '#', label: 'Instagram' },
+        { platform: 'twitter', url: '#', label: 'Twitter' }
+      ],
       showCopyright: true,
       copyrightText: `© ${new Date().getFullYear()} ${config.companyName}. Tous droits réservés.`
     },

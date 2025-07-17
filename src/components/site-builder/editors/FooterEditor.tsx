@@ -61,6 +61,30 @@ const FooterEditor = ({ block, onUpdate }: FooterEditorProps) => {
     onUpdate('legalLinks', updatedLinks);
   };
 
+  // Fonctions pour gérer les réseaux sociaux
+  const handleSocialLinksUpdate = (index: number, field: string, value: string) => {
+    const currentLinks = block.content.socialLinks || [
+      { platform: 'facebook', url: '', label: 'Facebook' },
+      { platform: 'instagram', url: '', label: 'Instagram' },
+      { platform: 'twitter', url: '', label: 'Twitter' }
+    ];
+
+    const updatedLinks = [...currentLinks];
+    updatedLinks[index] = { ...updatedLinks[index], [field]: value };
+    onUpdate('socialLinks', updatedLinks);
+  };
+
+  const addSocialLink = () => {
+    const currentLinks = block.content.socialLinks || [];
+    onUpdate('socialLinks', [...currentLinks, { platform: 'facebook', url: '', label: 'Facebook' }]);
+  };
+
+  const removeSocialLink = (index: number) => {
+    const currentLinks = block.content.socialLinks || [];
+    const updatedLinks = currentLinks.filter((_, i) => i !== index);
+    onUpdate('socialLinks', updatedLinks);
+  };
+
   return (
     <div className="space-y-6">
       {/* Informations de l'entreprise */}
@@ -261,6 +285,52 @@ const FooterEditor = ({ block, onUpdate }: FooterEditorProps) => {
             />
             <Label htmlFor="showSocialMedia">Afficher les réseaux sociaux</Label>
           </div>
+
+          {/* Configuration des réseaux sociaux */}
+          {block.content.showSocialMedia && (
+            <div className="space-y-3 p-4 border rounded-lg bg-gray-50">
+              <div className="flex items-center justify-between">
+                <Label className="text-sm font-medium">Liens des réseaux sociaux</Label>
+                <Button size="sm" variant="outline" onClick={addSocialLink}>
+                  <Plus className="h-4 w-4" />
+                </Button>
+              </div>
+              {(block.content.socialLinks || [
+                { platform: 'facebook', url: '', label: 'Facebook' },
+                { platform: 'instagram', url: '', label: 'Instagram' },
+                { platform: 'twitter', url: '', label: 'Twitter' }
+              ]).map((social, index) => (
+                <div key={index} className="flex gap-2 items-center">
+                  <select
+                    value={social.platform}
+                    onChange={(e) => handleSocialLinksUpdate(index, 'platform', e.target.value)}
+                    className="px-3 py-2 border rounded-md text-sm"
+                  >
+                    <option value="facebook">Facebook</option>
+                    <option value="instagram">Instagram</option>
+                    <option value="twitter">Twitter</option>
+                    <option value="linkedin">LinkedIn</option>
+                    <option value="youtube">YouTube</option>
+                    <option value="email">Email</option>
+                  </select>
+                  <Input
+                    placeholder="URL du réseau social"
+                    value={social.url}
+                    onChange={(e) => handleSocialLinksUpdate(index, 'url', e.target.value)}
+                    className="flex-1"
+                  />
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => removeSocialLink(index)}
+                    className="text-red-600 hover:text-red-700"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+              ))}
+            </div>
+          )}
           <div className="flex items-center space-x-2">
             <Switch
               id="showCopyright"

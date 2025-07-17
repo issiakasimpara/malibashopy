@@ -152,24 +152,7 @@ export const blockTemplates = [
       padding: '60px 0'
     }
   },
-  {
-    type: 'pricing',
-    name: 'Tarifs',
-    description: 'Tableaux de prix et offres',
-    icon: '💰',
-    content: {
-      title: 'Nos offres',
-      plans: [
-        { name: 'Basic', price: '5000 CFA', features: ['Feature 1', 'Feature 2'] },
-        { name: 'Pro', price: '10000 CFA', features: ['Feature 1', 'Feature 2', 'Feature 3'] }
-      ]
-    },
-    styles: {
-      backgroundColor: '#F9FAFB',
-      textColor: '#111827',
-      padding: '60px 0'
-    }
-  },
+
   {
     type: 'faq',
     name: 'FAQ',
@@ -270,9 +253,9 @@ export const blockTemplates = [
       newsletterDescription: 'Inscrivez-vous à notre newsletter pour recevoir nos dernières offres',
       showSocialMedia: true,
       socialLinks: [
-        { platform: 'Facebook', url: '#', icon: '📘' },
-        { platform: 'Instagram', url: '#', icon: '📷' },
-        { platform: 'Twitter', url: '#', icon: '🐦' }
+        { platform: 'facebook', url: '#', label: 'Facebook' },
+        { platform: 'instagram', url: '#', label: 'Instagram' },
+        { platform: 'twitter', url: '#', label: 'Twitter' }
       ],
       legalLinks: [
         { title: 'Conditions générales de vente', url: '/cgv' },
@@ -318,38 +301,6 @@ export const blockTemplates = [
       backgroundColor: '#FFFFFF',
       textColor: '#374151',
       padding: '60px 0'
-    }
-  },
-  {
-    type: 'single-product',
-    name: 'Produit unique',
-    description: 'Page produit détaillée style Shopify avec galerie d\'images et informations complètes',
-    icon: '📦',
-    content: {
-      productId: '',
-      showGallery: true,
-      showTrustBadges: true,
-      showSocialProof: true,
-      showRelatedProducts: true,
-      showTabs: true,
-      layout: 'gallery-left',
-      trustBadges: [
-        { text: 'Livraison gratuite', icon: '🚚' },
-        { text: 'Retours 30 jours', icon: '↩️' },
-        { text: 'Paiement sécurisé', icon: '🔒' }
-      ],
-      socialProofText: 'Vu par 24 personnes dans les dernières 24h',
-      tabs: [
-        { title: 'Description', content: 'Description détaillée du produit...' },
-        { title: 'Livraison & Retours', content: 'Informations de livraison...' },
-        { title: 'Guide des tailles', content: 'Guide pour choisir la bonne taille...' },
-        { title: 'Avis clients', content: 'Avis et commentaires clients...' }
-      ]
-    },
-    styles: {
-      backgroundColor: '#FFFFFF',
-      textColor: '#1F2937',
-      padding: '40px 0'
     }
   },
   {

@@ -8,6 +8,13 @@ interface BlockLibraryProps {
 }
 
 const BlockLibrary = ({ onBlockAdd }: BlockLibraryProps) => {
+  // Types de blocs supportés (synchronisé avec TemplateBlock)
+  const supportedBlockTypes = [
+    'hero', 'products', 'product-detail', 'text-image', 'text-video', 'video',
+    'testimonials', 'newsletter', 'contact', 'gallery', 'features',
+    'team', 'faq', 'before-after', 'footer', 'cart', 'checkout', 'comparison', 'guarantees'
+  ];
+
   const handleAddBlock = (blockTemplate: any) => {
     const newBlock: TemplateBlock = {
       id: `${blockTemplate.type}-${Date.now()}`,
@@ -19,11 +26,16 @@ const BlockLibrary = ({ onBlockAdd }: BlockLibraryProps) => {
     onBlockAdd(newBlock);
   };
 
+  // Filtrer les blocs pour ne montrer que ceux supportés
+  const filteredBlockTemplates = blockTemplates.filter(blockTemplate =>
+    supportedBlockTypes.includes(blockTemplate.type)
+  );
+
   return (
     <div className="space-y-4">
       <h3 className="font-semibold text-sm">Bibliothèque de blocs</h3>
       <div className="grid gap-2">
-        {blockTemplates.map((blockTemplate) => (
+        {filteredBlockTemplates.map((blockTemplate) => (
           <BlockLibraryItem
             key={blockTemplate.type}
             blockType={blockTemplate}
