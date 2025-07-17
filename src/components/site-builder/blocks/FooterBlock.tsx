@@ -1,5 +1,7 @@
 
+import React from 'react';
 import { TemplateBlock } from '@/types/template';
+import { Facebook, Instagram, Twitter, Linkedin, Youtube, Mail } from 'lucide-react';
 
 interface FooterBlockProps {
   block: TemplateBlock;
@@ -17,6 +19,27 @@ const FooterBlock = ({ block, isEditing, viewMode, onUpdate }: FooterBlockProps)
         return 'text-base px-4';
       default:
         return 'text-base px-6';
+    }
+  };
+
+  // Fonction pour obtenir l'icône de réseau social
+  const getSocialIcon = (platform: string) => {
+    const iconProps = { className: "h-5 w-5" };
+    switch (platform.toLowerCase()) {
+      case 'facebook':
+        return <Facebook {...iconProps} />;
+      case 'instagram':
+        return <Instagram {...iconProps} />;
+      case 'twitter':
+        return <Twitter {...iconProps} />;
+      case 'linkedin':
+        return <Linkedin {...iconProps} />;
+      case 'youtube':
+        return <Youtube {...iconProps} />;
+      case 'email':
+        return <Mail {...iconProps} />;
+      default:
+        return <Facebook {...iconProps} />;
     }
   };
 
