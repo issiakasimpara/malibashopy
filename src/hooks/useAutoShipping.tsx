@@ -108,7 +108,7 @@ export const useShippingWithAutoSetup = (storeId?: string, countryCode?: string)
         .select('*')
         .eq('store_id', storeId)
         .eq('is_active', true)
-        .order('sort_order');
+        .order('created_at', { ascending: false });
 
       if (error) {
         console.error('❌ Erreur:', error);

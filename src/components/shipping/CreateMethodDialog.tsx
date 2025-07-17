@@ -21,34 +21,16 @@ const CreateMethodDialog = ({ open, onOpenChange, storeId, onMethodCreated, edit
   const [description, setDescription] = useState(editingMethod?.description || '');
   const [price, setPrice] = useState(editingMethod?.price?.toString() || '');
   const [deliveryTime, setDeliveryTime] = useState(editingMethod?.delivery_time || '');
-  const [zoneId, setZoneId] = useState(editingMethod?.zone_id || '');
-  const [zones, setZones] = useState<any[]>([]);
+
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
-  useEffect(() => {
-    if (open) {
-      loadZones();
-    }
-  }, [open, storeId]);
 
-  const loadZones = async () => {
-    try {
-      const { data } = await supabase
-        .from('shipping_zones')
-        .select('*')
-        .eq('store_id', storeId);
-      
-      setZones(data || []);
-    } catch (error) {
-      console.error('Erreur lors du chargement des zones:', error);
-    }
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!name.trim() || !price || !deliveryTime || !zoneId) {
+    if (!name.trim() || !price || !deliveryTime) {
       toast({
         title: "Erreur",
         description: "Veuillez remplir tous les champs obligatoires",
@@ -90,7 +72,6 @@ const CreateMethodDialog = ({ open, onOpenChange, storeId, onMethodCreated, edit
             description: description.trim() || null,
             price: priceValue,
             estimated_days: deliveryTime.trim(),
-            shipping_zone_id: zoneId,
             store_id: storeId,
             is_active: true
           });
