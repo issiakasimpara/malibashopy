@@ -3,8 +3,11 @@ import { Badge } from '@/components/ui/badge';
 import ProductVariantSelector from './ProductVariantSelector';
 import AddToCartButton from '../AddToCartButton';
 import { Button } from '@/components/ui/button';
-import { Heart, Share2 } from 'lucide-react';
+import { Heart, Share2, ShoppingCart, Loader2 } from 'lucide-react';
 import type { Tables } from '@/integrations/supabase/types';
+import { useCart } from '@/contexts/CartContext';
+import { useNavigate, useParams } from 'react-router-dom';
+import { useState } from 'react';
 
 type Product = Tables<'products'>;
 
@@ -29,6 +32,10 @@ const ProductDetailInfo = ({
   viewMode,
   onVariantImageChange
 }: ProductDetailInfoProps) => {
+  const { addItem } = useCart();
+  const navigate = useNavigate();
+  const { storeSlug } = useParams();
+  const [isBuyingNow, setIsBuyingNow] = useState(false);
   console.log('ProductDetailInfo - Rendering with:', {
     productName: product.name,
     productId: product.id,
@@ -60,6 +67,40 @@ const ProductDetailInfo = ({
   };
 
   const stockStatus = getStockStatus();
+
+  // Fonction pour "Acheter maintenant"
+  const handleBuyNow = async () => {
+    if (!isInStock) return;
+
+    setIsBuyingNow(true);
+
+    try {
+      // Créer l'item pour le panier
+      const cartItem = {
+        id: `${product.id}_${Date.now()}`,
+        product_id: product.id,
+        name: product.name,
+        price: Number(currentPrice),
+        quantity: 1,
+        image: product.images?.[0],
+        sku: product.sku || ''
+      };
+
+      // Ajouter au panier
+      await addItem(cartItem, product.store_id);
+
+      // Rediriger vers checkout
+      if (storeSlug) {
+        navigate(`/store/${storeSlug}/checkout`);
+      } else {
+        navigate('/checkout');
+      }
+    } catch (error) {
+      console.error('Erreur lors de l\'achat immédiat:', error);
+    } finally {
+      setIsBuyingNow(false);
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -163,12 +204,24 @@ const ProductDetailInfo = ({
         </div>
 
         {isInStock && (
-          <Button 
-            className="w-full" 
+          <Button
+            className="w-full"
             size="lg"
             variant="secondary"
+            onClick={handleBuyNow}
+            disabled={isBuyingNow}
           >
-            Acheter maintenant
+            {isBuyingNow ? (
+              <>
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                Redirection...
+              </>
+            ) : (
+              <>
+                <ShoppingCart className="h-4 w-4 mr-2" />
+                Acheter maintenant
+              </>
+            )}
           </Button>
         )}
       </div>
