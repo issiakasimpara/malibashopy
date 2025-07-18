@@ -7,6 +7,7 @@ interface BrandingData {
   brandName?: string;
   tagline?: string;
   description?: string;
+  logoPosition?: 'left' | 'center' | 'right';
 }
 
 export const useBranding = (template: Template | null) => {

@@ -5,7 +5,8 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
-import { Upload, X, Image, Globe, Building2 } from 'lucide-react';
+import { Upload, X, Image, Globe, Building2, AlignLeft, AlignCenter, AlignRight } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 
 interface BrandingEditorProps {
@@ -167,6 +168,44 @@ const BrandingEditor = ({ block, onUpdate }: BrandingEditorProps) => {
               Formats acceptés: JPG, PNG, GIF, WebP (max 5MB)
             </p>
           </div>
+
+          {/* Position du logo */}
+          {block.content.logo && (
+            <div>
+              <Label htmlFor="logoPosition">Position du logo</Label>
+              <Select
+                value={block.content.logoPosition || 'left'}
+                onValueChange={(value) => onUpdate('logoPosition', value)}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="left">
+                    <div className="flex items-center gap-2">
+                      <AlignLeft className="h-4 w-4" />
+                      À gauche
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="center">
+                    <div className="flex items-center gap-2">
+                      <AlignCenter className="h-4 w-4" />
+                      Au centre
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="right">
+                    <div className="flex items-center gap-2">
+                      <AlignRight className="h-4 w-4" />
+                      À droite
+                    </div>
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-gray-500 mt-1">
+                Position du logo dans la navigation
+              </p>
+            </div>
+          )}
         </CardContent>
       </Card>
 

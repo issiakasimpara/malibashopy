@@ -50,7 +50,8 @@ export const blockTemplates = [
       favicon: '',
       brandName: '',
       tagline: '',
-      description: ''
+      description: '',
+      logoPosition: 'left'
     },
     styles: {
       backgroundColor: '#f8fafc',
