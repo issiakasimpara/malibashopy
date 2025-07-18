@@ -31,9 +31,9 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    // Get Cloudflare credentials from secrets
-    const cloudflareToken = Deno.env.get('CLOUDFLARE_API_TOKEN') || 'htEA5MxDyt7W-uw46gEYbSNV2hdUPuPADneE6mcY';
-    const cloudflareAccountId = Deno.env.get('CLOUDFLARE_ACCOUNT_ID') || '9d78e2b9a6d68284c6c82f69d39e11b3';
+    // 🔐 Récupération sécurisée des credentials Cloudflare
+    const cloudflareToken = Deno.env.get('CLOUDFLARE_API_TOKEN');
+    const cloudflareAccountId = Deno.env.get('CLOUDFLARE_ACCOUNT_ID');
 
     console.log('Cloudflare Token available:', !!cloudflareToken);
     console.log('Cloudflare Account ID available:', !!cloudflareAccountId);

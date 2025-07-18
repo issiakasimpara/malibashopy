@@ -15,8 +15,12 @@ export const useCustomers = () => {
     queryKey: ['customers', store?.id],
     queryFn: () => store?.id ? customerService.getStoreCustomers(store.id) : Promise.resolve([]),
     enabled: !!store?.id,
-    refetchInterval: 60000, // Rafraîchir toutes les minutes
-    staleTime: 30000, // Considérer les données comme fraîches pendant 30 secondes
+    // ⚡ OPTIMISATION: Réduction drastique du polling
+    refetchInterval: 5 * 60 * 1000, // 5 minutes au lieu de 1 minute
+    staleTime: 3 * 60 * 1000, // 3 minutes au lieu de 30 secondes
+    cacheTime: 10 * 60 * 1000, // Cache pendant 10 minutes
+    refetchOnWindowFocus: false, // Éviter les requêtes au focus
+    refetchOnMount: false, // Éviter les requêtes au mount si cache valide
   });
 
   // Récupérer les statistiques des clients
@@ -34,8 +38,12 @@ export const useCustomers = () => {
       averageOrderValue: 0
     }),
     enabled: !!store?.id,
-    refetchInterval: 60000,
-    staleTime: 30000,
+    // ⚡ OPTIMISATION: Stats moins critiques, polling plus lent
+    refetchInterval: 10 * 60 * 1000, // 10 minutes pour les stats
+    staleTime: 5 * 60 * 1000, // 5 minutes de cache
+    cacheTime: 15 * 60 * 1000, // Cache pendant 15 minutes
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
   });
 
   return {

@@ -8,32 +8,39 @@ import { CartProvider } from "@/contexts/CartContext";
 import { AuthProvider } from "@/hooks/useAuth";
 import CartWidget from "@/components/site-builder/blocks/CartWidget";
 import ErrorBoundary from "@/components/ErrorBoundary";
-import Index from "./pages/Index";
-import SimpleIndex from "./pages/SimpleIndex";
-import Auth from "./pages/Auth";
-import Dashboard from "./pages/Dashboard";
-import Products from "./pages/Products";
-import Categories from "./pages/Categories";
-import Orders from "./pages/Orders";
-import Customers from "./pages/Customers";
-import Analytics from "./pages/Analytics";
-import Settings from "./pages/Settings";
-import StoreConfig from "./pages/StoreConfig";
-import Domains from "./pages/Domains";
-import CustomDomains from "./pages/CustomDomains";
-import SiteBuilder from "./pages/SiteBuilder";
-import TemplateEditor from "./pages/TemplateEditor";
-import Testimonials from "./pages/Testimonials";
-import Payments from "./pages/Payments";
-import MarketsShipping from "./pages/MarketsShipping";
-import TestPage from "./pages/TestPage";
+// ⚡ LAZY LOADING POUR OPTIMISER LE BUNDLE
+import { lazy, Suspense } from 'react';
+import LoadingSpinner from '@/components/LoadingSpinner';
 
-import Cart from "./pages/Cart";
-import Checkout from "./pages/Checkout";
-import PaymentSuccess from "./pages/PaymentSuccess";
-import CustomerOrders from "./pages/CustomerOrders";
-import Storefront from "./pages/Storefront";
+// Pages publiques (chargement immédiat)
+import Index from "./pages/Index";
+import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
+
+// Pages admin (lazy loading)
+const Dashboard = lazy(() => import("./pages/Dashboard"));
+const Products = lazy(() => import("./pages/Products"));
+const Categories = lazy(() => import("./pages/Categories"));
+const Orders = lazy(() => import("./pages/Orders"));
+const Customers = lazy(() => import("./pages/Customers"));
+const Analytics = lazy(() => import("./pages/Analytics"));
+const Settings = lazy(() => import("./pages/Settings"));
+const StoreConfig = lazy(() => import("./pages/StoreConfig"));
+const Domains = lazy(() => import("./pages/Domains"));
+const CustomDomains = lazy(() => import("./pages/CustomDomains"));
+const SiteBuilder = lazy(() => import("./pages/SiteBuilder"));
+const TemplateEditor = lazy(() => import("./pages/TemplateEditor"));
+const Testimonials = lazy(() => import("./pages/Testimonials"));
+const Payments = lazy(() => import("./pages/Payments"));
+const MarketsShipping = lazy(() => import("./pages/MarketsShipping"));
+const TestPage = lazy(() => import("./pages/TestPage"));
+
+// Pages e-commerce (lazy loading)
+const Cart = lazy(() => import("./pages/Cart"));
+const Checkout = lazy(() => import("./pages/Checkout"));
+const PaymentSuccess = lazy(() => import("./pages/PaymentSuccess"));
+const CustomerOrders = lazy(() => import("./pages/CustomerOrders"));
+const Storefront = lazy(() => import("./pages/Storefront"));
 import ProtectedRoute from "./components/ProtectedRoute";
 
 const queryClient = new QueryClient();
@@ -114,7 +121,9 @@ const App = () => (
                 path="/dashboard"
                 element={
                   <ProtectedRoute>
-                    <Dashboard />
+                    <Suspense fallback={<LoadingSpinner />}>
+                      <Dashboard />
+                    </Suspense>
                   </ProtectedRoute>
                 }
               />

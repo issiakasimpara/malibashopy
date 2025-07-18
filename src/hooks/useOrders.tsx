@@ -18,8 +18,15 @@ export const useOrders = () => {
     queryKey: ['orders', store?.id],
     queryFn: () => store?.id ? orderService.getStoreOrders(store.id) : Promise.resolve([]),
     enabled: !!store?.id,
-    refetchInterval: 30000, // Rafraîchir toutes les 30 secondes
-    staleTime: 10000, // Considérer les données comme fraîches pendant 10 secondes
+    // ⚡ OPTIMISATION: Commandes moins fréquentes mais plus intelligentes
+    refetchInterval: 2 * 60 * 1000, // 2 minutes au lieu de 30 secondes
+    staleTime: 60 * 1000, // 1 minute de cache au lieu de 10 secondes
+    cacheTime: 5 * 60 * 1000, // Cache pendant 5 minutes
+    refetchOnWindowFocus: true, // Garder le focus pour les commandes (important)
+    refetchOnMount: false,
+    // Retry intelligent pour les commandes critiques
+    retry: 3,
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 10000),
   });
 
   // Récupérer les statistiques
@@ -31,8 +38,12 @@ export const useOrders = () => {
     queryKey: ['store-stats', store?.id],
     queryFn: () => store?.id ? orderService.getStoreStats(store.id) : Promise.resolve(null),
     enabled: !!store?.id,
-    refetchInterval: 30000, // Rafraîchir toutes les 30 secondes
-    staleTime: 10000,
+    // ⚡ OPTIMISATION: Stats moins critiques
+    refetchInterval: 5 * 60 * 1000, // 5 minutes pour les stats
+    staleTime: 2 * 60 * 1000, // 2 minutes de cache
+    cacheTime: 10 * 60 * 1000,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
   });
 
   // Créer une commande

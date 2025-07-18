@@ -77,12 +77,13 @@ export const useAnalytics = () => {
       ordersByStatus: []
     } as AnalyticsData),
     enabled: !!store?.id,
-    staleTime: 1000 * 60 * 5, // 5 minutes
-    cacheTime: 1000 * 60 * 15, // 15 minutes
+    // ⚡ OPTIMISATION: Configuration cohérente et performante
+    staleTime: 5 * 60 * 1000, // 5 minutes (suppression du doublon)
+    cacheTime: 15 * 60 * 1000, // 15 minutes
     retry: 1,
     refetchOnWindowFocus: false,
-    // refetchInterval: 60000, // Désactivé pour éviter les requêtes constantes
-    staleTime: 30000, // Considérer les données comme fraîches pendant 30 secondes
+    refetchOnMount: false,
+    // Pas de polling automatique pour les analytics (données moins critiques)
   });
 
   // Générer des données de ventes pour les graphiques

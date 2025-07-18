@@ -26,9 +26,9 @@ export const useDomains = (storeId?: string) => {
     queryKey: ['domains', storeId],
     queryFn: async () => {
       if (!storeId) return [];
-      
+
       console.log('Fetching domains for store:', storeId);
-      
+
       const { data, error } = await supabase
         .from('domains')
         .select('*')
@@ -39,12 +39,17 @@ export const useDomains = (storeId?: string) => {
         console.error('Error fetching domains:', error);
         throw error;
       }
-      
+
       console.log('Domains fetched:', data);
       return data || [];
     },
     enabled: !!storeId,
-    refetchInterval: 30000, // Vérifier toutes les 30 secondes
+    // ⚡ OPTIMISATION: Domaines changent rarement
+    refetchInterval: 10 * 60 * 1000, // 10 minutes au lieu de 30 secondes
+    staleTime: 5 * 60 * 1000, // 5 minutes de cache
+    cacheTime: 30 * 60 * 1000, // Cache pendant 30 minutes
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
   });
 
   // Configurer un nouveau domaine

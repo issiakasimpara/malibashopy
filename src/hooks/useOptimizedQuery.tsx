@@ -25,11 +25,11 @@ export const useOptimizedQuery = <T,>({
 }: OptimizedQueryOptions<T>) => {
   const queryClient = useQueryClient();
 
-  // Optimisation: mémoriser la clé de requête
-  const memoizedQueryKey = useMemo(() => queryKey, [JSON.stringify(queryKey)]);
+  // ⚡ OPTIMISATION CORRIGÉE: Éviter JSON.stringify qui cause des re-renders
+  const memoizedQueryKey = useMemo(() => queryKey, queryKey);
 
-  // Optimisation: mémoriser la fonction de requête
-  const memoizedQueryFn = useCallback(queryFn, []);
+  // ⚡ OPTIMISATION CORRIGÉE: Dépendances stables pour éviter les re-créations
+  const memoizedQueryFn = useCallback(queryFn, [queryFn]);
 
   const query = useQuery({
     queryKey: memoizedQueryKey,
