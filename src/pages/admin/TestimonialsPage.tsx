@@ -253,6 +253,13 @@ const TestimonialsPage = () => {
                       <div className="flex-1">
                         <div className="flex items-center gap-2 mb-2">
                           <h3 className="font-semibold">{testimonial.customer_name}</h3>
+                          {/* 📸 NOUVEAU: Indicateur d'images */}
+                          {testimonial.images && testimonial.images.length > 0 && (
+                            <Badge variant="outline" className="text-xs px-2 py-0.5 bg-blue-50 text-blue-700 border-blue-200">
+                              <ImageIcon className="h-3 w-3 mr-1" />
+                              {testimonial.images.length}
+                            </Badge>
+                          )}
                           <div className="flex">{renderStars(testimonial.rating)}</div>
                           {testimonial.is_featured && (
                             <Badge variant="secondary" className="bg-purple-100 text-purple-800">
@@ -268,6 +275,45 @@ const TestimonialsPage = () => {
                           <h4 className="font-medium text-gray-900 mb-2">{testimonial.title}</h4>
                         )}
                         <p className="text-gray-600 mb-2">"{testimonial.content}"</p>
+
+                        {/* 📸 NOUVEAU: Affichage des images */}
+                        {testimonial.images && testimonial.images.length > 0 && (
+                          <div className="mb-3">
+                            <div className="flex items-center gap-2 mb-2">
+                              <ImageIcon className="h-4 w-4 text-gray-500" />
+                              <span className="text-sm text-gray-600 font-medium">
+                                {testimonial.images.length} image{testimonial.images.length > 1 ? 's' : ''} jointe{testimonial.images.length > 1 ? 's' : ''}
+                              </span>
+                            </div>
+                            <div className="grid grid-cols-3 gap-2 max-w-xs">
+                              {testimonial.images.slice(0, 3).map((imageUrl, imgIndex) => (
+                                <div key={imgIndex} className="relative group">
+                                  <div className="aspect-square rounded-lg overflow-hidden bg-gray-100 border">
+                                    <img
+                                      src={imageUrl}
+                                      alt={`Image ${imgIndex + 1} du témoignage`}
+                                      className="w-full h-full object-cover hover:scale-105 transition-transform duration-200 cursor-pointer"
+                                      onClick={() => window.open(imageUrl, '_blank')}
+                                      onError={(e) => {
+                                        const target = e.target as HTMLImageElement;
+                                        target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjI0IiBoZWlnaHQ9IjI0IiBmaWxsPSIjRjNGNEY2Ii8+CjxwYXRoIGQ9Ik0xMiAxNkM5Ljc5IDEzLjc5IDkuNzkgMTAuMjEgMTIgOEMxNC4yMSAxMC4yMSAxNC4yMSAxMy43OSAxMiAxNloiIGZpbGw9IiM5Q0EzQUYiLz4KPC9zdmc+';
+                                      }}
+                                    />
+                                  </div>
+                                  {/* Overlay pour plus d'images */}
+                                  {imgIndex === 2 && testimonial.images && testimonial.images.length > 3 && (
+                                    <div className="absolute inset-0 bg-black bg-opacity-50 rounded-lg flex items-center justify-center">
+                                      <span className="text-white text-xs font-medium">
+                                        +{testimonial.images.length - 3}
+                                      </span>
+                                    </div>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
                         <p className="text-sm text-gray-500">
                           {testimonial.customer_email} • {new Date(testimonial.created_at).toLocaleDateString('fr-FR')}
                         </p>

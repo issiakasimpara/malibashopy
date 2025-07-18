@@ -18,7 +18,8 @@ import {
   Grid3X3,
   Globe,
   Truck,
-  ExternalLink
+  ExternalLink,
+  Palette
 } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
@@ -133,6 +134,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
     { name: "Analyses", href: "/analytics", icon: BarChart3 },
     { name: "Paiements", href: "/payments", icon: CreditCard },
     { name: "Ma boutique", href: "/store-config", icon: Store },
+    { name: "Thèmes", href: "/themes", icon: Palette }, // 🎨 NOUVEAU: Onglet dédié aux thèmes
     { name: "Domaines", href: "/domains", icon: Globe },
     { name: "Paramètres", href: "/settings", icon: Settings },
   ];

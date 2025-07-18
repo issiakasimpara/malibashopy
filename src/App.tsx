@@ -35,6 +35,7 @@ const TestPage = lazy(() => import("./pages/TestPage"));
 const Categories = lazy(() => import("./pages/Categories"));
 const Customers = lazy(() => import("./pages/Customers"));
 const StoreConfig = lazy(() => import("./pages/StoreConfig"));
+const Themes = lazy(() => import("./pages/Themes")); // 🎨 NOUVEAU: Page dédiée aux thèmes
 const Domains = lazy(() => import("./pages/Domains"));
 const CustomDomains = lazy(() => import("./pages/CustomDomains"));
 const Payments = lazy(() => import("./pages/Payments"));
@@ -167,7 +168,9 @@ const App = () => {
                 path="/categories"
                 element={
                   <ProtectedRoute>
-                    <Categories />
+                    <Suspense fallback={<div className="flex items-center justify-center min-h-screen"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div></div>}>
+                      <Categories />
+                    </Suspense>
                   </ProtectedRoute>
                 }
               />
@@ -183,7 +186,9 @@ const App = () => {
                 path="/customers"
                 element={
                   <ProtectedRoute>
-                    <Customers />
+                    <Suspense fallback={<div className="flex items-center justify-center min-h-screen"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div></div>}>
+                      <Customers />
+                    </Suspense>
                   </ProtectedRoute>
                 }
               />
@@ -191,7 +196,9 @@ const App = () => {
                 path="/shipping"
                 element={
                   <ProtectedRoute>
-                    <MarketsShipping />
+                    <Suspense fallback={<div className="flex items-center justify-center min-h-screen"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div></div>}>
+                      <MarketsShipping />
+                    </Suspense>
                   </ProtectedRoute>
                 }
               />
@@ -200,10 +207,9 @@ const App = () => {
                 path="/analytics"
                 element={
                   <ProtectedRoute>
-                    <LazyRoute
-                      component={Analytics}
-                      fallbackMessage="Chargement des analytics..."
-                    />
+                    <Suspense fallback={<div className="flex items-center justify-center min-h-screen"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div></div>}>
+                      <Analytics />
+                    </Suspense>
                   </ProtectedRoute>
                 }
               />
@@ -211,10 +217,9 @@ const App = () => {
                 path="/settings"
                 element={
                   <ProtectedRoute>
-                    <LazyRoute
-                      component={Settings}
-                      fallbackMessage="Chargement des paramètres..."
-                    />
+                    <Suspense fallback={<div className="flex items-center justify-center min-h-screen"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div></div>}>
+                      <Settings />
+                    </Suspense>
                   </ProtectedRoute>
                 }
               />
@@ -222,10 +227,25 @@ const App = () => {
                 path="/store-config"
                 element={
                   <ProtectedRoute>
-                    <StoreConfig />
+                    <Suspense fallback={<div className="flex items-center justify-center min-h-screen"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div></div>}>
+                      <StoreConfig />
+                    </Suspense>
                   </ProtectedRoute>
                 }
               />
+
+              {/* 🎨 NOUVEAU: Route pour la galerie de thèmes SEULEMENT */}
+              <Route
+                path="/themes"
+                element={
+                  <ProtectedRoute>
+                    <Suspense fallback={<div className="flex items-center justify-center min-h-screen"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div></div>}>
+                      <Themes />
+                    </Suspense>
+                  </ProtectedRoute>
+                }
+              />
+
               <Route
                 path="/domains"
                 element={
@@ -234,6 +254,8 @@ const App = () => {
                   </ProtectedRoute>
                 }
               />
+
+              {/* 🏪 Site Builder reste dans store-config */}
               <Route
                 path="/store-config/site-builder"
                 element={
@@ -254,7 +276,9 @@ const App = () => {
                 path="/testimonials"
                 element={
                   <ProtectedRoute>
-                    <Testimonials />
+                    <Suspense fallback={<div className="flex items-center justify-center min-h-screen"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div></div>}>
+                      <Testimonials />
+                    </Suspense>
                   </ProtectedRoute>
                 }
               />

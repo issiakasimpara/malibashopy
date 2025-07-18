@@ -172,8 +172,8 @@ const SiteBuilder = () => {
                         <Eye className="h-4 w-4 mr-2 group-hover/btn:scale-110 transition-transform duration-200" />
                         Aperçu
                       </Button>
-                      <Button 
-                        size="sm" 
+                      <Button
+                        size="sm"
                         className="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 shadow-lg hover:shadow-xl transition-all duration-300 group/btn"
                         onClick={() => navigate(`/store-config/site-builder/editor/${template.id}`)}
                       >
