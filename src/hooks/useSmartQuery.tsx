@@ -87,14 +87,14 @@ export const useSmartQuery = <T,>({
     try {
       const result = await queryFn();
       
-      // Track performance
+      // Track performance - ÉTAPE 1 RÉACTIVÉ
       if (startTimeRef.current) {
         performanceManager.trackQuery(keyString, startTimeRef.current);
       }
       
       return result;
     } catch (error) {
-      // Track failed query
+      // Track failed query - ÉTAPE 1 RÉACTIVÉ
       if (startTimeRef.current) {
         performanceManager.trackQuery(`${keyString}:ERROR`, startTimeRef.current);
       }
@@ -146,7 +146,7 @@ export const useSmartQuery = <T,>({
       });
     },
 
-    // Obtenir les métriques de performance
+    // Obtenir les métriques de performance - ÉTAPE 1 RÉACTIVÉ
     getPerformanceMetrics: () => {
       return performanceManager.getMetrics();
     }

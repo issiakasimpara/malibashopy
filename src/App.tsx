@@ -8,39 +8,43 @@ import { CartProvider } from "@/contexts/CartContext";
 import { AuthProvider } from "@/hooks/useAuth";
 import CartWidget from "@/components/site-builder/blocks/CartWidget";
 import ErrorBoundary from "@/components/ErrorBoundary";
-// ⚡ LAZY LOADING POUR OPTIMISER LE BUNDLE
+// ⚡ ÉTAPE 2: LAZY LOADING PROGRESSIF
 import { lazy, Suspense } from 'react';
-import LoadingSpinner from '@/components/LoadingSpinner';
+import LazyFallback from '@/components/LazyFallback';
 
-// Pages publiques (chargement immédiat)
+// Pages critiques (chargement immédiat)
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
+import Dashboard from "./pages/Dashboard";
+import Products from "./pages/Products";
+import Orders from "./pages/Orders";
 import NotFound from "./pages/NotFound";
 
-// Pages admin (lazy loading)
-const Dashboard = lazy(() => import("./pages/Dashboard"));
-const Products = lazy(() => import("./pages/Products"));
-const Categories = lazy(() => import("./pages/Categories"));
-const Orders = lazy(() => import("./pages/Orders"));
-const Customers = lazy(() => import("./pages/Customers"));
+// Pages importantes (chargement immédiat)
+import Cart from "./pages/Cart";
+import Checkout from "./pages/Checkout";
+import Storefront from "./pages/Storefront";
+
+// ÉTAPE 2A: Pages moins critiques (lazy loading)
 const Analytics = lazy(() => import("./pages/Analytics"));
 const Settings = lazy(() => import("./pages/Settings"));
+const Testimonials = lazy(() => import("./pages/Testimonials"));
+const TestPage = lazy(() => import("./pages/TestPage"));
+
+// ÉTAPE 2B: Pages de configuration (lazy loading)
+const Categories = lazy(() => import("./pages/Categories"));
+const Customers = lazy(() => import("./pages/Customers"));
 const StoreConfig = lazy(() => import("./pages/StoreConfig"));
 const Domains = lazy(() => import("./pages/Domains"));
 const CustomDomains = lazy(() => import("./pages/CustomDomains"));
-const SiteBuilder = lazy(() => import("./pages/SiteBuilder"));
-const TemplateEditor = lazy(() => import("./pages/TemplateEditor"));
-const Testimonials = lazy(() => import("./pages/Testimonials"));
 const Payments = lazy(() => import("./pages/Payments"));
 const MarketsShipping = lazy(() => import("./pages/MarketsShipping"));
-const TestPage = lazy(() => import("./pages/TestPage"));
 
-// Pages e-commerce (lazy loading)
-const Cart = lazy(() => import("./pages/Cart"));
-const Checkout = lazy(() => import("./pages/Checkout"));
+// ÉTAPE 2C: Pages complexes (lazy loading)
+const SiteBuilder = lazy(() => import("./pages/SiteBuilder"));
+const TemplateEditor = lazy(() => import("./pages/TemplateEditor"));
 const PaymentSuccess = lazy(() => import("./pages/PaymentSuccess"));
 const CustomerOrders = lazy(() => import("./pages/CustomerOrders"));
-const Storefront = lazy(() => import("./pages/Storefront"));
 import ProtectedRoute from "./components/ProtectedRoute";
 
 const queryClient = new QueryClient();
@@ -121,9 +125,7 @@ const App = () => (
                 path="/dashboard"
                 element={
                   <ProtectedRoute>
-                    <Suspense fallback={<LoadingSpinner />}>
-                      <Dashboard />
-                    </Suspense>
+                    <Dashboard />
                   </ProtectedRoute>
                 }
               />

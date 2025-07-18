@@ -102,15 +102,23 @@ class PerformanceManager {
    * 📊 Mesurer l'utilisation mémoire
    */
   trackMemory(): void {
-    if ('memory' in performance) {
-      // @ts-ignore - API expérimentale
-      this.metrics.memoryUsage = performance.memory.usedJSHeapSize;
-      
-      if (this.metrics.memoryUsage > this.config.memoryThreshold) {
-        if (this.config.enableLogging) {
-          console.warn(`🧠 Utilisation mémoire élevée: ${Math.round(this.metrics.memoryUsage / 1024 / 1024)}MB`);
+    try {
+      if ('memory' in performance && (performance as any).memory) {
+        // API expérimentale disponible dans Chrome
+        this.metrics.memoryUsage = (performance as any).memory.usedJSHeapSize;
+
+        if (this.metrics.memoryUsage > this.config.memoryThreshold) {
+          if (this.config.enableLogging) {
+            console.warn(`🧠 Utilisation mémoire élevée: ${Math.round(this.metrics.memoryUsage / 1024 / 1024)}MB`);
+          }
         }
+      } else {
+        // Fallback pour les navigateurs sans support
+        this.metrics.memoryUsage = 0;
       }
+    } catch (error) {
+      // Silencieux en cas d'erreur
+      this.metrics.memoryUsage = 0;
     }
   }
 
