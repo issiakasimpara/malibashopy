@@ -124,17 +124,17 @@ const TestimonialsBlock = ({ block, isEditing, viewMode, selectedStore }: Testim
                     className="relative group bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 border border-gray-100 overflow-hidden"
                   >
                     {/* Header */}
-                    <div className="bg-gradient-to-br from-blue-500 via-purple-500 to-indigo-600 p-6 text-white">
+                    <div className="bg-gray-50 border-b border-gray-100 p-6">
                       <div className="flex items-center gap-4">
-                        <div className="w-14 h-14 bg-white/20 rounded-full flex items-center justify-center text-white font-bold text-xl">
+                        <div className="w-14 h-14 bg-gray-200 rounded-full flex items-center justify-center text-gray-700 font-bold text-xl">
                           {testimonial.customer_name.charAt(0).toUpperCase()}
                         </div>
 
                         <div className="flex-1">
-                          <h4 className="font-bold text-lg">{testimonial.customer_name}</h4>
+                          <h4 className="font-bold text-lg text-gray-900">{testimonial.customer_name}</h4>
                           <div className="flex items-center gap-1 mt-1">
                             {renderStars(testimonial.rating)}
-                            <span className="ml-2 text-white/90 text-sm font-medium">
+                            <span className="ml-2 text-gray-600 text-sm font-medium">
                               {testimonial.rating}/5
                             </span>
                           </div>

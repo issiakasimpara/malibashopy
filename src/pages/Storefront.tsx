@@ -328,37 +328,51 @@ const Storefront = () => {
     if (!template) return null;
 
     const mainPages = ['home', 'product', 'category', 'contact'];
+    const logoPosition = brandingData.logoPosition || 'left';
+
+    // Composant Logo réutilisable
+    const LogoComponent = () => (
+      <div className="flex items-center space-x-3">
+        {brandingData.logo ? (
+          <img
+            src={brandingData.logo}
+            alt={brandingData.brandName || store?.name}
+            className="h-10 max-w-32 object-contain"
+          />
+        ) : store?.logo_url ? (
+          <img
+            src={store.logo_url}
+            alt={store.name}
+            className="h-10 w-10 rounded-lg object-cover"
+          />
+        ) : (
+          <div className="p-2 rounded-lg" style={{ backgroundColor: template.styles.primaryColor }}>
+            <ShoppingBag className="h-5 w-5 text-white" />
+          </div>
+        )}
+        <span className="text-xl font-bold">
+          {brandingData.brandName || store?.name}
+        </span>
+      </div>
+    );
 
     return (
       <nav className="bg-white shadow-sm border-b">
         <div className="container mx-auto px-4">
-          <div className="flex items-center justify-between h-16">
-            {/* Logo/Nom de la boutique */}
-            <div className="flex items-center space-x-3">
-              {brandingData.logo ? (
-                <img
-                  src={brandingData.logo}
-                  alt={brandingData.brandName || store?.name}
-                  className="h-10 max-w-32 object-contain"
-                />
-              ) : store?.logo_url ? (
-                <img
-                  src={store.logo_url}
-                  alt={store.name}
-                  className="h-10 w-10 rounded-lg object-cover"
-                />
-              ) : (
-                <div className="p-2 rounded-lg" style={{ backgroundColor: template.styles.primaryColor }}>
-                  <ShoppingBag className="h-5 w-5 text-white" />
-                </div>
-              )}
-              <span className="text-xl font-bold">
-                {brandingData.brandName || store?.name}
-              </span>
-            </div>
+          <div className="relative flex items-center justify-between h-16">
+            {/* Position gauche */}
+            {logoPosition === 'left' && <LogoComponent />}
+            {logoPosition !== 'left' && <div></div>} {/* Spacer */}
+
+            {/* Position centre */}
+            {logoPosition === 'center' && (
+              <div className="absolute left-1/2 transform -translate-x-1/2">
+                <LogoComponent />
+              </div>
+            )}
 
             {/* Navigation principale */}
-            <div className="hidden md:flex items-center space-x-8">
+            <div className={`hidden md:flex items-center space-x-8 ${logoPosition === 'center' ? 'ml-auto' : ''}`}>
               {mainPages.map((page) => (
                 <button
                   key={page}
@@ -377,8 +391,11 @@ const Storefront = () => {
               ))}
             </div>
 
-            {/* Actions */}
+            {/* Actions et Position droite */}
             <div className="flex items-center space-x-4">
+              {/* Position droite */}
+              {logoPosition === 'right' && <LogoComponent />}
+
               <Button
                 variant="ghost"
                 size="sm"

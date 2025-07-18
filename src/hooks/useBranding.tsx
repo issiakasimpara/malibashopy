@@ -39,7 +39,8 @@ export const useBranding = (template: Template | null) => {
         favicon: brandingBlock.content.favicon || '',
         brandName: brandingBlock.content.brandName || '',
         tagline: brandingBlock.content.tagline || '',
-        description: brandingBlock.content.description || ''
+        description: brandingBlock.content.description || '',
+        logoPosition: brandingBlock.content.logoPosition || 'left'
       };
 
       console.log('🎨 Données branding extraites:', newBrandingData);
