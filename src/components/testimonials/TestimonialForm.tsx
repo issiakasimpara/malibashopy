@@ -6,6 +6,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Star, Send } from 'lucide-react';
 import { useTestimonials, CreateTestimonialData } from '@/hooks/useTestimonials';
+import ImageUpload from './ImageUpload'; // 📸 NOUVEAU: Import du composant d'upload
 
 interface TestimonialFormProps {
   storeId: string;
@@ -31,6 +32,7 @@ const TestimonialForm = ({
     content: '',
     rating: 0
   });
+  const [images, setImages] = useState<string[]>([]); // 📸 NOUVEAU: État pour les images
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { createTestimonial } = useTestimonials();
 
@@ -55,7 +57,8 @@ const TestimonialForm = ({
       title: formData.title || undefined,
       content: formData.content,
       product_id: productId,
-      order_id: orderId
+      order_id: orderId,
+      images: images.length > 0 ? images : undefined // 📸 NOUVEAU: Inclure les images
     };
 
     const result = await createTestimonial(testimonialData);
@@ -69,6 +72,7 @@ const TestimonialForm = ({
         content: '',
         rating: 0
       });
+      setImages([]); // 📸 NOUVEAU: Réinitialiser les images
       
       if (onSuccess) {
         onSuccess();
@@ -180,6 +184,15 @@ const TestimonialForm = ({
             required
           />
         </div>
+
+        {/* 📸 NOUVEAU: Upload d'images */}
+        <ImageUpload
+          images={images}
+          onImagesChange={setImages}
+          maxImages={3}
+          maxSizeInMB={5}
+          className="mt-4"
+        />
 
         {/* Bouton et info */}
         <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-2">

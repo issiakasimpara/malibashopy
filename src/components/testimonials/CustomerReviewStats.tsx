@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Star, Edit3, X, Send } from 'lucide-react';
 import { useTestimonials, CreateTestimonialData } from '@/hooks/useTestimonials';
+import ImageUpload from './ImageUpload'; // 📸 NOUVEAU: Import du composant d'upload
 
 interface CustomerReviewStatsProps {
   testimonials: Array<{
@@ -26,6 +27,7 @@ export const CustomerReviewStats: React.FC<CustomerReviewStatsProps> = ({
     content: '',
     rating: 0
   });
+  const [images, setImages] = useState<string[]>([]); // 📸 NOUVEAU: État pour les images
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const { createTestimonial } = useTestimonials();
@@ -45,7 +47,8 @@ export const CustomerReviewStats: React.FC<CustomerReviewStatsProps> = ({
       customer_email: formData.customer_email,
       rating: formData.rating,
       title: formData.title || undefined,
-      content: formData.content
+      content: formData.content,
+      images: images.length > 0 ? images : undefined // 📸 NOUVEAU: Inclure les images
     };
 
     const result = await createTestimonial(testimonialData);
@@ -59,6 +62,7 @@ export const CustomerReviewStats: React.FC<CustomerReviewStatsProps> = ({
         content: '',
         rating: 0
       });
+      setImages([]); // 📸 NOUVEAU: Réinitialiser les images
 
       // Fermer le formulaire
       setIsFormOpen(false);
@@ -268,6 +272,15 @@ export const CustomerReviewStats: React.FC<CustomerReviewStatsProps> = ({
                 required
               />
             </div>
+
+            {/* 📸 NOUVEAU: Upload d'images */}
+            <ImageUpload
+              images={images}
+              onImagesChange={setImages}
+              maxImages={3}
+              maxSizeInMB={5}
+              className="mt-4"
+            />
 
             <div className="flex justify-end gap-4">
               <button

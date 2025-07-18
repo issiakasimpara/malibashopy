@@ -10,6 +10,7 @@ interface Testimonial {
   rating: number;
   is_approved: boolean;
   created_at: string;
+  images?: string[]; // 📸 NOUVEAU: Images du témoignage
 }
 
 interface TestimonialsListProps {

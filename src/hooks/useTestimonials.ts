@@ -15,6 +15,7 @@ export interface Testimonial {
   is_approved: boolean;
   is_featured: boolean;
   product_id?: string;
+  images?: string[]; // 📸 NOUVEAU: Images du témoignage
   created_at: string;
   updated_at: string;
 }
@@ -28,6 +29,7 @@ export interface CreateTestimonialData {
   content: string;
   product_id?: string;
   order_id?: string;
+  images?: string[]; // 📸 NOUVEAU: Images du témoignage
 }
 
 export const useTestimonials = (storeId?: string, approvedOnly: boolean = true) => {

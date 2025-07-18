@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { TemplateBlock } from '@/types/template';
-import { Star, MessageCircle } from 'lucide-react';
+import { Star, MessageCircle, Image as ImageIcon } from 'lucide-react';
 import { useTestimonials } from '@/hooks/useTestimonials';
 import { CustomerReviewStats } from '@/components/testimonials/CustomerReviewStats';
 import type { Tables } from '@/integrations/supabase/types';
@@ -147,6 +147,43 @@ const TestimonialsBlock = ({ block, isEditing, viewMode, selectedStore }: Testim
                       <p className="text-gray-600 leading-relaxed mb-4 italic">
                         "{testimonial.content}"
                       </p>
+
+                      {/* 📸 NOUVEAU: Affichage des images */}
+                      {testimonial.images && testimonial.images.length > 0 && (
+                        <div className="mt-4">
+                          <div className="flex items-center gap-2 mb-3">
+                            <ImageIcon className="h-4 w-4 text-gray-500" />
+                            <span className="text-sm text-gray-500 font-medium">
+                              {testimonial.images.length} image{testimonial.images.length > 1 ? 's' : ''}
+                            </span>
+                          </div>
+                          <div className="grid grid-cols-2 gap-2">
+                            {testimonial.images.slice(0, 4).map((imageUrl, imgIndex) => (
+                              <div key={imgIndex} className="relative group">
+                                <div className="aspect-square rounded-lg overflow-hidden bg-gray-100">
+                                  <img
+                                    src={imageUrl}
+                                    alt={`Image ${imgIndex + 1} du témoignage`}
+                                    className="w-full h-full object-cover hover:scale-105 transition-transform duration-200"
+                                    onError={(e) => {
+                                      const target = e.target as HTMLImageElement;
+                                      target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjI0IiBoZWlnaHQ9IjI0IiBmaWxsPSIjRjNGNEY2Ii8+CjxwYXRoIGQ9Ik0xMiAxNkM5Ljc5IDEzLjc5IDkuNzkgMTAuMjEgMTIgOEMxNC4yMSAxMC4yMSAxNC4yMSAxMy43OSAxMiAxNloiIGZpbGw9IiM5Q0EzQUYiLz4KPC9zdmc+';
+                                    }}
+                                  />
+                                </div>
+                                {/* Overlay pour plus d'images */}
+                                {imgIndex === 3 && testimonial.images && testimonial.images.length > 4 && (
+                                  <div className="absolute inset-0 bg-black bg-opacity-50 rounded-lg flex items-center justify-center">
+                                    <span className="text-white text-sm font-medium">
+                                      +{testimonial.images.length - 4}
+                                    </span>
+                                  </div>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
                     </div>
 
                     {/* Badge vérifié */}

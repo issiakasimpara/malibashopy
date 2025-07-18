@@ -2,7 +2,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Star, Check, X, Eye } from 'lucide-react';
+import { Star, Check, X, Eye, Image as ImageIcon } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -20,6 +20,7 @@ interface Testimonial {
   rating: number;
   is_approved: boolean;
   created_at: string;
+  images?: string[]; // 📸 NOUVEAU: Images du témoignage
 }
 
 interface TestimonialCardProps {
@@ -64,6 +65,13 @@ const TestimonialCard = ({ testimonial, onApprove, onDelete }: TestimonialCardPr
               <span className="text-sm text-muted-foreground font-medium">
                 {testimonial.rating}/5
               </span>
+              {/* 📸 NOUVEAU: Indicateur d'images */}
+              {testimonial.images && testimonial.images.length > 0 && (
+                <Badge variant="outline" className="text-xs px-2 py-0.5 bg-blue-50 text-blue-700 border-blue-200">
+                  <ImageIcon className="h-3 w-3 mr-1" />
+                  {testimonial.images.length}
+                </Badge>
+              )}
             </div>
             <CardDescription className="font-medium">{testimonial.customer_email}</CardDescription>
           </div>
@@ -96,6 +104,33 @@ const TestimonialCard = ({ testimonial, onApprove, onDelete }: TestimonialCardPr
                     <h4 className="font-semibold mb-1">Email :</h4>
                     <p className="text-sm text-muted-foreground">{testimonial.customer_email}</p>
                   </div>
+
+                  {/* 📸 NOUVEAU: Affichage des images */}
+                  {testimonial.images && testimonial.images.length > 0 && (
+                    <div>
+                      <h4 className="font-semibold mb-3 flex items-center gap-2">
+                        <ImageIcon className="h-4 w-4" />
+                        Images ({testimonial.images.length})
+                      </h4>
+                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                        {testimonial.images.map((imageUrl, index) => (
+                          <div key={index} className="relative group">
+                            <div className="aspect-square rounded-lg overflow-hidden bg-gray-100">
+                              <img
+                                src={imageUrl}
+                                alt={`Image ${index + 1} du témoignage`}
+                                className="w-full h-full object-cover hover:scale-105 transition-transform duration-200"
+                                onError={(e) => {
+                                  const target = e.target as HTMLImageElement;
+                                  target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjI0IiBoZWlnaHQ9IjI0IiBmaWxsPSIjRjNGNEY2Ii8+CjxwYXRoIGQ9Ik0xMiAxNkM5Ljc5IDEzLjc5IDkuNzkgMTAuMjEgMTIgOEMxNC4yMSAxMC4yMSAxNC4yMSAxMy43OSAxMiAxNloiIGZpbGw9IiM5Q0EzQUYiLz4KPC9zdmc+';
+                                }}
+                              />
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
               </DialogContent>
             </Dialog>

@@ -4,17 +4,18 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { 
-  Star, 
-  Check, 
-  X, 
-  Trash2, 
-  Search, 
+import {
+  Star,
+  Check,
+  X,
+  Trash2,
+  Search,
   Filter,
   MessageCircle,
   TrendingUp,
   Users,
-  Award
+  Award,
+  Image as ImageIcon
 } from 'lucide-react';
 import { useTestimonials } from '@/hooks/useTestimonials';
 import { useStores } from '@/hooks/useStores';
