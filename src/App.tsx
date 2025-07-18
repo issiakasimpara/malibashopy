@@ -10,7 +10,6 @@ import CartWidget from "@/components/site-builder/blocks/CartWidget";
 import ErrorBoundary from "@/components/ErrorBoundary";
 // ⚡ ÉTAPE 2: LAZY LOADING PROGRESSIF
 import { lazy, Suspense } from 'react';
-import { LazyRoute } from '@/components/LazyWrapper';
 
 // Pages critiques (chargement immédiat)
 import Index from "./pages/Index";
@@ -127,22 +126,39 @@ const App = () => {
               <Toaster />
               <Sonner />
               <BrowserRouter>
-            <Routes>
-              {/* Route de test */}
-              <Route path="/test" element={<TestPage />} />
+            <ErrorBoundary>
+              <Routes>
+                {/* Route de test */}
+                <Route path="/test" element={
+                  <Suspense fallback={<div className="flex items-center justify-center min-h-screen"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div></div>}>
+                    <TestPage />
+                  </Suspense>
+                } />
 
               {/* Routes publiques/clients */}
               <Route path="/" element={<Index />} />
               <Route path="/cart" element={<Cart />} />
               <Route path="/checkout" element={<Checkout />} />
-              <Route path="/payment-success" element={<PaymentSuccess />} />
-              <Route path="/mes-commandes" element={<CustomerOrders />} />
+              <Route path="/payment-success" element={
+                <Suspense fallback={<div className="flex items-center justify-center min-h-screen"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div></div>}>
+                  <PaymentSuccess />
+                </Suspense>
+              } />
+              <Route path="/mes-commandes" element={
+                <Suspense fallback={<div className="flex items-center justify-center min-h-screen"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div></div>}>
+                  <CustomerOrders />
+                </Suspense>
+              } />
 
               {/* Routes des boutiques publiques */}
               <Route path="/store/:storeSlug" element={<Storefront />} />
               <Route path="/store/:storeSlug/cart" element={<Cart />} />
               <Route path="/store/:storeSlug/checkout" element={<Checkout />} />
-              <Route path="/store/:storeSlug/payment-success" element={<PaymentSuccess />} />
+              <Route path="/store/:storeSlug/payment-success" element={
+                <Suspense fallback={<div className="flex items-center justify-center min-h-screen"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div></div>}>
+                  <PaymentSuccess />
+                </Suspense>
+              } />
               
               {/* Routes d'authentification */}
               <Route path="/auth" element={<Auth />} />
@@ -250,7 +266,9 @@ const App = () => {
                 path="/domains"
                 element={
                   <ProtectedRoute>
-                    <CustomDomains />
+                    <Suspense fallback={<div className="flex items-center justify-center min-h-screen"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div></div>}>
+                      <CustomDomains />
+                    </Suspense>
                   </ProtectedRoute>
                 }
               />
@@ -260,7 +278,9 @@ const App = () => {
                 path="/store-config/site-builder"
                 element={
                   <ProtectedRoute>
-                    <SiteBuilder />
+                    <Suspense fallback={<div className="flex items-center justify-center min-h-screen"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div></div>}>
+                      <SiteBuilder />
+                    </Suspense>
                   </ProtectedRoute>
                 }
               />
@@ -268,7 +288,9 @@ const App = () => {
                 path="/store-config/site-builder/editor/:templateId"
                 element={
                   <ProtectedRoute>
-                    <TemplateEditor />
+                    <Suspense fallback={<div className="flex items-center justify-center min-h-screen"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div></div>}>
+                      <TemplateEditor />
+                    </Suspense>
                   </ProtectedRoute>
                 }
               />
@@ -286,12 +308,15 @@ const App = () => {
                 path="/payments"
                 element={
                   <ProtectedRoute>
-                    <Payments />
+                    <Suspense fallback={<div className="flex items-center justify-center min-h-screen"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div></div>}>
+                      <Payments />
+                    </Suspense>
                   </ProtectedRoute>
                 }
               />
               <Route path="*" element={<NotFound />} />
-            </Routes>
+              </Routes>
+            </ErrorBoundary>
             <CartWidgetConditional />
 
             {/* ⚡ ÉTAPE 3: Moniteur de performance (dev uniquement) */}
