@@ -12,15 +12,17 @@ interface TestimonialFormProps {
   productId?: string;
   orderId?: string;
   onSuccess?: () => void;
+  onCancel?: () => void;
   className?: string;
 }
 
-const TestimonialForm = ({ 
-  storeId, 
-  productId, 
-  orderId, 
+const TestimonialForm = ({
+  storeId,
+  productId,
+  orderId,
   onSuccess,
-  className = "" 
+  onCancel,
+  className = ""
 }: TestimonialFormProps) => {
   const [formData, setFormData] = useState({
     customer_name: '',
@@ -71,6 +73,11 @@ const TestimonialForm = ({
       if (onSuccess) {
         onSuccess();
       }
+
+      // Fermer le formulaire après succès
+      if (onCancel) {
+        onCancel();
+      }
     }
 
     setIsSubmitting(false);
@@ -101,87 +108,93 @@ const TestimonialForm = ({
   };
 
   return (
-    <Card className={className}>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Star className="w-5 h-5 text-yellow-400" />
-          Laissez votre avis
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Nom */}
+    <div className={`bg-white rounded-lg shadow-md p-6 ${className}`}>
+      <div className="flex items-center gap-2 mb-6">
+        <Star className="w-5 h-5 text-yellow-400" />
+        <h3 className="text-lg font-semibold">Laissez votre avis</h3>
+      </div>
+
+      <form onSubmit={handleSubmit} className="space-y-4">
+        {/* Ligne 1: Nom et Email */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <Label htmlFor="customer_name">Votre nom *</Label>
+            <Label htmlFor="customer_name" className="text-sm font-medium text-gray-700">Votre nom *</Label>
             <Input
               id="customer_name"
               value={formData.customer_name}
               onChange={(e) => setFormData(prev => ({ ...prev, customer_name: e.target.value }))}
               placeholder="Votre nom complet"
+              className="mt-1 h-10"
               required
             />
           </div>
-
-          {/* Email */}
           <div>
-            <Label htmlFor="customer_email">Votre email *</Label>
+            <Label htmlFor="customer_email" className="text-sm font-medium text-gray-700">Votre email *</Label>
             <Input
               id="customer_email"
               type="email"
               value={formData.customer_email}
               onChange={(e) => setFormData(prev => ({ ...prev, customer_email: e.target.value }))}
               placeholder="votre@email.com"
+              className="mt-1 h-10"
               required
             />
           </div>
+        </div>
 
-          {/* Note */}
+        {/* Ligne 2: Note et Titre */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <Label>Votre note *</Label>
-            <div className="mt-2">
+            <Label className="text-sm font-medium text-gray-700">Votre note *</Label>
+            <div className="mt-1 flex items-center gap-1">
               {renderStars()}
               {formData.rating > 0 && (
-                <p className="text-sm text-gray-600 mt-1">
-                  {formData.rating} étoile{formData.rating > 1 ? 's' : ''}
-                </p>
+                <span className="text-sm text-gray-600 ml-2">
+                  {formData.rating}/5
+                </span>
               )}
             </div>
           </div>
-
-          {/* Titre (optionnel) */}
           <div>
-            <Label htmlFor="title">Titre de votre avis</Label>
+            <Label htmlFor="title" className="text-sm font-medium text-gray-700">Titre de votre avis</Label>
             <Input
               id="title"
               value={formData.title}
               onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
-              placeholder="Résumez votre expérience en quelques mots"
+              placeholder="Résumez votre expérience..."
+              className="mt-1 h-10"
             />
           </div>
+        </div>
 
-          {/* Commentaire */}
-          <div>
-            <Label htmlFor="content">Votre commentaire *</Label>
-            <Textarea
-              id="content"
-              value={formData.content}
-              onChange={(e) => setFormData(prev => ({ ...prev, content: e.target.value }))}
-              placeholder="Partagez votre expérience avec ce produit ou cette boutique..."
-              rows={4}
-              required
-            />
-          </div>
+        {/* Commentaire */}
+        <div>
+          <Label htmlFor="content" className="text-sm font-medium text-gray-700">Votre commentaire *</Label>
+          <Textarea
+            id="content"
+            value={formData.content}
+            onChange={(e) => setFormData(prev => ({ ...prev, content: e.target.value }))}
+            placeholder="Partagez votre expérience avec ce produit ou cette boutique..."
+            rows={3}
+            className="mt-1 resize-none"
+            required
+          />
+        </div>
 
-          {/* Bouton de soumission */}
-          <Button 
-            type="submit" 
+        {/* Bouton et info */}
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-2">
+          <p className="text-xs text-gray-500 order-2 sm:order-1">
+            Votre avis sera examiné avant publication
+          </p>
+          <Button
+            type="submit"
             disabled={isSubmitting || formData.rating === 0}
-            className="w-full"
+            className="order-1 sm:order-2 px-6 py-2 h-10"
           >
             {isSubmitting ? (
               <>
                 <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                Envoi en cours...
+                Envoi...
               </>
             ) : (
               <>
@@ -190,13 +203,9 @@ const TestimonialForm = ({
               </>
             )}
           </Button>
-
-          <p className="text-xs text-gray-500 text-center">
-            Votre avis sera examiné avant publication
-          </p>
-        </form>
-      </CardContent>
-    </Card>
+        </div>
+      </form>
+    </div>
   );
 };
 

@@ -1,8 +1,10 @@
 
+import React, { useState } from 'react';
 import { TemplateBlock } from '@/types/template';
 import { Star, MessageCircle } from 'lucide-react';
 import { useTestimonials } from '@/hooks/useTestimonials';
 import TestimonialForm from '@/components/testimonials/TestimonialForm';
+import { ReviewStats } from '@/components/testimonials/ReviewStats';
 import type { Tables } from '@/integrations/supabase/types';
 
 type Store = Tables<'stores'>;
@@ -17,6 +19,7 @@ interface TestimonialsBlockProps {
 
 const TestimonialsBlock = ({ block, isEditing, viewMode, selectedStore }: TestimonialsBlockProps) => {
   const { testimonials, isLoading } = useTestimonials(selectedStore?.id, true);
+  const [isFormOpen, setIsFormOpen] = useState(false);
 
   const getResponsiveClasses = () => {
     switch (viewMode) {
@@ -98,28 +101,67 @@ const TestimonialsBlock = ({ block, isEditing, viewMode, selectedStore }: Testim
     >
       <div className="container mx-auto">
         <h2 className={`font-bold text-center mb-12 ${viewMode === 'mobile' ? 'text-xl' : 'text-3xl'}`}>
-          {block.content.title || 'Ce que disent nos clients'}
+          {block.content.title || 'Customer Reviews'}
         </h2>
 
+        {/* NOUVELLE INTERFACE PROFESSIONNELLE */}
+
+        {/* 1. Section Statistiques avec bouton Write Review */}
+        <div className="mb-8">
+          <ReviewStats
+            testimonials={limitedTestimonials}
+            showWriteButton={!isEditing && !!selectedStore}
+            isFormOpen={isFormOpen}
+            onToggleForm={() => setIsFormOpen(!isFormOpen)}
+          />
+        </div>
+
+        {/* 2. Formulaire (affiché conditionnellement) */}
+        {!isEditing && selectedStore && isFormOpen && (
+          <div className="mb-8">
+            <TestimonialForm
+              storeId={selectedStore.id}
+              onCancel={() => setIsFormOpen(false)}
+              className="max-w-2xl mx-auto"
+            />
+          </div>
+        )}
+
+        {/* 3. Liste des avis */}
         {limitedTestimonials.length > 0 ? (
-          <div className={`grid ${gridCols} gap-8`}>
+          <div className="space-y-4">
             {limitedTestimonials.map((testimonial) => (
               <div key={testimonial.id} className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
-                <div className="flex items-center mb-4">
-                  {renderStars(testimonial.rating)}
-                </div>
-                {testimonial.title && (
-                  <h3 className="font-semibold text-gray-900 mb-2">{testimonial.title}</h3>
-                )}
-                <p className="text-gray-600 mb-4 italic">"{testimonial.content}"</p>
-                <div className="text-sm font-semibold text-gray-800">
-                  {testimonial.customer_name}
-                </div>
-                {!isEditing && testimonial.created_at && (
-                  <div className="text-xs text-gray-500 mt-1">
-                    {new Date(testimonial.created_at).toLocaleDateString('fr-FR')}
+                <div className="flex items-start gap-4">
+
+                  {/* Avatar */}
+                  <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold text-lg">
+                    {testimonial.customer_name.charAt(0).toUpperCase()}
                   </div>
-                )}
+
+                  {/* Contenu */}
+                  <div className="flex-1">
+                    <div className="flex items-center justify-between mb-2">
+                      <h4 className="font-semibold text-gray-900">{testimonial.customer_name}</h4>
+                      <div className="flex items-center">
+                        {renderStars(testimonial.rating)}
+                      </div>
+                    </div>
+
+                    {testimonial.title && (
+                      <h5 className="font-medium text-gray-800 mb-2">{testimonial.title}</h5>
+                    )}
+
+                    <p className="text-gray-600 mb-3">"{testimonial.content}"</p>
+
+                    {!isEditing && testimonial.created_at && (
+                      <div className="text-xs text-gray-500">
+                        {new Date(testimonial.created_at).toLocaleDateString('fr-FR')}
+                      </div>
+                    )}
+                  </div>
+
+                </div>
               </div>
             ))}
           </div>
@@ -128,16 +170,6 @@ const TestimonialsBlock = ({ block, isEditing, viewMode, selectedStore }: Testim
             <MessageCircle className="w-16 h-16 text-gray-300 mx-auto mb-4" />
             <h3 className="text-xl font-semibold text-gray-600 mb-2">Aucun témoignage pour le moment</h3>
             <p className="text-gray-500">Soyez le premier à laisser un avis !</p>
-          </div>
-        )}
-
-        {/* Formulaire pour laisser un avis (uniquement en mode public) */}
-        {!isEditing && selectedStore && (
-          <div className="mt-16">
-            <TestimonialForm
-              storeId={selectedStore.id}
-              className="max-w-2xl mx-auto"
-            />
           </div>
         )}
 
