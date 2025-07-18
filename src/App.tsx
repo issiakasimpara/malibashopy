@@ -10,7 +10,7 @@ import CartWidget from "@/components/site-builder/blocks/CartWidget";
 import ErrorBoundary from "@/components/ErrorBoundary";
 // ⚡ ÉTAPE 2: LAZY LOADING PROGRESSIF
 import { lazy, Suspense } from 'react';
-import LazyFallback from '@/components/LazyFallback';
+import { LazyRoute } from '@/components/LazyWrapper';
 
 // Pages critiques (chargement immédiat)
 import Index from "./pages/Index";
@@ -46,6 +46,10 @@ const TemplateEditor = lazy(() => import("./pages/TemplateEditor"));
 const PaymentSuccess = lazy(() => import("./pages/PaymentSuccess"));
 const CustomerOrders = lazy(() => import("./pages/CustomerOrders"));
 import ProtectedRoute from "./components/ProtectedRoute";
+
+// ⚡ ÉTAPE 3: Monitoring en temps réel (dev uniquement)
+import React, { useState } from 'react';
+import PerformanceMonitor from './components/PerformanceMonitor';
 
 const queryClient = new QueryClient();
 
@@ -91,15 +95,37 @@ const CartWidgetConditional = () => {
   return <CartWidget />;
 };
 
-const App = () => (
-  <ErrorBoundary>
-    <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <CartProvider>
-          <TooltipProvider>
-            <Toaster />
-            <Sonner />
-            <BrowserRouter>
+const App = () => {
+  // ⚡ ÉTAPE 3: État du moniteur de performance
+  const [showPerformanceMonitor, setShowPerformanceMonitor] = useState(
+    import.meta.env.DEV && localStorage.getItem('showPerformanceMonitor') === 'true'
+  );
+
+  // Raccourci clavier pour toggle le moniteur (Ctrl+Shift+P)
+  React.useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.ctrlKey && e.shiftKey && e.key === 'P' && import.meta.env.DEV) {
+        setShowPerformanceMonitor(prev => {
+          const newValue = !prev;
+          localStorage.setItem('showPerformanceMonitor', String(newValue));
+          return newValue;
+        });
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
+  return (
+    <ErrorBoundary>
+      <QueryClientProvider client={queryClient}>
+        <AuthProvider>
+          <CartProvider>
+            <TooltipProvider>
+              <Toaster />
+              <Sonner />
+              <BrowserRouter>
             <Routes>
               {/* Route de test */}
               <Route path="/test" element={<TestPage />} />
@@ -174,7 +200,10 @@ const App = () => (
                 path="/analytics"
                 element={
                   <ProtectedRoute>
-                    <Analytics />
+                    <LazyRoute
+                      component={Analytics}
+                      fallbackMessage="Chargement des analytics..."
+                    />
                   </ProtectedRoute>
                 }
               />
@@ -182,7 +211,10 @@ const App = () => (
                 path="/settings"
                 element={
                   <ProtectedRoute>
-                    <Settings />
+                    <LazyRoute
+                      component={Settings}
+                      fallbackMessage="Chargement des paramètres..."
+                    />
                   </ProtectedRoute>
                 }
               />
@@ -237,12 +269,24 @@ const App = () => (
               <Route path="*" element={<NotFound />} />
             </Routes>
             <CartWidgetConditional />
+
+            {/* ⚡ ÉTAPE 3: Moniteur de performance (dev uniquement) */}
+            {import.meta.env.DEV && (
+              <PerformanceMonitor
+                isVisible={showPerformanceMonitor}
+                onClose={() => {
+                  setShowPerformanceMonitor(false);
+                  localStorage.setItem('showPerformanceMonitor', 'false');
+                }}
+              />
+            )}
           </BrowserRouter>
         </TooltipProvider>
       </CartProvider>
     </AuthProvider>
   </QueryClientProvider>
   </ErrorBoundary>
-);
+  );
+};
 
 export default App;

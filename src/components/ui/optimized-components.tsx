@@ -1,7 +1,7 @@
 // ⚡ COMPOSANTS UI OPTIMISÉS POUR LA PERFORMANCE
 import React, { memo, useMemo, useCallback, forwardRef } from 'react';
 import { cn } from '@/lib/utils';
-import { usePerformanceTracker } from '@/utils/performanceManager';
+import { useComponentPerformance } from '@/hooks/useComponentPerformance';
 
 // 🎯 Types pour les props optimisées
 interface OptimizedProps {
@@ -26,7 +26,11 @@ export const OptimizedButton = memo(forwardRef<HTMLButtonElement, OptimizedProps
   size = 'default',
   ...props 
 }, ref) => {
-  usePerformanceTracker('OptimizedButton');
+  useComponentPerformance({
+    componentName: 'OptimizedButton',
+    trackRenders: true,
+    slowRenderThreshold: 8 // Boutons doivent être très rapides
+  });
 
   // Memoization des classes CSS
   const buttonClasses = useMemo(() => {
