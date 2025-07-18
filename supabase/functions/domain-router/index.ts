@@ -95,13 +95,13 @@ serve(async (req) => {
       .eq('store_id', customDomain.store_id)
       .eq('status', 'active');
 
-    // Get site template for the store
+    // Get site template for the store (PUBLISHED ONLY)
     const { data: siteTemplate, error: templateError } = await supabase
       .from('site_templates')
-      .select('template_data, is_published')
+      .select('template_data')
       .eq('store_id', customDomain.store_id)
       .eq('is_published', true)
-      .single();
+      .maybeSingle();
 
     const storeData = {
       domain: customDomain,

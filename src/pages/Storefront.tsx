@@ -132,7 +132,7 @@ const Storefront = () => {
       setStore(foundStore);
       setStoreId(foundStore.id);
 
-      // 2. Récupérer le template publié
+      // 2. Récupérer le template publié UNIQUEMENT
       const { data: templateData, error: templateError } = await supabase
         .from('site_templates')
         .select('template_data')
@@ -145,10 +145,10 @@ const Storefront = () => {
       }
 
       if (templateData) {
-        console.log('✅ Template trouvé');
+        console.log('✅ Template publié trouvé');
         setTemplate(templateData.template_data as Template);
       } else {
-        console.log('⚠️ Aucun template publié trouvé');
+        console.log('⚠️ Aucun template publié trouvé - boutique non accessible');
       }
 
       // 3. Récupérer les produits
