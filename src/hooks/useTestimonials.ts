@@ -8,6 +8,7 @@ export interface Testimonial {
   order_id?: string;
   customer_name: string;
   customer_email: string;
+  customer_image?: string;
   rating: number;
   title?: string;
   content: string;
