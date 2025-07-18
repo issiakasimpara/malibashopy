@@ -186,10 +186,19 @@ const Storefront = () => {
     const page = searchParams.get('page') || 'home';
     const productId = searchParams.get('product');
 
-    console.log('Storefront: URL params changed', { page, productId });
+    console.log('Storefront: URL params changed', { page, productId, productsLoaded: products.length > 0, loading });
 
-    // Vérifier que le produit existe si on est sur la page produit-detail
-    if (page === 'product-detail' && productId && products.length > 0) {
+    // Si on est sur une page produit-detail avec un productId
+    if (page === 'product-detail' && productId) {
+      // Si les produits ne sont pas encore chargés, attendre
+      if (loading || products.length === 0) {
+        console.log('Storefront: Products not loaded yet, waiting...');
+        // Ne pas changer la page, attendre le chargement
+        setSelectedProductId(productId);
+        return;
+      }
+
+      // Vérifier que le produit existe maintenant que les produits sont chargés
       const productExists = products.find(p => p.id === productId);
       if (!productExists) {
         console.log('Storefront: Product not found, redirecting to boutique');
@@ -200,7 +209,7 @@ const Storefront = () => {
 
     setCurrentPage(page);
     setSelectedProductId(productId);
-  }, [searchParams, products, navigate]);
+  }, [searchParams, products, navigate, loading]);
 
   // Écouter les changements d'historique (bouton retour du navigateur)
   useEffect(() => {
@@ -444,6 +453,7 @@ const Storefront = () => {
                 selectedStore={store}
                 productId={selectedProductId}
                 onProductClick={handleProductClick}
+                products={products}
               />
             </div>
           ))}

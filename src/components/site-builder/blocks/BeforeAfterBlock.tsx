@@ -116,6 +116,8 @@ const BeforeAfterBlock = ({ block, isEditing = false, viewMode = 'desktop' }: Be
             <div
               ref={containerRef}
               className="relative w-full h-96 md:h-[500px] overflow-hidden rounded-lg shadow-lg cursor-col-resize select-none"
+              onMouseDown={(e) => e.stopPropagation()} // Empêcher le drag du bloc parent
+              draggable={false} // Désactiver le drag HTML5
             >
               {/* Image Avant (arrière-plan) */}
               <div className="absolute inset-0">
@@ -156,8 +158,15 @@ const BeforeAfterBlock = ({ block, isEditing = false, viewMode = 'desktop' }: Be
               <div
                 className="absolute top-0 bottom-0 w-1 bg-white shadow-lg cursor-col-resize z-10"
                 style={{ left: `${sliderPosition}%`, transform: 'translateX(-50%)' }}
-                onMouseDown={handleMouseDown}
-                onTouchStart={handleTouchStart}
+                onMouseDown={(e) => {
+                  e.stopPropagation(); // Empêcher le drag du bloc parent
+                  handleMouseDown(e);
+                }}
+                onTouchStart={(e) => {
+                  e.stopPropagation(); // Empêcher le drag du bloc parent
+                  handleTouchStart(e);
+                }}
+                draggable={false} // Désactiver le drag HTML5
               >
                 {/* Poignée du curseur */}
                 <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-8 h-8 bg-white rounded-full shadow-lg border-2 border-gray-200 flex items-center justify-center">

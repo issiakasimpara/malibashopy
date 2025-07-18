@@ -1,5 +1,28 @@
 export const blockTemplates = [
   {
+    type: 'announcement',
+    name: 'Barre d\'annonces',
+    description: 'Barre défilante pour promotions et annonces importantes',
+    icon: '📢',
+    content: {
+      announcements: [
+        { id: '1', text: '🔥 SOLDES D\'ÉTÉ : -40% sur tout le site !', icon: '🔥' },
+        { id: '2', text: '📦 Livraison gratuite dès 50€ d\'achat', icon: '📦' },
+        { id: '3', text: '⭐ Plus de 10 000 clients satisfaits', icon: '⭐' }
+      ],
+      backgroundColor: '#3B82F6',
+      textColor: '#FFFFFF',
+      speed: 30,
+      isEnabled: true,
+      isSticky: false
+    },
+    styles: {
+      backgroundColor: '#3B82F6',
+      textColor: '#FFFFFF',
+      padding: '12px 0'
+    }
+  },
+  {
     type: 'hero',
     name: 'Section Hero',
     description: 'Bannière d\'accueil avec titre, sous-titre et bouton',

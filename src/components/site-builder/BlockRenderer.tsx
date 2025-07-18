@@ -4,6 +4,7 @@ import { TemplateBlock } from '@/types/template';
 import type { Tables } from '@/integrations/supabase/types';
 
 // LAZY LOADING pour des performances ultra-rapides ⚡
+const AnnouncementBarBlock = React.lazy(() => import('./blocks/AnnouncementBarBlock'));
 const HeroBlock = React.lazy(() => import('./blocks/HeroBlock'));
 const ProductsBlock = React.lazy(() => import('./blocks/ProductsBlock'));
 const ProductDetailBlock = React.lazy(() => import('./blocks/ProductDetailBlock'));
@@ -39,6 +40,7 @@ interface BlockRendererProps {
   productId?: string | null;
   onProductClick?: (productId: string) => void;
   onNavigate?: (page: string) => void;
+  products?: any[]; // Ajouter les produits pour éviter les requêtes doubles
 }
 
 const BlockRenderer = memo(({
@@ -49,7 +51,8 @@ const BlockRenderer = memo(({
   selectedStore,
   productId,
   onProductClick,
-  onNavigate
+  onNavigate,
+  products
 }: BlockRendererProps) => {
   console.log('BlockRenderer - Rendering block:', block.type, 'with productId:', productId);
 
@@ -67,13 +70,15 @@ const BlockRenderer = memo(({
   const renderBlock = () => {
 
   switch (block.type) {
+    case 'announcement':
+      return <AnnouncementBarBlock {...blockProps} />;
     case 'hero':
       return <HeroBlock {...blockProps} />;
     case 'products':
       return <ProductsBlock {...blockProps} />;
     case 'product-detail':
       console.log('BlockRenderer - Rendering ProductDetailBlock with productId:', productId);
-      return <ProductDetailBlock {...blockProps} />;
+      return <ProductDetailBlock {...blockProps} products={products} />;
     case 'text-image':
       return <TextImageBlock {...blockProps} />;
     case 'text-video':
