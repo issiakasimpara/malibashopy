@@ -10,7 +10,7 @@ interface BlockLibraryProps {
 const BlockLibrary = ({ onBlockAdd }: BlockLibraryProps) => {
   // Types de blocs supportés (synchronisé avec TemplateBlock)
   const supportedBlockTypes = [
-    'announcement', 'hero', 'products', 'product-detail', 'text-image', 'text-video', 'video',
+    'announcement', 'branding', 'hero', 'products', 'product-detail', 'text-image', 'text-video', 'video',
     'testimonials', 'newsletter', 'contact', 'gallery', 'features',
     'team', 'faq', 'before-after', 'footer', 'cart', 'checkout', 'comparison', 'guarantees'
   ];

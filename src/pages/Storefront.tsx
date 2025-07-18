@@ -10,6 +10,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useOptimizedQuery } from '@/hooks/useOptimizedQuery';
 import type { Tables } from '@/integrations/supabase/types';
 import { debugStorefront } from '@/utils/debugStorefront';
+import { useBranding } from '@/hooks/useBranding';
 
 // Composant de chargement sophistiqué
 const StorefrontLoader = memo(() => (
@@ -47,6 +48,9 @@ const Storefront = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const { setStoreId } = useCart();
+
+  // Récupérer les données de branding
+  const brandingData = useBranding(template);
 
   console.log('Storefront: Loading store:', storeSlug);
 
@@ -205,6 +209,42 @@ const Storefront = () => {
     }
   }, [storeSlug]);
 
+  // Effet pour mettre à jour le favicon et le titre de la page
+  useEffect(() => {
+    console.log('🔄 Mise à jour branding:', {
+      favicon: brandingData.favicon ? 'Présent' : 'Absent',
+      brandName: brandingData.brandName
+    });
+
+    if (brandingData.favicon) {
+      try {
+        // Supprimer les anciens favicons
+        const existingFavicons = document.querySelectorAll("link[rel*='icon']");
+        existingFavicons.forEach(favicon => favicon.remove());
+
+        // Créer un nouveau favicon
+        const link = document.createElement('link');
+        link.rel = 'icon';
+        link.type = 'image/x-icon';
+        link.href = brandingData.favicon;
+
+        // Ajouter au head
+        document.getElementsByTagName('head')[0].appendChild(link);
+
+        console.log('✅ Favicon mis à jour:', brandingData.favicon.substring(0, 50) + '...');
+      } catch (error) {
+        console.error('❌ Erreur mise à jour favicon:', error);
+      }
+    }
+
+    // Mettre à jour le titre de la page
+    if (brandingData.brandName) {
+      document.title = brandingData.brandName;
+    } else if (store?.name) {
+      document.title = store.name;
+    }
+  }, [brandingData, store]);
+
   // Gérer les paramètres d'URL pour la navigation
   useEffect(() => {
     const page = searchParams.get('page') || 'home';
@@ -295,7 +335,13 @@ const Storefront = () => {
           <div className="flex items-center justify-between h-16">
             {/* Logo/Nom de la boutique */}
             <div className="flex items-center space-x-3">
-              {store?.logo_url ? (
+              {brandingData.logo ? (
+                <img
+                  src={brandingData.logo}
+                  alt={brandingData.brandName || store?.name}
+                  className="h-10 max-w-32 object-contain"
+                />
+              ) : store?.logo_url ? (
                 <img
                   src={store.logo_url}
                   alt={store.name}
@@ -306,7 +352,9 @@ const Storefront = () => {
                   <ShoppingBag className="h-5 w-5 text-white" />
                 </div>
               )}
-              <span className="text-xl font-bold">{store?.name}</span>
+              <span className="text-xl font-bold">
+                {brandingData.brandName || store?.name}
+              </span>
             </div>
 
             {/* Navigation principale */}

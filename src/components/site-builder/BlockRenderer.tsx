@@ -5,6 +5,7 @@ import type { Tables } from '@/integrations/supabase/types';
 
 // LAZY LOADING pour des performances ultra-rapides ⚡
 const AnnouncementBarBlock = React.lazy(() => import('./blocks/AnnouncementBarBlock'));
+const BrandingBlock = React.lazy(() => import('./blocks/BrandingBlock'));
 const HeroBlock = React.lazy(() => import('./blocks/HeroBlock'));
 const ProductsBlock = React.lazy(() => import('./blocks/ProductsBlock'));
 const ProductDetailBlock = React.lazy(() => import('./blocks/ProductDetailBlock'));
@@ -72,6 +73,8 @@ const BlockRenderer = memo(({
   switch (block.type) {
     case 'announcement':
       return <AnnouncementBarBlock {...blockProps} />;
+    case 'branding':
+      return <BrandingBlock {...blockProps} />;
     case 'hero':
       return <HeroBlock {...blockProps} />;
     case 'products':

@@ -17,6 +17,7 @@ import BeforeAfterEditor from './editors/BeforeAfterEditor';
 import ComparisonEditor from './editors/ComparisonEditor';
 import GuaranteesEditor from './editors/GuaranteesEditor';
 import AnnouncementBarEditor from './editors/AnnouncementBarEditor';
+import BrandingEditor from './editors/BrandingEditor';
 import StylePanel from './StylePanel';
 import type { Tables } from '@/integrations/supabase/types';
 
@@ -69,6 +70,8 @@ const EditorPropertiesPanel = ({
     switch (selectedBlock.type) {
       case 'announcement':
         return <AnnouncementBarEditor block={selectedBlock} onUpdate={handleUpdate} />;
+      case 'branding':
+        return <BrandingEditor block={selectedBlock} onUpdate={handleUpdate} />;
       case 'hero':
         return <HeroEditor block={selectedBlock} onUpdate={handleUpdate} onMediaSelect={handleMediaSelect} />;
       case 'products':

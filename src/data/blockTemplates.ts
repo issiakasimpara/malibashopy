@@ -41,6 +41,24 @@ export const blockTemplates = [
     }
   },
   {
+    type: 'branding',
+    name: 'Configuration de marque',
+    description: 'Gérez le logo, favicon et identité de votre boutique',
+    icon: '🏢',
+    content: {
+      logo: '',
+      favicon: '',
+      brandName: '',
+      tagline: '',
+      description: ''
+    },
+    styles: {
+      backgroundColor: '#f8fafc',
+      textColor: '#000000',
+      padding: '40px 0'
+    }
+  },
+  {
     type: 'products',
     name: 'Grille de produits',
     description: 'Affichage de vos produits en grille',
