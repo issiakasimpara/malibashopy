@@ -68,8 +68,8 @@ const ProductsEditor = ({ block, selectedStore, onUpdate }: ProductsEditorProps)
       
       <div>
         <Label>Mise en page</Label>
-        <Select 
-          value={block.content.layout || 'grid'} 
+        <Select
+          value={block.content.layout || 'grid'}
           onValueChange={(value) => onUpdate('layout', value)}
         >
           <SelectTrigger>
@@ -81,6 +81,30 @@ const ProductsEditor = ({ block, selectedStore, onUpdate }: ProductsEditorProps)
           </SelectContent>
         </Select>
       </div>
+
+      {/* Option colonnes mobile - seulement pour la grille */}
+      {(block.content.layout || 'grid') === 'grid' && (
+        <div>
+          <Label>Colonnes sur mobile</Label>
+          <Select
+            value={String(block.content.mobileColumns || 1)}
+            onValueChange={(value) => onUpdate('mobileColumns', parseInt(value))}
+          >
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="1">1 colonne (large)</SelectItem>
+              <SelectItem value="2">2 colonnes</SelectItem>
+              <SelectItem value="3">3 colonnes</SelectItem>
+              <SelectItem value="4">4 colonnes</SelectItem>
+            </SelectContent>
+          </Select>
+          <p className="text-xs text-gray-500 mt-1">
+            Nombre de produits par ligne sur mobile
+          </p>
+        </div>
+      )}
       
       <div className="flex items-center space-x-2">
         <Switch

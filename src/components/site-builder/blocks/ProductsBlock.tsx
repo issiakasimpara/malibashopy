@@ -36,10 +36,17 @@ const ProductsBlock = ({
   const getGridCols = () => {
     const layout = block.content.layout || 'grid';
     if (layout === 'list') return 'grid-cols-1';
-    
-    if (viewMode === 'mobile') return 'grid-cols-1 sm:grid-cols-2';
+
+    const mobileColumns = block.content.mobileColumns || 1;
+
+    if (viewMode === 'mobile') {
+      // Mode preview mobile - utiliser le nombre de colonnes choisi
+      return `grid-cols-${mobileColumns}`;
+    }
     if (viewMode === 'tablet') return 'grid-cols-2 lg:grid-cols-3';
-    return 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4';
+
+    // Mode desktop et responsive réel - inclure les colonnes mobile
+    return `grid-cols-${mobileColumns} sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4`;
   };
 
   const handleProductClick = (productId: string) => {

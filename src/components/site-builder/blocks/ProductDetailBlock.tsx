@@ -7,7 +7,6 @@ import { useProductVariantSelection } from '@/hooks/useProductVariantSelection';
 import ProductImageGallery from './product-detail/ProductImageGallery';
 import ProductDetailLoadingState from './product-detail/ProductDetailLoadingState';
 import ProductDetailEmptyState from './product-detail/ProductDetailEmptyState';
-import ProductDetailHeader from './product-detail/ProductDetailHeader';
 import ProductDetailInfo from './product-detail/ProductDetailInfo';
 import type { Tables } from '@/integrations/supabase/types';
 
@@ -152,9 +151,6 @@ const ProductDetailBlock = ({
     <div className="bg-white">
       <section className="py-16">
         <div className="container mx-auto px-4">
-          {/* Breadcrumb */}
-          <ProductDetailHeader productName={selectedProduct.name} />
-
           <div className={`grid ${getGridLayout()} gap-12`}>
             {/* Galerie d'images */}
             <ProductImageGallery
