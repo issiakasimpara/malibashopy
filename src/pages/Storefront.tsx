@@ -9,6 +9,7 @@ import { Template } from '@/types/template';
 import { supabase } from '@/integrations/supabase/client';
 import { useOptimizedQuery } from '@/hooks/useOptimizedQuery';
 import type { Tables } from '@/integrations/supabase/types';
+import { debugStorefront } from '@/utils/debugStorefront';
 
 // Composant de chargement sophistiqué
 const StorefrontLoader = memo(() => (
@@ -132,23 +133,40 @@ const Storefront = () => {
       setStore(foundStore);
       setStoreId(foundStore.id);
 
-      // 2. Récupérer le template publié UNIQUEMENT
+      // 2. Récupérer le template publié (toujours chercher la dernière version publiée)
+      console.log('🔍 Recherche de templates pour store_id:', foundStore.id);
+
+      // D'abord voir tous les templates pour ce store
+      const { data: allTemplates, error: allError } = await supabase
+        .from('site_templates')
+        .select('id, template_id, is_published, updated_at')
+        .eq('store_id', foundStore.id)
+        .order('updated_at', { ascending: false });
+
+      console.log('📋 Tous les templates trouvés:', allTemplates);
+
+      // Maintenant chercher spécifiquement les templates publiés
       const { data: templateData, error: templateError } = await supabase
         .from('site_templates')
-        .select('template_data')
+        .select('template_data, is_published, updated_at')
         .eq('store_id', foundStore.id)
         .eq('is_published', true)
+        .order('updated_at', { ascending: false })
+        .limit(1)
         .maybeSingle();
 
       if (templateError && templateError.code !== 'PGRST116') {
-        console.error('Erreur template:', templateError);
+        console.error('❌ Erreur template:', templateError);
       }
 
+      console.log('🎯 Template publié trouvé:', templateData);
+
       if (templateData) {
-        console.log('✅ Template publié trouvé');
+        console.log('✅ Template publié trouvé (dernière version publiée)');
         setTemplate(templateData.template_data as Template);
       } else {
         console.log('⚠️ Aucun template publié trouvé - boutique non accessible');
+        console.log('💡 Vous devez publier votre site au moins une fois depuis le site builder');
       }
 
       // 3. Récupérer les produits
@@ -179,6 +197,12 @@ const Storefront = () => {
 
   useEffect(() => {
     fetchStoreData();
+
+    // Ajouter la fonction de debug à la console
+    if (storeSlug) {
+      (window as any).debugStorefront = () => debugStorefront(storeSlug);
+      console.log('🔧 Pour diagnostiquer, tapez: debugStorefront() dans la console');
+    }
   }, [storeSlug]);
 
   // Gérer les paramètres d'URL pour la navigation

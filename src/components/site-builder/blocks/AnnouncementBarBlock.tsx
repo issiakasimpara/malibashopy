@@ -114,19 +114,21 @@ const AnnouncementBarBlock = ({ block, isEditing, viewMode, onUpdate }: Announce
       </div>
 
       {/* CSS pour l'animation */}
-      <style jsx>{`
-        @keyframes scroll {
-          0% {
-            transform: translateX(100%);
+      <style dangerouslySetInnerHTML={{
+        __html: `
+          @keyframes scroll {
+            0% {
+              transform: translateX(100%);
+            }
+            100% {
+              transform: translateX(-100%);
+            }
           }
-          100% {
-            transform: translateX(-100%);
+          .animate-scroll {
+            animation: scroll linear infinite;
           }
-        }
-        .animate-scroll {
-          animation: scroll linear infinite;
-        }
-      `}</style>
+        `
+      }} />
     </div>
   );
 };

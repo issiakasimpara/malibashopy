@@ -95,12 +95,14 @@ serve(async (req) => {
       .eq('store_id', customDomain.store_id)
       .eq('status', 'active');
 
-    // Get site template for the store (PUBLISHED ONLY)
+    // Get site template for the store (latest published version)
     const { data: siteTemplate, error: templateError } = await supabase
       .from('site_templates')
-      .select('template_data')
+      .select('template_data, is_published, updated_at')
       .eq('store_id', customDomain.store_id)
       .eq('is_published', true)
+      .order('updated_at', { ascending: false })
+      .limit(1)
       .maybeSingle();
 
     const storeData = {
