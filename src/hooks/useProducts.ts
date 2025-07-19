@@ -14,9 +14,13 @@ export interface Product {
   updated_at: string;
 }
 
+// Stockage temporaire en mémoire
+let tempProducts: Product[] = [];
+
 export function useProducts(storeId?: string) {
   const [products, setProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isCreating, setIsCreating] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -26,30 +30,45 @@ export function useProducts(storeId?: string) {
       return;
     }
 
-    // Simulation de données temporaires
+    // Charger les produits du store depuis le stockage temporaire
     setTimeout(() => {
-      setProducts([
-        {
-          id: '1',
-          name: 'Produit Exemple',
-          description: 'Description du produit',
-          price: 29.99,
-          image_url: 'https://via.placeholder.com/300',
-          category: 'Électronique',
-          stock_quantity: 10,
-          store_id: storeId,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        }
-      ]);
+      const storeProducts = tempProducts.filter(p => p.store_id === storeId);
+      setProducts(storeProducts);
       setIsLoading(false);
     }, 500);
   }, [storeId]);
 
-  const createProduct = async (data: Partial<Product>) => {
-    // Simulation de création
-    console.log('Création de produit:', data);
-    return { id: Date.now().toString(), ...data } as Product;
+  const createProduct = async (data: any) => {
+    setIsCreating(true);
+    try {
+      // Simulation de création avec stockage temporaire
+      const newProduct: Product = {
+        id: Date.now().toString(),
+        name: data.name || '',
+        description: data.description || '',
+        price: parseFloat(data.price) || 0,
+        image_url: data.images?.[0] || '',
+        category: data.category || '',
+        stock_quantity: parseInt(data.inventory_quantity) || 0,
+        store_id: storeId || '',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      };
+
+      // Ajouter au stockage temporaire
+      tempProducts.push(newProduct);
+
+      // Mettre à jour l'état local
+      setProducts(prev => [...prev, newProduct]);
+
+      console.log('✅ Produit créé avec succès:', newProduct);
+      return newProduct;
+    } catch (error) {
+      console.error('❌ Erreur création produit:', error);
+      throw error;
+    } finally {
+      setIsCreating(false);
+    }
   };
 
   const updateProduct = async (id: string, data: Partial<Product>) => {
@@ -60,12 +79,15 @@ export function useProducts(storeId?: string) {
 
   const deleteProduct = async (id: string) => {
     // Simulation de suppression
-    console.log('Suppression produit:', id);
+    tempProducts = tempProducts.filter(p => p.id !== id);
+    setProducts(prev => prev.filter(p => p.id !== id));
+    console.log('Produit supprimé:', id);
   };
 
   return {
     products,
     isLoading,
+    isCreating,
     error,
     createProduct,
     updateProduct,

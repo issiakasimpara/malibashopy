@@ -14,6 +14,16 @@ import Index from "./pages/Index";
 import Dashboard from "./pages/Dashboard";
 import Products from "./pages/Products";
 import Orders from "./pages/Orders";
+import Categories from "./pages/Categories";
+import Customers from "./pages/Customers";
+import MarketsShipping from "./pages/MarketsShipping";
+import Analytics from "./pages/Analytics";
+import Settings from "./pages/Settings";
+import Testimonials from "./pages/Testimonials";
+import Themes from "./pages/Themes";
+import Domains from "./pages/Domains";
+import StoreConfig from "./pages/StoreConfig";
+import Payments from "./pages/Payments";
 import NotFound from "./pages/NotFound";
 
 // Page de test Clerk
@@ -89,7 +99,7 @@ const App = () => {
                 path="/categories"
                 element={
                   <ProtectedRoute>
-                    <div className="p-8"><h1 className="text-2xl">📂 Catégories</h1><p>Page en cours de restauration...</p></div>
+                    <Categories />
                   </ProtectedRoute>
                 }
               />
@@ -98,7 +108,7 @@ const App = () => {
                 path="/customers"
                 element={
                   <ProtectedRoute>
-                    <div className="p-8"><h1 className="text-2xl">👥 Clients</h1><p>Page en cours de restauration...</p></div>
+                    <Customers />
                   </ProtectedRoute>
                 }
               />
@@ -107,7 +117,7 @@ const App = () => {
                 path="/shipping"
                 element={
                   <ProtectedRoute>
-                    <div className="p-8"><h1 className="text-2xl">🚚 Livraisons</h1><p>Page en cours de restauration...</p></div>
+                    <MarketsShipping />
                   </ProtectedRoute>
                 }
               />
@@ -116,7 +126,7 @@ const App = () => {
                 path="/analytics"
                 element={
                   <ProtectedRoute>
-                    <div className="p-8"><h1 className="text-2xl">📊 Analyses</h1><p>Page en cours de restauration...</p></div>
+                    <Analytics />
                   </ProtectedRoute>
                 }
               />
@@ -125,7 +135,53 @@ const App = () => {
                 path="/settings"
                 element={
                   <ProtectedRoute>
-                    <div className="p-8"><h1 className="text-2xl">⚙️ Paramètres</h1><p>Page en cours de restauration...</p></div>
+                    <Settings />
+                  </ProtectedRoute>
+                }
+              />
+
+              {/* Pages manquantes restaurées */}
+              <Route
+                path="/testimonials"
+                element={
+                  <ProtectedRoute>
+                    <Testimonials />
+                  </ProtectedRoute>
+                }
+              />
+
+              <Route
+                path="/themes"
+                element={
+                  <ProtectedRoute>
+                    <Themes />
+                  </ProtectedRoute>
+                }
+              />
+
+              <Route
+                path="/domains"
+                element={
+                  <ProtectedRoute>
+                    <Domains />
+                  </ProtectedRoute>
+                }
+              />
+
+              <Route
+                path="/store-config"
+                element={
+                  <ProtectedRoute>
+                    <StoreConfig />
+                  </ProtectedRoute>
+                }
+              />
+
+              <Route
+                path="/payments"
+                element={
+                  <ProtectedRoute>
+                    <Payments />
                   </ProtectedRoute>
                 }
               />

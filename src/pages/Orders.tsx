@@ -14,8 +14,10 @@ import DashboardLayout from '@/components/DashboardLayout';
 import OrderDetailsModal from '@/components/OrderDetailsModal';
 
 const Orders = () => {
-  const { store } = useStores();
+  const { stores } = useStores();
   const { toast } = useToast();
+  const [selectedStoreId, setSelectedStoreId] = useState<string>('');
+
   const {
     orders,
     isLoading,
@@ -24,7 +26,14 @@ const Orders = () => {
     isUpdatingStatus,
     isUpdatingPayment,
     refetchOrders
-  } = useOrders();
+  } = useOrders(selectedStoreId);
+
+  // Auto-select the first store when stores are loaded
+  useEffect(() => {
+    if (stores.length > 0 && !selectedStoreId) {
+      setSelectedStoreId(stores[0].id);
+    }
+  }, [stores, selectedStoreId]);
 
   const [filteredOrders, setFilteredOrders] = useState<Order[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
