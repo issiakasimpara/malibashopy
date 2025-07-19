@@ -1,17 +1,33 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Palette, Eye, Sparkles, Grid, Star, Zap } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import DashboardLayout from "@/components/DashboardLayout";
 import { preBuiltTemplates } from "@/data/preBuiltTemplates";
 import { templateCategories } from "@/data/templateCategories";
 import TemplateCategoriesSection from "@/components/site-builder/TemplateCategoriesSection";
+import { useStores } from "@/hooks/useStores";
 
 const SiteBuilder = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const { store } = useStores();
   const [selectedCategory, setSelectedCategory] = useState('all');
+
+  // Si on vient de /store-config/site-builder (Ma boutique), rediriger directement vers l'éditeur
+  useEffect(() => {
+    if (location.pathname === '/store-config/site-builder' && store) {
+      // Rediriger vers l'éditeur du thème par défaut de la boutique
+      const defaultTemplate = preBuiltTemplates[0]; // ou le thème actuel de la boutique
+      navigate(`/store-config/site-builder/editor/${defaultTemplate.id}`, { replace: true });
+    }
+  }, [location.pathname, store, navigate]);
+
+  // Déterminer le contexte : galerie de thèmes ou personnalisation boutique
+  const isThemeGallery = location.pathname === '/themes/gallery';
+  const isStoreCustomization = location.pathname.includes('/store-config/site-builder');
 
   const filteredTemplates = selectedCategory === 'all' 
     ? preBuiltTemplates 
@@ -43,6 +59,20 @@ const SiteBuilder = () => {
     return previewImages[category] || previewImages.default;
   };
 
+  // Si on est en train de rediriger, afficher un loading
+  if (location.pathname === '/store-config/site-builder' && store) {
+    return (
+      <DashboardLayout>
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+            <p>Ouverture de l'éditeur de personnalisation...</p>
+          </div>
+        </div>
+      </DashboardLayout>
+    );
+  }
+
   return (
     <DashboardLayout>
       <div className="space-y-8">
@@ -61,11 +91,14 @@ const SiteBuilder = () => {
                 </div>
                 <div className="flex-1">
                   <h1 className="text-4xl font-bold bg-gradient-to-r from-purple-600 via-pink-600 to-blue-600 dark:from-purple-400 dark:via-pink-400 dark:to-blue-400 bg-clip-text text-transparent">
-                    Créateur de Site
+                    {isThemeGallery ? 'Galerie de Thèmes' : 'Créateur de Site'}
                   </h1>
                   <p className="text-lg text-muted-foreground font-medium mt-2 flex items-center gap-2">
                     <Zap className="h-5 w-5 text-amber-500" />
-                    Choisissez un template et personnalisez votre boutique
+                    {isThemeGallery
+                      ? 'Choisissez un thème pour créer votre boutique'
+                      : 'Choisissez un template et personnalisez votre boutique'
+                    }
                   </p>
                 </div>
               </div>
@@ -175,10 +208,19 @@ const SiteBuilder = () => {
                       <Button
                         size="sm"
                         className="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 shadow-lg hover:shadow-xl transition-all duration-300 group/btn"
-                        onClick={() => navigate(`/store-config/site-builder/editor/${template.id}`)}
+                        onClick={() => {
+                          if (isThemeGallery) {
+                            // Si on est dans la galerie de thèmes, ouvrir le formulaire de création de boutique
+                            // TODO: Implémenter l'ouverture du formulaire avec le thème sélectionné
+                            console.log('Créer boutique avec thème:', template.id);
+                          } else {
+                            // Si on est dans la personnalisation, aller à l'éditeur
+                            navigate(`/store-config/site-builder/editor/${template.id}`);
+                          }
+                        }}
                       >
                         <Palette className="h-4 w-4 mr-2 group-hover/btn:scale-110 transition-transform duration-200" />
-                        Utiliser
+                        {isThemeGallery ? 'Utiliser ce thème' : 'Utiliser'}
                       </Button>
                     </div>
                   </CardContent>

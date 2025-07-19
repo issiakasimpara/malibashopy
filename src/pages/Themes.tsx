@@ -1,5 +1,6 @@
 // 🎨 PAGE GALERIE DE THÈMES (SEULEMENT POUR CHOISIR)
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import DashboardLayout from '@/components/DashboardLayout';
 import { useStores } from '@/hooks/useStores';
 import { useAuth } from '@/hooks/useAuth';
@@ -11,10 +12,16 @@ import { Badge } from '@/components/ui/badge';
 import { Palette, Eye, Sparkles, Layout, ShoppingBag } from 'lucide-react';
 
 const Themes = () => {
+  const navigate = useNavigate();
   const [showCreateStore, setShowCreateStore] = useState(false);
   const [selectedTheme, setSelectedTheme] = useState<string | null>(null);
   const { store, hasStore, isLoading, refetchStores } = useStores();
   const { user, loading: authLoading } = useAuth();
+
+  // Rediriger vers la galerie de thèmes
+  useEffect(() => {
+    navigate('/themes/gallery', { replace: true });
+  }, [navigate]);
 
   const handleThemeSelect = (themeId: string) => {
     setSelectedTheme(themeId);
