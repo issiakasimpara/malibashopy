@@ -1,8 +1,8 @@
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { CheckCircle, Mail, Zap } from "lucide-react";
-import EmailTestPanel from "@/components/EmailTestPanel";
+import { CheckCircle, Zap } from "lucide-react";
+
 
 const TestPage = () => {
   return (
@@ -41,32 +41,7 @@ const TestPage = () => {
             </CardContent>
           </Card>
 
-          {/* E-mails */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Mail className="h-5 w-5 text-blue-500" />
-                E-mails
-              </CardTitle>
-              <CardDescription>Service d'e-mail EmailJS</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-2">
-                <div className="flex justify-between">
-                  <span>Service:</span>
-                  <Badge variant="outline">EmailJS</Badge>
-                </div>
-                <div className="flex justify-between">
-                  <span>Gratuit:</span>
-                  <span className="text-sm">200/mois</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Templates:</span>
-                  <Badge variant="default">Prêts</Badge>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+
 
           {/* Performance */}
           <Card>
@@ -96,10 +71,7 @@ const TestPage = () => {
           </Card>
         </div>
 
-        {/* Test des E-mails */}
-        <div className="mb-8">
-          <EmailTestPanel />
-        </div>
+
       </div>
     </div>
   );

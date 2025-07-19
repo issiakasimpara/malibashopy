@@ -1,6 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { orderService, CreateOrderData, Order } from '@/services/orderService';
-import { emailService, OrderEmailData } from '@/services/emailService';
 import { useToast } from '@/hooks/use-toast';
 import { useStores } from '@/hooks/useStores';
 import { supabase } from '@/integrations/supabase/client';
@@ -10,27 +9,7 @@ export const useOrders = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  // Fonction pour récupérer l'e-mail de l'admin de la boutique
-  const getStoreAdminEmail = async (storeId: string): Promise<string> => {
-    try {
-      // Récupérer l'e-mail du propriétaire de la boutique depuis Supabase
-      const { data, error } = await supabase
-        .from('stores')
-        .select(`
-          user_id,
-          profiles!inner(email)
-        `)
-        .eq('id', storeId)
-        .single();
 
-      if (error) throw error;
-
-      return data?.profiles?.email || `admin@boutique-${storeId.slice(0, 8)}.com`;
-    } catch (error) {
-      console.error('❌ Erreur récupération e-mail admin:', error);
-      return `admin@boutique-${storeId.slice(0, 8)}.com`; // Fallback
-    }
-  };
 
   // Récupérer les commandes de la boutique
   const {
@@ -76,56 +55,7 @@ export const useOrders = () => {
       // 1. Créer la commande
       const newOrder = await orderService.createOrder(orderData);
 
-      // 2. Récupérer l'e-mail de l'admin de la boutique
-      const storeAdminEmail = await getStoreAdminEmail(orderData.storeId);
-
-      // 3. Préparer les données pour les e-mails
-      const emailData: OrderEmailData = {
-        orderId: newOrder.order_number,
-        customerName: `${orderData.customerInfo.firstName} ${orderData.customerInfo.lastName}`,
-        customerEmail: orderData.customerInfo.email,
-        customerPhone: orderData.customerInfo.phone,
-        items: orderData.items.map(item => ({
-          name: item.name,
-          quantity: item.quantity,
-          price: item.price,
-          image: item.image
-        })),
-        subtotal: orderData.totalAmount - (orderData.shippingCost || 0),
-        shipping: orderData.shippingCost || 0,
-        total: orderData.totalAmount,
-        shippingAddress: {
-          street: orderData.customerInfo.address,
-          city: orderData.customerInfo.city,
-          postalCode: orderData.customerInfo.postalCode,
-          country: orderData.customerInfo.country
-        },
-        storeName: orderData.storeName,
-        storeEmail: storeAdminEmail,
-        estimatedDelivery: orderData.shippingMethod?.delivery_time
-      };
-
-      // 3. Envoyer les e-mails (en arrière-plan, ne pas bloquer si ça échoue)
-      try {
-        console.log('📧 Envoi des e-mails de confirmation...');
-        const emailResults = await emailService.sendOrderEmails(emailData);
-        console.log('📊 Résultats e-mails:', emailResults);
-
-        if (emailResults.customer) {
-          console.log('✅ E-mail client envoyé');
-        } else {
-          console.warn('⚠️ Échec envoi e-mail client');
-        }
-
-        if (emailResults.admin) {
-          console.log('✅ E-mail admin envoyé');
-        } else {
-          console.warn('⚠️ Échec envoi e-mail admin');
-        }
-      } catch (emailError) {
-        console.error('❌ Erreur envoi e-mails (non bloquant):', emailError);
-        // Ne pas faire échouer la commande si les e-mails échouent
-      }
+      console.log('✅ Commande créée avec succès:', newOrder.order_number);
 
       return newOrder;
     },
@@ -142,7 +72,7 @@ export const useOrders = () => {
 
       toast({
         title: "Commande créée !",
-        description: `Commande ${newOrder.order_number} créée avec succès. E-mails de confirmation envoyés.`,
+        description: `Commande ${newOrder.order_number} créée avec succès.`,
       });
     },
     onError: (error: any) => {
