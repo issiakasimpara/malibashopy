@@ -69,7 +69,7 @@ const StorePreview = ({ selectedStore, onViewModeChange }: StorePreviewProps) =>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card className="group relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 cursor-pointer bg-gradient-to-br from-background via-background to-blue-50/20 dark:to-blue-950/20" onClick={() => navigate('/store-config/site-builder')}>
+        <Card className="group relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 cursor-pointer bg-gradient-to-br from-background via-background to-blue-50/20 dark:to-blue-950/20" onClick={() => navigate('/store-config/site-builder/editor/fashion-modern')}>
           <div className="absolute inset-0 bg-gradient-to-r from-blue-500/5 via-purple-500/5 to-transparent pointer-events-none" />
           <CardContent className="relative flex items-center p-6">
             <div className="flex items-center space-x-4">

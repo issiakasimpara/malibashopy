@@ -19,7 +19,8 @@ const OptimizedTemplateEditor = () => {
   } = useOptimizedTemplateLoader(templateId || '');
 
   const handleBack = () => {
-    navigate('/store-config/site-builder');
+    // Retourner vers l'onglet Ma boutique (configuration) au lieu du site-builder
+    navigate('/store-config');
   };
 
   // Show loading state

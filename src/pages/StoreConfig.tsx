@@ -153,7 +153,7 @@ const StoreConfig = () => {
                           </Link>
                         </TabsTrigger>
                         <TabsTrigger value="site-builder" asChild className="flex items-center gap-3 h-12 rounded-xl transition-all duration-300 data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500 data-[state=active]:to-pink-500 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:scale-105 hover:bg-muted/50">
-                          <Link to="/store-config/site-builder">
+                          <Link to="/store-config/site-builder/editor/fashion-modern">
                             <div className="p-1.5 bg-gradient-to-br from-purple-100 to-pink-100 dark:from-purple-900/40 dark:to-pink-900/40 rounded-lg data-[state=active]:bg-white/20">
                               <Palette className="h-4 w-4" />
                             </div>

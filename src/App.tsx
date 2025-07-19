@@ -43,6 +43,7 @@ const MarketsShipping = lazy(() => import("./pages/MarketsShipping"));
 // ÉTAPE 2C: Pages complexes (lazy loading)
 const SiteBuilder = lazy(() => import("./pages/SiteBuilder"));
 const TemplateEditor = lazy(() => import("./pages/TemplateEditor"));
+const TemplatePreview = lazy(() => import("./components/site-builder/TemplatePreview"));
 const PaymentSuccess = lazy(() => import("./pages/PaymentSuccess"));
 const CustomerOrders = lazy(() => import("./pages/CustomerOrders"));
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -302,6 +303,18 @@ const App = () => {
                   <ProtectedRoute>
                     <Suspense fallback={<div className="flex items-center justify-center min-h-screen"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div></div>}>
                       <TemplateEditor />
+                    </Suspense>
+                  </ProtectedRoute>
+                }
+              />
+
+              {/* 👁️ Route pour l'aperçu des thèmes */}
+              <Route
+                path="/store-config/site-builder/preview/:templateId"
+                element={
+                  <ProtectedRoute>
+                    <Suspense fallback={<div className="flex items-center justify-center min-h-screen"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div></div>}>
+                      <TemplatePreview />
                     </Suspense>
                   </ProtectedRoute>
                 }

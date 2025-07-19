@@ -107,7 +107,7 @@ const StoreStatusCard = ({ selectedStore, onViewModeChange }: StoreStatusCardPro
             asChild
             className="flex items-center gap-2 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950/20 dark:to-pink-950/20 hover:from-purple-100 hover:to-pink-100 dark:hover:from-purple-900/30 dark:hover:to-pink-900/30 border-purple-200 dark:border-purple-800 text-purple-700 dark:text-purple-300 transition-all duration-300 hover:scale-105"
           >
-            <Link to="/store-config/site-builder">
+            <Link to="/store-config/site-builder/editor/fashion-modern">
               <Palette className="h-4 w-4" />
               Personnaliser
             </Link>

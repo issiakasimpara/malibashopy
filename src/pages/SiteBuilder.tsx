@@ -16,12 +16,16 @@ const SiteBuilder = () => {
   const { store } = useStores();
   const [selectedCategory, setSelectedCategory] = useState('all');
 
-  // Si on vient de /store-config/site-builder (Ma boutique), rediriger directement vers l'éditeur
+  // Redirection conditionnelle selon le contexte
   useEffect(() => {
+    // Si on vient de /store-config/site-builder ET qu'on a une boutique, rediriger vers l'éditeur
     if (location.pathname === '/store-config/site-builder' && store) {
-      // Rediriger vers l'éditeur du thème par défaut de la boutique
-      const defaultTemplate = preBuiltTemplates[0]; // ou le thème actuel de la boutique
+      const defaultTemplate = preBuiltTemplates[0];
       navigate(`/store-config/site-builder/editor/${defaultTemplate.id}`, { replace: true });
+    }
+    // Si on vient de /store-config/site-builder SANS boutique, rediriger vers la création
+    else if (location.pathname === '/store-config/site-builder' && !store) {
+      navigate('/store-config', { replace: true });
     }
   }, [location.pathname, store, navigate]);
 
