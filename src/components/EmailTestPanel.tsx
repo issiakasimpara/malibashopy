@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { emailService, OrderEmailData } from '@/services/emailService';
+import { emailJSService } from '@/services/emailJSService';
 import { useToast } from '@/hooks/use-toast';
 import { Mail, Send, CheckCircle, XCircle, Loader2 } from 'lucide-react';
 
@@ -13,6 +14,10 @@ const EmailTestPanel = () => {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [results, setResults] = useState<{ customer: boolean; admin: boolean } | null>(null);
+  const [isTestingSimple, setIsTestingSimple] = useState(false);
+  const [simpleTestResult, setSimpleTestResult] = useState<boolean | null>(null);
+  const [isTestingSimple, setIsTestingSimple] = useState(false);
+  const [simpleTestResult, setSimpleTestResult] = useState<boolean | null>(null);
   
   const [testData, setTestData] = useState({
     customerEmail: '',
@@ -98,6 +103,34 @@ const EmailTestPanel = () => {
       });
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleSimpleTest = async () => {
+    if (!customerEmail) {
+      alert('Veuillez entrer un e-mail client pour le test');
+      return;
+    }
+
+    setIsTestingSimple(true);
+    setSimpleTestResult(null);
+
+    try {
+      console.log('🧪 Test simple EmailJS...');
+      const result = await emailJSService.sendTestEmail(customerEmail);
+      setSimpleTestResult(result);
+
+      if (result) {
+        alert('✅ Test simple réussi ! Vérifiez votre boîte e-mail.');
+      } else {
+        alert('❌ Test simple échoué. Vérifiez la console pour les détails.');
+      }
+    } catch (error) {
+      console.error('❌ Erreur test simple:', error);
+      setSimpleTestResult(false);
+      alert('❌ Erreur lors du test simple.');
+    } finally {
+      setIsTestingSimple(false);
     }
   };
 
@@ -191,6 +224,33 @@ const EmailTestPanel = () => {
           )}
         </Button>
 
+        {/* Bouton test simple */}
+        <Button
+          onClick={handleSimpleTest}
+          disabled={isTestingSimple || !testData.customerEmail}
+          variant="outline"
+          className="w-full"
+          size="lg"
+        >
+          {isTestingSimple ? (
+            <>
+              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              Test simple...
+            </>
+          ) : (
+            <>
+              🧪 Test Simple EmailJS (Debug)
+            </>
+          )}
+        </Button>
+
+        {/* Résultat test simple */}
+        {simpleTestResult !== null && (
+          <div className={`p-3 rounded-lg ${simpleTestResult ? 'bg-green-50 text-green-800' : 'bg-red-50 text-red-800'}`}>
+            {simpleTestResult ? '✅ Test simple réussi !' : '❌ Test simple échoué - Vérifiez la console'}
+          </div>
+        )}
+
         {/* Résultats */}
         {results && (
           <div className="space-y-3">
@@ -227,16 +287,17 @@ const EmailTestPanel = () => {
           </div>
         )}
 
-        {/* Configuration Resend */}
+        {/* Configuration EmailJS */}
         <div className="bg-yellow-50 dark:bg-yellow-950/20 p-4 rounded-lg">
           <h4 className="font-semibold text-yellow-900 dark:text-yellow-100 mb-2">
-            ⚙️ Configuration requise :
+            ⚙️ Configuration EmailJS :
           </h4>
           <ul className="text-sm text-yellow-800 dark:text-yellow-200 space-y-1">
-            <li>• Créer un compte sur <a href="https://resend.com" target="_blank" rel="noopener noreferrer" className="underline">resend.com</a></li>
-            <li>• Obtenir une clé API gratuite (3,000 e-mails/mois)</li>
-            <li>• Remplacer <code>VITE_RESEND_API_KEY</code> dans <code>.env.local</code></li>
-            <li>• Configurer <code>VITE_FROM_EMAIL</code> avec votre domaine</li>
+            <li>• Créer un compte sur <a href="https://emailjs.com" target="_blank" rel="noopener noreferrer" className="underline">emailjs.com</a></li>
+            <li>• Configurer un service e-mail (Gmail, Outlook, etc.)</li>
+            <li>• Créer 2 templates (client + admin)</li>
+            <li>• Mettre les clés dans <code>.env.local</code></li>
+            <li>• <strong>200 e-mails gratuits/mois</strong></li>
           </ul>
         </div>
       </CardContent>

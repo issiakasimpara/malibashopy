@@ -48,17 +48,17 @@ const TestPage = () => {
                 <Mail className="h-5 w-5 text-blue-500" />
                 E-mails
               </CardTitle>
-              <CardDescription>Service d'e-mail Resend</CardDescription>
+              <CardDescription>Service d'e-mail EmailJS</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-2">
                 <div className="flex justify-between">
                   <span>Service:</span>
-                  <Badge variant="outline">Resend</Badge>
+                  <Badge variant="outline">EmailJS</Badge>
                 </div>
                 <div className="flex justify-between">
                   <span>Gratuit:</span>
-                  <span className="text-sm">3,000/mois</span>
+                  <span className="text-sm">200/mois</span>
                 </div>
                 <div className="flex justify-between">
                   <span>Templates:</span>
