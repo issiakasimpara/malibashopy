@@ -200,11 +200,19 @@ const SiteBuilder = () => {
                     
                     {/* Actions */}
                     <div className="flex gap-2">
-                      <Button 
-                        variant="outline" 
-                        size="sm" 
+                      <Button
+                        variant="outline"
+                        size="sm"
                         className="flex-1 group/btn bg-gradient-to-r from-white to-blue-50/30 dark:from-gray-950 dark:to-blue-950/20 hover:from-blue-50 hover:to-purple-50 dark:hover:from-blue-950/30 dark:hover:to-purple-950/30 border-border/60 hover:border-blue-300 dark:hover:border-blue-600 transition-all duration-300"
-                        onClick={() => navigate(`/store-config/site-builder/preview/${template.id}`)}
+                        onClick={() => {
+                          if (isThemeGallery) {
+                            // Si on est dans la galerie de thèmes, aller à l'aperçu
+                            navigate(`/store-config/site-builder/preview/${template.id}`);
+                          } else {
+                            // Si on est dans la personnalisation, ouvrir l'aperçu dans l'éditeur
+                            console.log('Aperçu dans l\'éditeur:', template.id);
+                          }
+                        }}
                       >
                         <Eye className="h-4 w-4 mr-2 group-hover/btn:scale-110 transition-transform duration-200" />
                         Aperçu

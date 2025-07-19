@@ -1,25 +1,104 @@
 import React from 'react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { CheckCircle, Mail, Zap } from "lucide-react";
+import EmailTestPanel from "@/components/EmailTestPanel";
 
 const TestPage = () => {
   return (
-    <div className="min-h-screen bg-gray-100 flex items-center justify-center">
-      <div className="bg-white p-8 rounded-lg shadow-lg max-w-md w-full">
-        <h1 className="text-2xl font-bold text-green-600 mb-4">✅ Application fonctionne !</h1>
-        <p className="text-gray-700 mb-4">
-          Si vous voyez cette page, l'application React fonctionne correctement.
-        </p>
-        <div className="space-y-2 text-sm text-gray-600">
-          <p><strong>Port:</strong> 8081</p>
-          <p><strong>Status:</strong> En ligne</p>
-          <p><strong>Vite:</strong> Actif</p>
+    <div className="min-h-screen bg-gray-50 py-8">
+      <div className="container mx-auto px-4 max-w-6xl">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">🧪 Page de Test</h1>
+          <p className="text-gray-600">Tests et outils de développement pour l'application e-commerce</p>
         </div>
-        <div className="mt-6">
-          <a 
-            href="/dashboard" 
-            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors"
-          >
-            Aller au Dashboard
-          </a>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+          {/* Status Application */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <CheckCircle className="h-5 w-5 text-green-500" />
+                Application
+              </CardTitle>
+              <CardDescription>Status de l'application</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2">
+                <div className="flex justify-between">
+                  <span>Status:</span>
+                  <Badge variant="default">En ligne</Badge>
+                </div>
+                <div className="flex justify-between">
+                  <span>Port:</span>
+                  <span className="font-mono">8080</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Environnement:</span>
+                  <Badge variant="secondary">Développement</Badge>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* E-mails */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Mail className="h-5 w-5 text-blue-500" />
+                E-mails
+              </CardTitle>
+              <CardDescription>Service d'e-mail Resend</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2">
+                <div className="flex justify-between">
+                  <span>Service:</span>
+                  <Badge variant="outline">Resend</Badge>
+                </div>
+                <div className="flex justify-between">
+                  <span>Gratuit:</span>
+                  <span className="text-sm">3,000/mois</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Templates:</span>
+                  <Badge variant="default">Prêts</Badge>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Performance */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Zap className="h-5 w-5 text-yellow-500" />
+                Performance
+              </CardTitle>
+              <CardDescription>Optimisations actives</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2">
+                <div className="flex justify-between">
+                  <span>Lazy Loading:</span>
+                  <Badge variant="default">✅</Badge>
+                </div>
+                <div className="flex justify-between">
+                  <span>Code Splitting:</span>
+                  <Badge variant="default">✅</Badge>
+                </div>
+                <div className="flex justify-between">
+                  <span>Caching:</span>
+                  <Badge variant="default">✅</Badge>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Test des E-mails */}
+        <div className="mb-8">
+          <EmailTestPanel />
         </div>
       </div>
     </div>
