@@ -24,8 +24,8 @@ import {
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { useClerk } from "@clerk/clerk-react";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -34,8 +34,7 @@ interface DashboardLayoutProps {
 const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const location = useLocation();
-  const { user } = useAuth();
-  const { signOut } = useClerk();
+  const { user, signOut } = useAuth();
   const { toast } = useToast();
 
   // Fonction pour ouvrir la boutique dans une nouvelle fenêtre
@@ -50,11 +49,61 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
         return;
       }
 
-      // TODO: Implémenter avec Drizzle + Neon
-      toast({
-        title: "Fonctionnalité en cours de migration",
-        description: "Cette fonctionnalité sera bientôt disponible avec la nouvelle base de données.",
-      });
+      // D'abord récupérer le profil de l'utilisateur (comme dans useStores)
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('user_id', user.id)
+        .single();
+
+      if (profileError || !profile) {
+        console.error('Profile error:', profileError);
+        toast({
+          title: "Erreur",
+          description: "Profil utilisateur non trouvé.",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      // Maintenant récupérer les boutiques de ce profil
+      const { data: stores, error } = await supabase
+        .from('stores')
+        .select('*')
+        .eq('merchant_id', profile.id)
+        .eq('status', 'active')
+        .limit(1);
+
+      if (error) {
+        console.error('Erreur lors de la récupération de la boutique:', error);
+        toast({
+          title: "Erreur",
+          description: "Impossible de récupérer les informations de la boutique.",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      if (!stores || stores.length === 0) {
+        toast({
+          title: "Aucune boutique",
+          description: "Vous devez d'abord créer une boutique pour la voir.",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      const currentStore = stores[0];
+
+      // Créer le slug de la boutique (nom en minuscules, espaces remplacés par des tirets)
+      const storeSlug = currentStore.name
+        ?.toLowerCase()
+        .replace(/\s+/g, '-')
+        .replace(/[^a-z0-9-]/g, '') || 'ma-boutique';
+
+      // Ouvrir la boutique dans une nouvelle fenêtre
+      const storeUrl = `/store/${storeSlug}`;
+      window.open(storeUrl, '_blank');
 
     } catch (error) {
       console.error('Erreur lors de l\'ouverture de la boutique:', error);
@@ -173,13 +222,13 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
             <div className="flex items-center space-x-4">
               <div className="relative w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center flex-shrink-0 shadow-lg group-hover:shadow-xl transition-shadow duration-300">
                 <span className="text-white text-lg font-bold">
-                  {user?.firstName?.charAt(0).toUpperCase() || user?.email?.charAt(0).toUpperCase() || 'U'}
+                  {user?.email?.charAt(0).toUpperCase() || 'U'}
                 </span>
                 <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent rounded-full" />
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-semibold text-foreground truncate">
-                  {user?.fullName || user?.firstName || user?.email?.split('@')[0] || 'Utilisateur'}
+                  {user?.user_metadata?.first_name || user?.email?.split('@')[0] || 'Issiaka'}
                 </p>
                 <p className="text-xs text-muted-foreground truncate">{user?.email}</p>
               </div>

@@ -13,7 +13,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useLocation, useParams } from 'react-router-dom';
 import { useOrders } from '@/hooks/useOrders';
 import { useToast } from '@/hooks/use-toast';
-// import { supabase } from '@/integrations/supabase/client'; // TODO: Migrer vers Drizzle
+import { supabase } from '@/integrations/supabase/client';
 import { detectUserCountry, SUPPORTED_COUNTRIES, type CountryCode } from '@/utils/countryDetection';
 import { useShippingWithAutoSetup } from '@/hooks/useAutoShipping';
 
@@ -169,7 +169,7 @@ const Checkout = () => {
       // 3. Filtrer les méthodes par pays de l'utilisateur
       console.log('🎯 Filtrage intelligent pour le pays:', userCountryCode);
 
-      let availableMethods: any[] = [];
+      const availableMethods: any[] = [];
 
       if (methods && methods.length > 0) {
         for (const method of methods) {

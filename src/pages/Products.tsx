@@ -9,14 +9,14 @@ import ProductList from '@/components/products/ProductList';
 import NoStoreSelected from '@/components/products/NoStoreSelected';
 import { useProducts } from '@/hooks/useProducts';
 import { useStores } from '@/hooks/useStores';
-import type { Tables } from '@/types/database';
+import type { Tables } from '@/integrations/supabase/types';
 
 const Products = () => {
   const [selectedStoreId, setSelectedStoreId] = useState<string>('');
   const [showCreateStore, setShowCreateStore] = useState(false);
   const [showAddProduct, setShowAddProduct] = useState(false);
   const [showEditProduct, setShowEditProduct] = useState(false);
-  const [selectedProduct, setSelectedProduct] = useState<Tables['products'] | null>(null);
+  const [selectedProduct, setSelectedProduct] = useState<Tables<'products'> | null>(null);
   
   const { stores } = useStores();
   const { products, isLoading, deleteProduct } = useProducts(selectedStoreId);

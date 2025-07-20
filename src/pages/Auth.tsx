@@ -12,6 +12,8 @@ import { useToast } from '@/hooks/use-toast';
 
 const Auth = () => {
   const [isLoading, setIsLoading] = useState(false);
+  const [showVerification, setShowVerification] = useState(false);
+  const [verificationCode, setVerificationCode] = useState('');
   const [signUpData, setSignUpData] = useState({
     email: '',
     password: '',
@@ -23,8 +25,8 @@ const Auth = () => {
     email: '',
     password: ''
   });
-  
-  const { signUp, signIn } = useAuth();
+
+  const { signUp, signIn, verifyEmailCode } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -41,29 +43,93 @@ const Auth = () => {
     
     setIsLoading(true);
     
-    const { error } = await signUp(
-      signUpData.email, 
-      signUpData.password, 
-      signUpData.firstName, 
+    const result = await signUp(
+      signUpData.email,
+      signUpData.password,
+      signUpData.firstName,
       signUpData.lastName
     );
-    
-    if (error) {
+
+    if (result.error) {
+      const errorMessage = result.error.message;
+
+      // REDIRECTION INTELLIGENTE : Si compte existe déjà, essayer de connecter
+      if (result.error.message.includes('Un compte existe déjà') ||
+          result.error.message.includes('already exists')) {
+
+        console.log('🔄 Compte existant détecté, tentative de connexion automatique...');
+
+        // Essayer de connecter automatiquement avec les mêmes identifiants
+        const loginResult = await signIn(signUpData.email, signUpData.password);
+
+        if (!loginResult.error) {
+          toast({
+            title: "Connexion automatique !",
+            description: "Vous étiez déjà inscrit. Connexion réussie !",
+          });
+          navigate('/dashboard');
+          setIsLoading(false);
+          return;
+        } else {
+          // Si la connexion échoue, proposer d'aller à l'onglet connexion
+          toast({
+            title: "Compte existant",
+            description: "Un compte existe avec cet email. Veuillez vous connecter.",
+          });
+          // Passer automatiquement à l'onglet connexion
+          setSignInData({ email: signUpData.email, password: '' });
+          setIsLoading(false);
+          return;
+        }
+      }
+
       toast({
         title: "Erreur d'inscription",
-        description: error.message === 'User already registered' 
-          ? "Un compte existe déjà avec cette adresse email"
-          : error.message,
+        description: errorMessage,
         variant: "destructive"
       });
+    } else if (result.needsVerification || result.error === null) {
+      // TOUJOURS afficher l'interface de vérification après inscription réussie
+      // Car Clerk exige OBLIGATOIREMENT la vérification email
+      setShowVerification(true);
+      toast({
+        title: "Vérification requise",
+        description: "Un code de vérification a été envoyé à votre email.",
+      });
     } else {
+      // Cas improbable : inscription complète sans vérification
       toast({
         title: "Inscription réussie !",
-        description: "Vous pouvez maintenant vous connecter à votre compte.",
+        description: "Bienvenue sur CommerceFlow.",
       });
       navigate('/dashboard');
     }
     
+    setIsLoading(false);
+  };
+
+  // Fonction de vérification du code email
+  const handleVerifyCode = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+
+    const result = await verifyEmailCode(verificationCode);
+
+    if (result.error) {
+      toast({
+        title: "Erreur de vérification",
+        description: result.error.message,
+        variant: "destructive"
+      });
+    } else {
+      toast({
+        title: "Vérification réussie !",
+        description: "Votre compte a été créé avec succès.",
+      });
+      setShowVerification(false);
+      navigate('/dashboard');
+    }
+
     setIsLoading(false);
   };
 
@@ -212,6 +278,8 @@ const Auth = () => {
                       required
                     />
                   </div>
+                  {/* Élément CAPTCHA requis par Clerk */}
+                  <div id="clerk-captcha"></div>
                 </CardContent>
                 <CardFooter>
                   <Button type="submit" className="w-full" disabled={isLoading}>
@@ -222,6 +290,48 @@ const Auth = () => {
             </Card>
           </TabsContent>
         </Tabs>
+
+        {/* Interface de vérification email */}
+        {showVerification && (
+          <Card className="mt-6">
+            <CardHeader>
+              <CardTitle>Vérification Email</CardTitle>
+              <CardDescription>
+                Entrez le code de vérification envoyé à {signUpData.email}
+              </CardDescription>
+            </CardHeader>
+            <form onSubmit={handleVerifyCode}>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="verification-code">Code de vérification</Label>
+                  <Input
+                    id="verification-code"
+                    type="text"
+                    placeholder="123456"
+                    value={verificationCode}
+                    onChange={(e) => setVerificationCode(e.target.value)}
+                    maxLength={6}
+                    required
+                  />
+                </div>
+              </CardContent>
+              <CardFooter className="flex gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="flex-1"
+                  onClick={() => setShowVerification(false)}
+                  disabled={isLoading}
+                >
+                  Annuler
+                </Button>
+                <Button type="submit" className="flex-1" disabled={isLoading}>
+                  {isLoading ? "Vérification..." : "Vérifier"}
+                </Button>
+              </CardFooter>
+            </form>
+          </Card>
+        )}
 
         <div className="text-center mt-6">
           <Link to="/" className="text-sm text-gray-600 hover:text-gray-900">

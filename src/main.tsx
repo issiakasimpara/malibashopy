@@ -4,7 +4,6 @@ import { createRoot } from 'react-dom/client'
 import App from './App.tsx'
 import './index.css'
 import { ThemeProvider } from './contexts/ThemeContext'
-import { ClerkProvider } from './providers/ClerkProvider'
 
 // 🔐 Validation de sécurité au démarrage
 import { logSecurityReport } from './utils/securityValidator'
@@ -33,10 +32,8 @@ if (import.meta.env.DEV) {
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <ClerkProvider>
-      <ThemeProvider>
-        <App />
-      </ThemeProvider>
-    </ClerkProvider>
+    <ThemeProvider>
+      <App />
+    </ThemeProvider>
   </StrictMode>,
 )
