@@ -5,7 +5,14 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { CartProvider } from "@/contexts/CartContext";
-import { AuthProvider } from "@/hooks/useAuth";
+import { ClerkProvider } from "@clerk/clerk-react";
+
+// Récupération de la clé publique Clerk
+const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
+
+if (!PUBLISHABLE_KEY) {
+  throw new Error("Missing Publishable Key")
+}
 import CartWidget from "@/components/site-builder/blocks/CartWidget";
 import ErrorBoundary from "@/components/ErrorBoundary";
 // ⚡ ÉTAPE 2: LAZY LOADING PROGRESSIF
@@ -121,7 +128,7 @@ const App = () => {
   return (
     <ErrorBoundary>
       <QueryClientProvider client={queryClient}>
-        <AuthProvider>
+        <ClerkProvider publishableKey={PUBLISHABLE_KEY}>
           <CartProvider>
             <TooltipProvider>
               <Toaster />
@@ -357,7 +364,7 @@ const App = () => {
           </BrowserRouter>
         </TooltipProvider>
       </CartProvider>
-    </AuthProvider>
+    </ClerkProvider>
   </QueryClientProvider>
   </ErrorBoundary>
   );

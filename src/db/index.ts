@@ -2,8 +2,8 @@ import { drizzle } from 'drizzle-orm/neon-http';
 import { neon } from '@neondatabase/serverless';
 import * as schema from './schema';
 
-// 🔐 Récupération de l'URL de la base de données
-const databaseUrl = import.meta.env.DATABASE_URL || process.env.DATABASE_URL;
+// 🔐 Récupération de l'URL de la base de données (côté client uniquement)
+const databaseUrl = import.meta.env.VITE_DATABASE_URL;
 
 if (!databaseUrl) {
   throw new Error('🚨 DATABASE_URL is required');

@@ -86,24 +86,15 @@ export const useOptimizedProducts = (storeId?: string) => {
     queryFn: async () => {
       if (!storeId) return [];
       
-      const { supabase } = await import('@/integrations/supabase/client');
-      const { data, error } = await supabase
-        .from('products')
-        .select(`
-          id,
-          name,
-          description,
-          price,
-          images,
-          status,
-          category_id,
-          categories(name)
-        `)
-        .eq('store_id', storeId)
-        .eq('status', 'active')
-        .order('created_at', { ascending: false });
+      const { db, products } = await import('@/db');
+      const { eq, desc } = await import('drizzle-orm');
 
-      if (error) throw error;
+      const data = await db
+        .select()
+        .from(products)
+        .where(eq(products.storeId, storeId))
+        .orderBy(desc(products.createdAt));
+
       return data || [];
     },
     enabled: !!storeId,
@@ -120,15 +111,16 @@ export const useOptimizedStore = (storeId?: string) => {
     queryFn: async () => {
       if (!storeId) return null;
       
-      const { supabase } = await import('@/integrations/supabase/client');
-      const { data, error } = await supabase
-        .from('stores')
-        .select('*')
-        .eq('id', storeId)
-        .single();
+      const { db, stores } = await import('@/db');
+      const { eq } = await import('drizzle-orm');
 
-      if (error) throw error;
-      return data;
+      const data = await db
+        .select()
+        .from(stores)
+        .where(eq(stores.id, storeId))
+        .limit(1);
+
+      return data[0] || null;
     },
     enabled: !!storeId,
     staleTime: 10 * 60 * 1000, // 10 minutes pour les infos boutique

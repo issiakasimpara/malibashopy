@@ -1,16 +1,16 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { db, stores, profiles } from '@/db';
 import { useAuth } from './useAuth';
 import { useToast } from './use-toast';
-import type { Tables, TablesInsert, TablesUpdate } from '@/integrations/supabase/types';
+import { eq, desc } from 'drizzle-orm';
 
-type Store = Tables<'stores'>;
-type StoreInsert = TablesInsert<'stores'>;
-type StoreUpdate = TablesUpdate<'stores'>;
+type Store = typeof stores.$inferSelect;
+type StoreInsert = typeof stores.$inferInsert;
+type StoreUpdate = Partial<StoreInsert>;
 
 export const useStores = () => {
-  const { user, loading: authLoading } = useAuth();
+  const { user, isLoading: authLoading } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -26,33 +26,26 @@ export const useStores = () => {
 
       try {
         // D'abord récupérer le profil de l'utilisateur
-        const { data: profile, error: profileError } = await supabase
-          .from('profiles')
-          .select('id')
-          .eq('user_id', user.id)
-          .single();
+        const profile = await db
+          .select({ id: profiles.id })
+          .from(profiles)
+          .where(eq(profiles.userId, user.id))
+          .limit(1);
 
-        if (profileError) {
-          console.error('Profile error:', profileError);
-          // Si pas de profil, retourner un tableau vide au lieu de créer automatiquement
+        if (!profile.length) {
           console.log('No profile found, returning empty stores array');
           return [];
         }
 
         // Maintenant récupérer les boutiques de ce profil
-        const { data, error } = await supabase
-          .from('stores')
-          .select('*')
-          .eq('merchant_id', profile.id)
-          .order('created_at', { ascending: false });
+        const storesResult = await db
+          .select()
+          .from(stores)
+          .where(eq(stores.merchantId, profile[0].id))
+          .orderBy(desc(stores.createdAt));
 
-        if (error) {
-          console.error('Error fetching stores:', error);
-          throw error;
-        }
-
-        console.log('Stores fetched for profile:', profile.id, 'stores:', data);
-        return data as Store[];
+        console.log('Stores fetched for profile:', profile[0].id, 'stores:', storesResult);
+        return storesResult as Store[];
       } catch (error) {
         console.error('Error in stores query:', error);
         // Retourner un tableau vide en cas d'erreur pour éviter les crashes
@@ -61,7 +54,6 @@ export const useStores = () => {
     },
     enabled: !!user && !authLoading,
     staleTime: 1000 * 60 * 10, // 10 minutes de cache
-    cacheTime: 1000 * 60 * 30, // 30 minutes en cache
     retry: 1, // Réduire les tentatives
     refetchOnWindowFocus: false, // Éviter les requêtes inutiles
   });
@@ -80,25 +72,22 @@ export const useStores = () => {
       }
 
       // First get the user's profile
-      const { data: profile, error: profileError } = await supabase
-        .from('profiles')
-        .select('id')
-        .eq('user_id', user.id)
-        .single();
+      const profile = await db
+        .select({ id: profiles.id })
+        .from(profiles)
+        .where(eq(profiles.userId, user.id))
+        .limit(1);
 
-      if (profileError || !profile) {
-        console.error('Profile error:', profileError);
+      if (!profile.length) {
         throw new Error('Profile not found');
       }
 
-      const { data, error } = await supabase
-        .from('stores')
-        .insert({ ...store, merchant_id: profile.id })
-        .select()
-        .single();
+      const newStore = await db
+        .insert(stores)
+        .values({ ...store, merchantId: profile[0].id })
+        .returning();
 
-      if (error) throw error;
-      return data;
+      return newStore[0];
     },
     onSuccess: (newStore) => {
       queryClient.invalidateQueries({ queryKey: ['stores'] });
@@ -120,15 +109,13 @@ export const useStores = () => {
 
   const updateStore = useMutation({
     mutationFn: async ({ id, ...updates }: StoreUpdate & { id: string }) => {
-      const { data, error } = await supabase
-        .from('stores')
-        .update(updates)
-        .eq('id', id)
-        .select()
-        .single();
+      const updatedStore = await db
+        .update(stores)
+        .set(updates)
+        .where(eq(stores.id, id))
+        .returning();
 
-      if (error) throw error;
-      return data;
+      return updatedStore[0];
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['stores'] });

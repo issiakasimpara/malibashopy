@@ -1,22 +1,10 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { db, productVariants, variantAttributeValues } from '@/db';
 import { useToast } from './use-toast';
-import type { Tables, TablesInsert } from '@/integrations/supabase/types';
+import { eq } from 'drizzle-orm';
 
-type ProductVariant = Tables<'product_variants'>;
-
-// Ajouter supabase au window pour pouvoir y accéder dans les composants
-declare global {
-  interface Window {
-    supabase: typeof supabase;
-  }
-}
-
-// Assigner supabase au window
-if (typeof window !== 'undefined') {
-  window.supabase = supabase;
-}
+type ProductVariant = typeof productVariants.$inferSelect;
 
 export const useProductVariants = (productId?: string) => {
   const { toast } = useToast();
@@ -26,37 +14,25 @@ export const useProductVariants = (productId?: string) => {
     queryKey: ['product-variants', productId],
     queryFn: async () => {
       if (!productId) return [];
-      
-      const { data, error } = await supabase
-        .from('product_variants')
-        .select(`
-          *,
-          variant_attribute_values (
-            attribute_values (
-              *,
-              product_attributes (*)
-            )
-          )
-        `)
-        .eq('product_id', productId)
-        .order('created_at');
 
-      if (error) throw error;
+      const data = await db
+        .select()
+        .from(productVariants)
+        .where(eq(productVariants.productId, productId));
+
       return data;
     },
     enabled: !!productId,
   });
 
   const createVariant = useMutation({
-    mutationFn: async (variant: TablesInsert<'product_variants'>) => {
-      const { data, error } = await supabase
-        .from('product_variants')
-        .insert(variant)
-        .select()
-        .single();
+    mutationFn: async (variant: typeof productVariants.$inferInsert) => {
+      const data = await db
+        .insert(productVariants)
+        .values(variant)
+        .returning();
 
-      if (error) throw error;
-      return data;
+      return data[0];
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['product-variants'] });
@@ -76,15 +52,13 @@ export const useProductVariants = (productId?: string) => {
 
   const updateVariant = useMutation({
     mutationFn: async ({ id, ...updates }: Partial<ProductVariant> & { id: string }) => {
-      const { data, error } = await supabase
-        .from('product_variants')
-        .update(updates)
-        .eq('id', id)
-        .select()
-        .single();
+      const data = await db
+        .update(productVariants)
+        .set(updates)
+        .where(eq(productVariants.id, id))
+        .returning();
 
-      if (error) throw error;
-      return data;
+      return data[0];
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['product-variants'] });
@@ -104,12 +78,9 @@ export const useProductVariants = (productId?: string) => {
 
   const deleteVariant = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase
-        .from('product_variants')
-        .delete()
-        .eq('id', id);
-
-      if (error) throw error;
+      await db
+        .delete(productVariants)
+        .where(eq(productVariants.id, id));
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['product-variants'] });
@@ -129,14 +100,12 @@ export const useProductVariants = (productId?: string) => {
 
   const linkAttributeToVariant = useMutation({
     mutationFn: async ({ variantId, attributeValueId }: { variantId: string; attributeValueId: string }) => {
-      const { data, error } = await supabase
-        .from('variant_attribute_values')
-        .insert({ variant_id: variantId, attribute_value_id: attributeValueId })
-        .select()
-        .single();
+      const data = await db
+        .insert(variantAttributeValues)
+        .values({ variantId, attributeValueId })
+        .returning();
 
-      if (error) throw error;
-      return data;
+      return data[0];
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['product-variants'] });

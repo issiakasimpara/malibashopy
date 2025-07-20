@@ -1,0 +1,254 @@
+table_name,column_name,data_type,is_nullable,column_default,character_maximum_length
+attribute_values,id,uuid,NO,gen_random_uuid(),null
+attribute_values,attribute_id,uuid,NO,null,null
+attribute_values,value,text,NO,null,null
+attribute_values,hex_color,text,YES,null,null
+attribute_values,sort_order,integer,YES,0,null
+attribute_values,created_at,timestamp with time zone,NO,now(),null
+cart_sessions,id,uuid,NO,gen_random_uuid(),null
+cart_sessions,session_id,text,NO,null,null
+cart_sessions,store_id,uuid,YES,null,null
+cart_sessions,items,jsonb,NO,'[]'::jsonb,null
+cart_sessions,customer_info,jsonb,YES,null,null
+cart_sessions,created_at,timestamp with time zone,NO,now(),null
+cart_sessions,updated_at,timestamp with time zone,NO,now(),null
+cart_sessions,expires_at,timestamp with time zone,NO,(now() + '7 days'::interval),null
+categories,id,uuid,NO,gen_random_uuid(),null
+categories,store_id,uuid,NO,null,null
+categories,name,text,NO,null,null
+categories,description,text,YES,null,null
+categories,parent_id,uuid,YES,null,null
+categories,created_at,timestamp with time zone,NO,now(),null
+custom_domains,id,uuid,NO,gen_random_uuid(),null
+custom_domains,user_id,uuid,NO,null,null
+custom_domains,store_id,uuid,NO,null,null
+custom_domains,custom_domain,text,NO,null,null
+custom_domains,verification_token,text,NO,null,null
+custom_domains,verified,boolean,NO,false,null
+custom_domains,ssl_enabled,boolean,NO,false,null
+custom_domains,cloudflare_zone_id,text,YES,null,null
+custom_domains,cloudflare_record_id,text,YES,null,null
+custom_domains,created_at,timestamp with time zone,NO,now(),null
+custom_domains,updated_at,timestamp with time zone,NO,now(),null
+customers,id,uuid,NO,gen_random_uuid(),null
+customers,store_id,uuid,NO,null,null
+customers,email,text,NO,null,null
+customers,first_name,text,YES,null,null
+customers,last_name,text,YES,null,null
+customers,phone,text,YES,null,null
+customers,address,jsonb,YES,'{}'::jsonb,null
+customers,created_at,timestamp with time zone,NO,now(),null
+customers,updated_at,timestamp with time zone,NO,now(),null
+dns_records,id,uuid,NO,gen_random_uuid(),null
+dns_records,domain_id,uuid,NO,null,null
+dns_records,cloudflare_record_id,text,YES,null,null
+dns_records,record_type,text,NO,null,null
+dns_records,name,text,NO,null,null
+dns_records,value,text,NO,null,null
+dns_records,ttl,integer,YES,3600,null
+dns_records,proxied,boolean,YES,true,null
+dns_records,priority,integer,YES,null,null
+dns_records,status,text,NO,'pending'::text,null
+dns_records,created_at,timestamp with time zone,YES,now(),null
+dns_records,updated_at,timestamp with time zone,YES,now(),null
+domains,domain_catalog,name,YES,null,null
+domains,id,uuid,NO,gen_random_uuid(),null
+domains,store_id,uuid,NO,null,null
+domains,domain_schema,name,YES,null,null
+domains,domain_name,name,YES,null,null
+domains,domain_name,text,NO,null,null
+domains,data_type,character varying,YES,null,null
+domains,status,text,NO,'pending'::text,null
+domains,character_maximum_length,integer,YES,null,null
+domains,ssl_status,text,NO,'pending'::text,null
+domains,character_octet_length,integer,YES,null,null
+domains,character_set_catalog,name,YES,null,null
+domains,is_verified,boolean,YES,false,null
+domains,character_set_schema,name,YES,null,null
+domains,verification_token,text,YES,null,null
+domains,last_verified_at,timestamp with time zone,YES,null,null
+domains,character_set_name,name,YES,null,null
+domains,error_message,text,YES,null,null
+domains,collation_catalog,name,YES,null,null
+domains,created_at,timestamp with time zone,YES,now(),null
+domains,collation_schema,name,YES,null,null
+domains,collation_name,name,YES,null,null
+domains,updated_at,timestamp with time zone,YES,now(),null
+domains,vercel_domain_id,text,YES,null,null
+domains,numeric_precision,integer,YES,null,null
+domains,numeric_precision_radix,integer,YES,null,null
+domains,cname_target,text,YES,null,null
+domains,numeric_scale,integer,YES,null,null
+domains,datetime_precision,integer,YES,null,null
+domains,interval_type,character varying,YES,null,null
+domains,aws_amplify_app_id,text,YES,null,null
+domains,interval_precision,integer,YES,null,null
+domains,domain_default,character varying,YES,null,null
+domains,aws_domain_name,text,YES,null,null
+domains,aws_deployment_url,text,YES,null,null
+domains,udt_catalog,name,YES,null,null
+domains,udt_schema,name,YES,null,null
+domains,udt_name,name,YES,null,null
+domains,scope_catalog,name,YES,null,null
+domains,scope_schema,name,YES,null,null
+domains,scope_name,name,YES,null,null
+domains,maximum_cardinality,integer,YES,null,null
+domains,dtd_identifier,name,YES,null,null
+markets,id,uuid,NO,gen_random_uuid(),null
+markets,store_id,uuid,NO,null,null
+markets,name,character varying,NO,null,255
+markets,countries,ARRAY,NO,'{}'::text[],null
+markets,is_active,boolean,YES,true,null
+markets,created_at,timestamp with time zone,YES,now(),null
+markets,updated_at,timestamp with time zone,YES,now(),null
+order_items,id,uuid,NO,gen_random_uuid(),null
+order_items,order_id,uuid,NO,null,null
+order_items,product_id,uuid,NO,null,null
+order_items,quantity,integer,NO,1,null
+order_items,price,numeric,NO,null,null
+order_items,total,numeric,NO,null,null
+order_items,created_at,timestamp with time zone,NO,now(),null
+orders,id,uuid,NO,gen_random_uuid(),null
+orders,store_id,uuid,NO,null,null
+orders,customer_id,uuid,YES,null,null
+orders,order_number,text,NO,null,null
+orders,status,USER-DEFINED,NO,'pending'::order_status,null
+orders,subtotal,numeric,NO,0,null
+orders,tax_amount,numeric,NO,0,null
+orders,shipping_amount,numeric,NO,0,null
+orders,total_amount,numeric,NO,0,null
+orders,currency,text,NO,'CFA'::text,null
+orders,billing_address,jsonb,YES,'{}'::jsonb,null
+orders,shipping_address,jsonb,YES,'{}'::jsonb,null
+orders,notes,text,YES,null,null
+orders,created_at,timestamp with time zone,NO,now(),null
+orders,updated_at,timestamp with time zone,NO,now(),null
+product_attributes,id,uuid,NO,gen_random_uuid(),null
+product_attributes,name,text,NO,null,null
+product_attributes,type,text,NO,null,null
+product_attributes,created_at,timestamp with time zone,NO,now(),null
+product_attributes,updated_at,timestamp with time zone,NO,now(),null
+product_variants,id,uuid,NO,gen_random_uuid(),null
+product_variants,product_id,uuid,NO,null,null
+product_variants,sku,text,YES,null,null
+product_variants,price,numeric,YES,null,null
+product_variants,compare_price,numeric,YES,null,null
+product_variants,cost_price,numeric,YES,null,null
+product_variants,inventory_quantity,integer,YES,0,null
+product_variants,weight,numeric,YES,null,null
+product_variants,images,ARRAY,YES,null,null
+product_variants,is_default,boolean,YES,false,null
+product_variants,created_at,timestamp with time zone,NO,now(),null
+product_variants,updated_at,timestamp with time zone,NO,now(),null
+products,id,uuid,NO,gen_random_uuid(),null
+products,store_id,uuid,NO,null,null
+products,category_id,uuid,YES,null,null
+products,name,text,NO,null,null
+products,description,text,YES,null,null
+products,price,numeric,NO,null,null
+products,compare_price,numeric,YES,null,null
+products,cost_price,numeric,YES,null,null
+products,sku,text,YES,null,null
+products,inventory_quantity,integer,YES,0,null
+products,status,USER-DEFINED,NO,'draft'::product_status,null
+products,images,ARRAY,YES,'{}'::text[],null
+products,tags,ARRAY,YES,'{}'::text[],null
+products,weight,numeric,YES,null,null
+products,dimensions,jsonb,YES,'{}'::jsonb,null
+products,created_at,timestamp with time zone,NO,now(),null
+products,updated_at,timestamp with time zone,NO,now(),null
+products,track_inventory,boolean,YES,true,null
+profiles,id,uuid,NO,null,null
+profiles,user_id,uuid,YES,null,null
+profiles,first_name,text,YES,null,null
+profiles,last_name,text,YES,null,null
+profiles,email,text,YES,null,null
+profiles,phone,text,YES,null,null
+profiles,avatar_url,text,YES,null,null
+profiles,created_at,timestamp with time zone,YES,now(),null
+profiles,updated_at,timestamp with time zone,YES,now(),null
+public_orders,id,uuid,NO,gen_random_uuid(),null
+public_orders,order_number,text,NO,null,null
+public_orders,customer_email,text,NO,null,null
+public_orders,customer_name,text,YES,null,null
+public_orders,customer_phone,text,YES,null,null
+public_orders,store_id,uuid,YES,null,null
+public_orders,total_amount,numeric,NO,0,null
+public_orders,currency,text,NO,'EUR'::text,null
+public_orders,status,text,NO,'pending'::text,null
+public_orders,items,jsonb,NO,'[]'::jsonb,null
+public_orders,shipping_address,jsonb,YES,null,null
+public_orders,billing_address,jsonb,YES,null,null
+public_orders,created_at,timestamp with time zone,NO,now(),null
+public_orders,updated_at,timestamp with time zone,NO,now(),null
+public_orders,shipping_method,jsonb,YES,null,null
+public_orders,shipping_country,text,YES,null,null
+public_orders,shipping_cost,numeric,YES,0,null
+shipping_addresses,id,uuid,NO,gen_random_uuid(),null
+shipping_addresses,order_id,uuid,YES,null,null
+shipping_addresses,country,character varying,NO,null,10
+shipping_addresses,city,character varying,YES,null,255
+shipping_addresses,address_line,text,YES,null,null
+shipping_addresses,postal_code,character varying,YES,null,20
+shipping_addresses,phone,character varying,YES,null,30
+shipping_addresses,first_name,character varying,YES,null,255
+shipping_addresses,last_name,character varying,YES,null,255
+shipping_addresses,created_at,timestamp with time zone,YES,now(),null
+shipping_methods,id,uuid,NO,gen_random_uuid(),null
+shipping_methods,store_id,uuid,NO,null,null
+shipping_methods,market_id,uuid,NO,null,null
+shipping_methods,name,character varying,NO,null,255
+shipping_methods,description,text,YES,null,null
+shipping_methods,price,numeric,NO,0.0,null
+shipping_methods,estimated_min_days,integer,YES,1,null
+shipping_methods,estimated_max_days,integer,YES,7,null
+shipping_methods,is_active,boolean,YES,true,null
+shipping_methods,conditions,jsonb,YES,null,null
+shipping_methods,sort_order,integer,YES,0,null
+shipping_methods,created_at,timestamp with time zone,YES,now(),null
+shipping_methods,updated_at,timestamp with time zone,YES,now(),null
+site_templates,id,uuid,NO,gen_random_uuid(),null
+site_templates,store_id,uuid,NO,null,null
+site_templates,template_id,text,NO,null,null
+site_templates,template_data,jsonb,NO,null,null
+site_templates,is_published,boolean,YES,false,null
+site_templates,created_at,timestamp with time zone,NO,now(),null
+site_templates,updated_at,timestamp with time zone,NO,now(),null
+ssl_certificates,id,uuid,NO,gen_random_uuid(),null
+ssl_certificates,domain_id,uuid,NO,null,null
+ssl_certificates,cloudflare_cert_id,text,YES,null,null
+ssl_certificates,status,text,NO,'pending'::text,null
+ssl_certificates,issued_at,timestamp with time zone,YES,null,null
+ssl_certificates,expires_at,timestamp with time zone,YES,null,null
+ssl_certificates,auto_renew,boolean,YES,true,null
+ssl_certificates,created_at,timestamp with time zone,YES,now(),null
+ssl_certificates,updated_at,timestamp with time zone,YES,now(),null
+stores,id,uuid,NO,gen_random_uuid(),null
+stores,name,text,NO,null,null
+stores,description,text,YES,null,null
+stores,merchant_id,uuid,YES,null,null
+stores,user_id,uuid,YES,null,null
+stores,status,text,YES,'active'::text,null
+stores,logo_url,text,YES,null,null
+stores,settings,jsonb,YES,'{}'::jsonb,null
+stores,created_at,timestamp with time zone,YES,now(),null
+stores,updated_at,timestamp with time zone,YES,now(),null
+testimonials,id,uuid,NO,gen_random_uuid(),null
+testimonials,store_id,text,NO,null,null
+testimonials,customer_name,text,NO,null,null
+testimonials,customer_email,text,NO,null,null
+testimonials,rating,integer,NO,null,null
+testimonials,title,text,YES,null,null
+testimonials,content,text,NO,null,null
+testimonials,is_approved,boolean,YES,false,null
+testimonials,is_featured,boolean,YES,false,null
+testimonials,created_at,timestamp with time zone,YES,now(),null
+testimonials,updated_at,timestamp with time zone,YES,now(),null
+testimonials,order_id,text,YES,null,null
+testimonials,product_id,text,YES,null,null
+testimonials,customer_image,text,YES,null,null
+testimonials,images,ARRAY,YES,null,null
+variant_attribute_values,id,uuid,NO,gen_random_uuid(),null
+variant_attribute_values,variant_id,uuid,NO,null,null
+variant_attribute_values,attribute_value_id,uuid,NO,null,null
+variant_attribute_values,created_at,timestamp with time zone,NO,now(),null

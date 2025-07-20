@@ -28,8 +28,8 @@ export const validateSecurity = (): SecurityReport => {
   // 2. Vérifier l'absence de clés hardcodées
   checks.push(checkHardcodedSecrets());
   
-  // 3. Vérifier la configuration Supabase
-  checks.push(checkSupabaseConfig());
+  // 3. Vérifier la configuration Clerk
+  checks.push(checkClerkConfig());
   
   // 4. Vérifier HTTPS
   checks.push(checkHTTPS());
@@ -78,9 +78,9 @@ export const validateSecurity = (): SecurityReport => {
  * 🔍 Vérifier les variables d'environnement
  */
 const checkEnvironmentVariables = (): SecurityCheck => {
-  const requiredVars = ['VITE_SUPABASE_URL', 'VITE_SUPABASE_ANON_KEY'];
+  const requiredVars = ['VITE_CLERK_PUBLISHABLE_KEY', 'VITE_DATABASE_URL'];
   const missingVars = requiredVars.filter(varName => !import.meta.env[varName]);
-  
+
   if (missingVars.length > 0) {
     return {
       name: 'Environment Variables',
@@ -89,7 +89,7 @@ const checkEnvironmentVariables = (): SecurityCheck => {
       critical: true
     };
   }
-  
+
   return {
     name: 'Environment Variables',
     status: 'PASS',
@@ -133,33 +133,33 @@ const checkHardcodedSecrets = (): SecurityCheck => {
 };
 
 /**
- * 🔍 Vérifier la configuration Supabase
+ * 🔍 Vérifier la configuration Clerk
  */
-const checkSupabaseConfig = (): SecurityCheck => {
-  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-  
-  if (!supabaseUrl?.startsWith('https://')) {
+const checkClerkConfig = (): SecurityCheck => {
+  const clerkKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
+
+  if (!clerkKey?.startsWith('pk_')) {
     return {
-      name: 'Supabase Config',
+      name: 'Clerk Config',
       status: 'FAIL',
-      message: 'URL Supabase doit utiliser HTTPS',
+      message: 'Clé Clerk publique invalide',
       critical: true
     };
   }
-  
-  if (!supabaseUrl?.includes('.supabase.co')) {
+
+  if (clerkKey?.includes('live') && import.meta.env.DEV) {
     return {
-      name: 'Supabase Config',
+      name: 'Clerk Config',
       status: 'WARNING',
-      message: 'URL Supabase non standard détectée',
+      message: 'Clé de production utilisée en développement',
       critical: false
     };
   }
-  
+
   return {
-    name: 'Supabase Config',
+    name: 'Clerk Config',
     status: 'PASS',
-    message: 'Configuration Supabase sécurisée',
+    message: 'Configuration Clerk sécurisée',
     critical: false
   };
 };
